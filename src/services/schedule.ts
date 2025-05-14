@@ -18,11 +18,11 @@ export interface Schedule {
 export interface CreateScheduleData {
   userId: string;
   date: string;
-  start_time: string;
-  end_time: string;
+  startTime: string;
+  endTime: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   package_id: string;
-  package_period_id: string;
+  packagePeriodId: string;
 }
 
 interface ApiResponse<T> {

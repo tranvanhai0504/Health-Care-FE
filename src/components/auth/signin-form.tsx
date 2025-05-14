@@ -45,7 +45,6 @@ export default function SignInForm() {
     const success = await login(data);
 
     if (success) {
-      toast.success("Welcome back!");
       router.push(redirectUrl);
     } else {
       toast.error("Sign in failed. Please check your credentials.");

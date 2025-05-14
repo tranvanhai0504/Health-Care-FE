@@ -34,6 +34,8 @@ const UserProfile = ({ user }: UserProfileProps) => {
       .substring(0, 2);
   };
 
+  console.log(user);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -54,16 +56,11 @@ const UserProfile = ({ user }: UserProfileProps) => {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {user.phoneNumber}
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/" className="flex w-full items-center">
-            Dashboard
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/profile" className="flex w-full items-center">
             <User className="mr-2 h-4 w-4" />

@@ -12,33 +12,61 @@ const SectionLoader = () => (
 );
 
 // Dynamic imports for below-the-fold content with loading fallbacks
-const ServicesSection = dynamic(() => 
-  import("@/components/landing/ServicesSection").then(mod => ({ default: mod.ServicesSection })),
+const SpecialtiesSection = dynamic(
+  () =>
+    import("@/components/landing/SpecialtiesSection").then((mod) => ({
+      default: mod.SpecialtiesSection,
+    })),
   { loading: () => <SectionLoader /> }
 );
 
-const FeaturesSection = dynamic(() => 
-  import("@/components/landing/FeaturesSection").then(mod => ({ default: mod.FeaturesSection })),
+const ServicesSection = dynamic(
+  () =>
+    import("@/components/landing/ServicesSection").then((mod) => ({
+      default: mod.ServicesSection,
+    })),
   { loading: () => <SectionLoader /> }
 );
 
-const BlogSection = dynamic(() => 
-  import("@/components/landing/BlogSection").then(mod => ({ default: mod.BlogSection })),
+const FeaturesSection = dynamic(
+  () =>
+    import("@/components/landing/FeaturesSection").then((mod) => ({
+      default: mod.FeaturesSection,
+    })),
   { loading: () => <SectionLoader /> }
 );
 
-const CTASection = dynamic(() => 
-  import("@/components/landing/CTASection").then(mod => ({ default: mod.CTASection })),
+const BlogSection = dynamic(
+  () =>
+    import("@/components/landing/BlogSection").then((mod) => ({
+      default: mod.BlogSection,
+    })),
+  { loading: () => <SectionLoader /> }
+);
+
+const CTASection = dynamic(
+  () =>
+    import("@/components/landing/CTASection").then((mod) => ({
+      default: mod.CTASection,
+    })),
   { loading: () => <SectionLoader /> }
 );
 
 export const metadata: Metadata = {
   title: "Health Care Solutions | Modern Healthcare Services",
-  description: "Providing quality healthcare services to improve your wellbeing and quality of life. Book appointments, consult with specialists, and access personalized care.",
-  keywords: ["healthcare", "medical care", "doctor appointments", "healthcare solutions", "wellness"],
+  description:
+    "Providing quality healthcare services to improve your wellbeing and quality of life. Book appointments, consult with specialists, and access personalized care.",
+  keywords: [
+    "healthcare",
+    "medical care",
+    "doctor appointments",
+    "healthcare solutions",
+    "wellness",
+  ],
   openGraph: {
     title: "Health Care Solutions | Modern Healthcare Services",
-    description: "Providing quality healthcare services to improve your wellbeing and quality of life.",
+    description:
+      "Providing quality healthcare services to improve your wellbeing and quality of life.",
     url: "https://healthcaresolutions.com",
     siteName: "Health Care Solutions",
     locale: "en_US",
@@ -52,27 +80,36 @@ export default function Home() {
       <div className="min-h-screen">
         {/* Critical above-the-fold content - loaded immediately */}
         <HeroSection />
-        
+
+        {/* Specialties section */}
+        <Suspense fallback={<SectionLoader />}>
+          <SpecialtiesSection />
+        </Suspense>
+
         {/* Below-the-fold content with Suspense for better loading performance */}
         <Suspense fallback={<SectionLoader />}>
           <ServicesSection />
         </Suspense>
-        
+
         <Suspense fallback={<SectionLoader />}>
           <FeaturesSection />
         </Suspense>
-        
+
         <Suspense fallback={<SectionLoader />}>
           <BlogSection />
         </Suspense>
-        
+
         <Suspense fallback={<SectionLoader />}>
           <CTASection />
         </Suspense>
       </div>
 
       {/* Structured data for SEO */}
-      <Script id="structured-data" type="application/ld+json" strategy="afterInteractive">
+      <Script
+        id="structured-data"
+        type="application/ld+json"
+        strategy="afterInteractive"
+      >
         {`
           {
             "@context": "https://schema.org",
@@ -88,17 +125,7 @@ export default function Home() {
               "addressRegion": "HC",
               "postalCode": "12345",
               "addressCountry": "US"
-            },
-            "contactPoint": {
-              "@type": "ContactPoint",
-              "telephone": "+1-800-123-4567",
-              "contactType": "customer service"
-            },
-            "sameAs": [
-              "https://www.facebook.com/healthcaresolutions",
-              "https://www.twitter.com/healthcaresol",
-              "https://www.instagram.com/healthcaresolutions"
-            ]
+            }
           }
         `}
       </Script>

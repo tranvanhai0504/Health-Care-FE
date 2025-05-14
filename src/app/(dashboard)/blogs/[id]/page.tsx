@@ -9,8 +9,7 @@ import { Blog } from "@/services/blogs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ArrowLeft, User, Tag } from "lucide-react";
-import { remark } from "remark";
-import html from "remark-html";
+import { convertMarkdown } from "@/utils/markdown";
 
 const BlogDetailPage = () => {
   const params = useParams();
@@ -21,12 +20,6 @@ const BlogDetailPage = () => {
 
   const [content, setContent] = useState("");
 
-  const convertMarkDown = async (content: string) => {
-    const processedContent = await remark().use(html).process(content);
-    const contentHtml = processedContent.toString();
-
-    setContent(contentHtml);
-  };
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -40,7 +33,7 @@ const BlogDetailPage = () => {
         const response = await blogService.getBlogById(id);
         setBlog(response.data);
         setError(null);
-        convertMarkDown(response.data.content);
+        setContent(await convertMarkdown(response.data.content));
       } catch (err) {
         console.error("Error fetching blog:", err);
         setError("Failed to load blog. Please try again later.");
@@ -62,7 +55,7 @@ const BlogDetailPage = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto px-4">
       <Button
         variant="ghost"
         className="mb-6 pl-0"
