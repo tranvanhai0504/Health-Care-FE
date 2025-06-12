@@ -12,10 +12,11 @@ export interface ConsultationService {
   _id: string;
   name: string;
   description: string;
+  duration: number;
   room?: string;
   doctor?: string;
   price: number;
-  specialization?: Specialization;
+  specialization?: string; // This should be a string ID, not the full object
   createdAt: string;
   updatedAt: string;
   __v?: number;
@@ -23,8 +24,20 @@ export interface ConsultationService {
 
 interface ApiResponse<T> {
   data: T;
-  msg: string;
-  code: number;
+  msg?: string;
+  message?: string;
+  code?: number;
+  success?: boolean;
+}
+
+interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+interface UpdateManyRequest {
+  ids: string[];
+  data: Partial<ConsultationService>;
 }
 
 export class ConsultationServiceApiService extends BaseService<ConsultationService> {
@@ -37,8 +50,20 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
    * @returns Promise with array of consultation services
    */
   async getAll(): Promise<ConsultationService[]> {
-    const response = await api.get<ConsultationService[]>(this.basePath);
-    return response.data;
+    const response = await api.get<ApiResponse<ConsultationService[]>>(this.basePath);
+    return response.data.data || response.data;
+  }
+
+  /**
+   * Get many consultation services with pagination
+   * @param params - Pagination parameters
+   * @returns Promise with array of consultation services
+   */
+  async getMany(params?: PaginationParams): Promise<ConsultationService[]> {
+    const response = await api.get<ApiResponse<ConsultationService[]>>(`${this.basePath}/many`, {
+      params
+    });
+    return response.data.data || response.data;
   }
 
   /**
@@ -71,6 +96,16 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
   }
 
   /**
+   * Get consultation services by specialization
+   * @param specialization - The specialization to filter by
+   * @returns Promise with array of consultation services
+   */
+  async getBySpecialization(specialization: string): Promise<ConsultationService[]> {
+    const response = await api.get<ApiResponse<ConsultationService[]>>(`${this.basePath}/specialization/${specialization}`);
+    return response.data.data || response.data;
+  }
+
+  /**
    * Get multiple consultation services by their IDs
    * @param ids - Array of service IDs to retrieve
    * @returns Promise with array of consultation services (skips any not found)
@@ -97,8 +132,8 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
    * @returns Promise with the created service
    */
   async create(data: Partial<ConsultationService>): Promise<ConsultationService> {
-    const response = await api.post<ConsultationService>(this.basePath, data);
-    return response.data;
+    const response = await api.post<ApiResponse<ConsultationService>>(this.basePath, data);
+    return response.data.data || response.data;
   }
 
   /**
@@ -107,8 +142,41 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
    * @returns Promise with the created services
    */
   async createMany(data: Partial<ConsultationService>[]): Promise<ConsultationService[]> {
-    const response = await api.post<ConsultationService[]>(this.basePath, data);
+    const response = await api.post<ApiResponse<ConsultationService[]>>(`${this.basePath}/createMany`, data);
+    return response.data.data || response.data;
+  }
+
+  /**
+   * Update a consultation service
+   * @param id - The ID of the service to update
+   * @param data - The updated service data
+   * @returns Promise with the updated service
+   */
+  async update(id: string, data: Partial<ConsultationService>): Promise<ConsultationService> {
+    const response = await api.put<ApiResponse<ConsultationService>>(`${this.basePath}/${id}`, data);
+    return response.data.data || response.data;
+  }
+
+  /**
+   * Update multiple consultation services with the same data
+   * @param ids - Array of service IDs to update
+   * @param data - The updated service data
+   * @returns Promise with the updated services
+   */
+  async updateMany(ids: string[], data: Partial<ConsultationService>): Promise<ConsultationService[]> {
+    const requestBody: UpdateManyRequest = { ids, data };
+    const response = await api.put<ConsultationService[]>(`${this.basePath}/many`, requestBody);
     return response.data;
+  }
+
+  /**
+   * Delete a consultation service
+   * @param id - The ID of the service to delete
+   * @returns Promise with the deleted service
+   */
+  async delete(id: string): Promise<ConsultationService> {
+    const response = await api.delete<ApiResponse<ConsultationService>>(`${this.basePath}/${id}`);
+    return response.data.data || response.data;
   }
 }
 

@@ -14,7 +14,17 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, PackageCheck, ArrowRight, Filter, Tag, BadgeCheck, Calendar, Clock, Users, Star } from "lucide-react";
+import {
+  Search,
+  PackageCheck,
+  ArrowRight,
+  Filter,
+  Tag,
+  Calendar,
+  Clock,
+  Users,
+  Star,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BookPackageButton } from "@/components/packages/book-package-button";
 import { Badge } from "@/components/ui/badge";
@@ -30,16 +40,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Extend the base type with our UI-specific properties
 interface ConsultationPackage extends BaseConsultationPackage {
-  category?: string;
   isPopular?: boolean;
   duration?: string;
   consultations?: number;
   forFamily?: boolean;
   popularity?: number;
 }
-
-// Type for badge variants
-type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 
 const HealthPackagesPage = () => {
   const [packages, setPackages] = useState<ConsultationPackage[]>([]);
@@ -76,47 +82,52 @@ const HealthPackagesPage = () => {
 
   // Get categories from packages
   const getCategories = () => {
-    const categories = packages.map(pkg => pkg.category).filter(Boolean);
-    return ["all", ...Array.from(new Set(categories as string[]))];
+    const categories = packages.map((pkg) => pkg.category);
+    return ["all", ...Array.from(new Set(categories))];
   };
 
   // Filter packages based on search query and category
   const filterPackages = () => {
     let filtered = packages;
-    
+
     // Apply category filter (if not 'all')
     if (activeCategory !== "all") {
-      filtered = filtered.filter(pkg => pkg.category === activeCategory);
+      filtered = filtered.filter((pkg) => pkg.category === activeCategory);
     }
-    
+
     // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter(
         (pkg) =>
           pkg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (pkg.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+          (pkg.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+            false)
       );
     }
-    
+
     // Apply sorting
     switch (sortOption) {
       case "price-low":
         return filtered.sort((a, b) => {
-          const aMinPrice = Math.min(...(a.priceOptions?.map(opt => opt.price) || [0]));
-          const bMinPrice = Math.min(...(b.priceOptions?.map(opt => opt.price) || [0]));
-          return aMinPrice - bMinPrice;
+          const aPrice = a.price || 0;
+          const bPrice = b.price || 0;
+          return aPrice - bPrice;
         });
       case "price-high":
         return filtered.sort((a, b) => {
-          const aMinPrice = Math.min(...(a.priceOptions?.map(opt => opt.price) || [0]));
-          const bMinPrice = Math.min(...(b.priceOptions?.map(opt => opt.price) || [0]));
-          return bMinPrice - aMinPrice;
+          const aPrice = a.price || 0;
+          const bPrice = b.price || 0;
+          return bPrice - aPrice;
         });
       case "popular":
-        return filtered.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        return filtered.sort(
+          (a, b) => (b.popularity || 0) - (a.popularity || 0)
+        );
       case "newest":
-        return filtered.sort((a, b) => 
-          new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime()
+        return filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt || "").getTime() -
+            new Date(a.createdAt || "").getTime()
         );
       default:
         return filtered;
@@ -130,16 +141,12 @@ const HealthPackagesPage = () => {
   };
 
   // Get a random badge type for visual variety
-  const getBadgeVariant = (index: number): BadgeVariant => {
-    const variants: BadgeVariant[] = ["default", "secondary", "outline", "destructive"];
-    return variants[index % variants.length];
-  };
 
   // Get a suitable background gradient for a package category
   const getCategoryGradient = (category?: string) => {
     if (!category) return "from-primary/10 to-primary/5";
-    
-    switch(category.toLowerCase()) {
+
+    switch (category.toLowerCase()) {
       case "general":
         return "from-blue-100 to-blue-50 dark:from-blue-950/30 dark:to-blue-900/10";
       case "specialist":
@@ -154,27 +161,26 @@ const HealthPackagesPage = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
+    <div className="container mx-auto px-4 max-w-7xl">
       {/* Hero section */}
       <div className="mb-10 py-8 px-6 rounded-2xl bg-gradient-to-r from-primary/10 to-transparent">
         <h1 className="text-4xl font-bold mb-3">Health Packages</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mb-6">
-          Choose from our carefully designed health packages to ensure comprehensive care for you and your family. Each package is tailored to different healthcare needs.
+          Choose from our carefully designed health packages to ensure
+          comprehensive care for you and your family. Each package is tailored
+          to different healthcare needs.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 mt-2">
           <div className="relative flex-grow max-w-xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search health packages..."
-              className="pl-10 h-12 w-full"
+              className="pl-10 h-12 w-full bg-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Select
-            value={sortOption}
-            onValueChange={setSortOption}
-          >
+          <Select value={sortOption} onValueChange={setSortOption}>
             <SelectTrigger className="w-full sm:w-[180px] h-12 gap-2">
               <Filter className="w-4 h-4" />
               <SelectValue placeholder="Sort packages" />
@@ -189,12 +195,12 @@ const HealthPackagesPage = () => {
           </Select>
         </div>
       </div>
-      
+
       {/* Categories tabs */}
       <div className="mb-8">
-        <Tabs 
-          defaultValue="all" 
-          value={activeCategory} 
+        <Tabs
+          defaultValue="all"
+          value={activeCategory}
           onValueChange={setActiveCategory}
           className="w-full"
         >
@@ -202,14 +208,20 @@ const HealthPackagesPage = () => {
             <Tag className="h-4 w-4" />
             Categories:
           </div>
-          <TabsList className="bg-muted/50 p-1 h-auto grid grid-cols-2 md:flex md:flex-wrap">
+          <TabsList className="bg-muted/50 p-4 h-auto grid grid-cols-2 md:flex md:flex-wrap gap-2 justify-start">
             {getCategories().map((category) => (
-              <TabsTrigger 
-                key={category} 
+              <TabsTrigger
+                key={category}
                 value={category}
-                className="px-4 py-2 capitalize text-sm"
+                asChild
+                className="w-fit"
               >
-                {category === "all" ? "All Packages" : category}
+                <Button
+                  variant="ghost"
+                  className="px-4 py-2 capitalize text-sm !w-fit"
+                >
+                  {category === "all" ? "All Packages" : category}
+                </Button>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -230,7 +242,7 @@ const HealthPackagesPage = () => {
                 <div className="h-4 bg-muted rounded w-full mb-2 animate-pulse"></div>
                 <div className="h-4 bg-muted rounded w-full mb-2 animate-pulse"></div>
                 <div className="h-4 bg-muted rounded w-3/4 mb-6 animate-pulse"></div>
-                
+
                 <div className="flex flex-col gap-2 mt-6">
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 rounded-full bg-muted animate-pulse"></div>
@@ -258,7 +270,7 @@ const HealthPackagesPage = () => {
               ? "We couldn't find any packages matching your search criteria."
               : "There are currently no health packages available in this category."}
           </p>
-          <Button 
+          <Button
             onClick={() => {
               setSearchQuery("");
               setActiveCategory("all");
@@ -275,22 +287,28 @@ const HealthPackagesPage = () => {
         <>
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{filteredPackages.length}</span> packages
+              Showing{" "}
+              <span className="font-medium text-foreground">
+                {filteredPackages.length}
+              </span>{" "}
+              packages
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPackages.map((pkg, index) => (
-              <Card 
-                key={pkg._id} 
+            {filteredPackages.map((pkg) => (
+              <Card
+                key={pkg._id}
                 className="overflow-hidden flex flex-col h-full border border-border/40 hover:border-primary/30 hover:shadow-md transition-all group"
               >
                 {/* Colored top bar based on category */}
-                <div className={cn(
-                  "h-2 w-full bg-gradient-to-r", 
-                  getCategoryGradient(pkg.category)
-                )} />
-                
+                <div
+                  className={cn(
+                    "h-2 w-full bg-gradient-to-r",
+                    getCategoryGradient(pkg.category)
+                  )}
+                />
+
                 <CardHeader className="pt-5 pb-3">
                   <div className="flex items-start justify-between">
                     <div>
@@ -302,37 +320,31 @@ const HealthPackagesPage = () => {
                           </Badge>
                         )}
                       </div>
-                      {pkg.category && (
-                        <Badge 
-                          variant={getBadgeVariant(index)} 
-                          className="mb-2 capitalize font-normal"
-                        >
-                          {pkg.category}
-                        </Badge>
-                      )}
+                      <Badge
+                        variant={"outline"}
+                        className="mb-2 capitalize font-normal"
+                      >
+                        {pkg.category}
+                      </Badge>
                     </div>
                   </div>
                   <CardDescription className="line-clamp-2 mt-1">
                     {pkg.description}
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent className="pb-3 flex-grow">
                   {/* Package details */}
                   <div className="space-y-4">
-                    {/* Starting price */}
-                    {pkg.priceOptions && pkg.priceOptions.length > 0 && (
-                      <div className="mb-4">
-                        <span className="text-sm text-muted-foreground">Starting from</span>
-                        <p className="text-2xl font-bold text-primary">
-                          {formatCurrency(
-                            Math.min(
-                              ...pkg.priceOptions.map((option) => option.price)
-                            )
-                          )}
-                        </p>
-                      </div>
-                    )}
+                    {/* Package price */}
+                    <div className="mb-4">
+                      <span className="text-sm text-muted-foreground">
+                        Price
+                      </span>
+                      <p className="text-2xl font-bold text-primary">
+                        {pkg.price === 0 ? "Free" : formatCurrency(pkg.price)}
+                      </p>
+                    </div>
 
                     {/* Package info */}
                     <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
@@ -342,14 +354,14 @@ const HealthPackagesPage = () => {
                           <span>{pkg.duration}</span>
                         </div>
                       )}
-                      
+
                       {pkg.consultations && (
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5 text-primary" />
                           <span>{pkg.consultations} visits</span>
                         </div>
                       )}
-                      
+
                       {pkg.forFamily && (
                         <div className="flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-primary" />
@@ -357,27 +369,9 @@ const HealthPackagesPage = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Features */}
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">Key benefits:</h4>
-                      <ul className="space-y-1.5">
-                        {pkg.features?.slice(0, 3).map((feature, index) => (
-                          <li key={index} className="flex items-start text-sm">
-                            <BadgeCheck className="h-4 w-4 text-primary mr-1.5 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-1">{feature}</span>
-                          </li>
-                        ))}
-                        {pkg.features && pkg.features.length > 3 && (
-                          <li className="text-xs text-muted-foreground pl-6">
-                            + {pkg.features.length - 3} more benefits
-                          </li>
-                        )}
-                      </ul>
-                    </div>
                   </div>
                 </CardContent>
-                
+
                 <CardFooter className="pt-3 flex flex-col space-y-2">
                   <Button
                     variant="outline"
@@ -398,13 +392,16 @@ const HealthPackagesPage = () => {
           </div>
         </>
       )}
-      
+
       {/* Call to action section */}
       {!loading && filteredPackages.length > 0 && (
         <div className="mt-16 py-8 px-6 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 text-center">
-          <h2 className="text-2xl font-bold mb-3">Need a custom health plan?</h2>
+          <h2 className="text-2xl font-bold mb-3">
+            Need a custom health plan?
+          </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            We can create a customized health package specifically for your needs. Our healthcare specialists are ready to help.
+            We can create a customized health package specifically for your
+            needs. Our healthcare specialists are ready to help.
           </p>
           <Button size="lg" className="gap-2">
             <PackageCheck className="h-5 w-5" />

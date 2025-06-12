@@ -61,18 +61,20 @@ export function BookingConfirmationDialog({
               <span className="font-medium">Package:</span>
               <span className="font-semibold text-right">{packageData.title}</span>
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="font-medium">Plan:</span>
-              <span className="text-right">
-                {
-                  packageData.priceOptions.find(
-                    (option) =>
-                      option._id === selectedPriceOption ||
-                      option.tier === selectedPriceOption
-                  )?.tier
-                }
-              </span>
-            </div>
+            {packageData.priceOptions && packageData.priceOptions.length > 0 && (
+              <div className="flex justify-between items-center py-2">
+                <span className="font-medium">Plan:</span>
+                <span className="text-right">
+                  {
+                    packageData.priceOptions.find(
+                      (option) =>
+                        option._id === selectedPriceOption ||
+                        option.tier === selectedPriceOption
+                    )?.tier
+                  }
+                </span>
+              </div>
+            )}
             <div className="flex justify-between items-center py-2">
               <span className="font-medium">Price:</span>
               <span className="text-primary font-bold text-right">

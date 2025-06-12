@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, User } from "lucide-react";
+import { Settings, LogOut, User, LayoutDashboard } from "lucide-react";
 import { UserProfile as UserProfileType } from "@/services/auth";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -22,6 +22,7 @@ interface UserProfileProps {
 
 const UserProfile = ({ user }: UserProfileProps) => {
   const { logout } = useAuth();
+  const isAdmin = user.role === "admin";
 
   // Get initials for avatar fallback
   const getInitials = (name: string) => {
@@ -33,8 +34,6 @@ const UserProfile = ({ user }: UserProfileProps) => {
       .toUpperCase()
       .substring(0, 2);
   };
-
-  console.log(user);
 
   return (
     <DropdownMenu>
@@ -58,9 +57,22 @@ const UserProfile = ({ user }: UserProfileProps) => {
             <p className="text-xs leading-none text-muted-foreground">
               {user.phoneNumber}
             </p>
+            {isAdmin && (
+              <p className="text-xs leading-none text-muted-foreground mt-1">
+                Admin
+              </p>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" className="flex w-full items-center">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Admin Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/profile" className="flex w-full items-center">
             <User className="mr-2 h-4 w-4" />

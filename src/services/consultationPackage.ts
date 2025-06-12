@@ -24,29 +24,41 @@ export interface BookingOption {
 export interface ConsultationPackage {
   _id: string;
   title: string;
-  icon: string;
+  icon?: string;
   description: string;
-  features: string[];
-  priceOptions: PriceOption[];
-  tests: string[];
-  faq: FAQ[];
-  bookingOptions: BookingOption[];
+  features?: string[];
+  priceOptions?: PriceOption[];
+  tests?: string[];
+  faq?: FAQ[];
+  bookingOptions?: BookingOption[];
   maxSlotPerPeriod?: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   __v?: number;
+  // New fields from API response
+  category: string;
+  titleImage: string;
+  price: number;
+  // Additional fields from getById response
+  content?: string;
+  condition?: string;
+  bookingOption?: string;
 }
 
 export interface CreateConsultationPackageData {
   title: string;
-  icon: string;
+  icon?: string;
   description: string;
-  features: string[];
-  priceOptions: Omit<PriceOption, '_id'>[];
-  tests: string[];
-  faq: Omit<FAQ, '_id'>[];
-  bookingOptions: Omit<BookingOption, '_id'>[];
+  features?: string[];
+  priceOptions?: Omit<PriceOption, '_id'>[];
+  tests?: string[];
+  faq?: Omit<FAQ, '_id'>[];
+  bookingOptions?: Omit<BookingOption, '_id'>[];
   maxSlotPerPeriod?: number;
+  // New fields
+  category: string;
+  titleImage: string;
+  price: number;
 }
 
 interface ApiResponse<T> {
@@ -66,13 +78,16 @@ export class ConsultationPackageService extends BaseService<ConsultationPackage>
    */
   async getAll(): Promise<ConsultationPackage[]> {
     try {
-      const response = await api.get<ConsultationPackage[] | ApiResponse<ConsultationPackage[]>>(this.basePath);
+      const response = await api.get<ApiResponse<ConsultationPackage[]>>(this.basePath);
       
-      // Handle both direct array response and ApiResponse format
+      // Handle the new API response format
+      if (response.data && response.data.code === 200 && Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+      
+      // Fallback for other response formats
       if (Array.isArray(response.data)) {
         return response.data;
-      } else if (response.data && 'data' in response.data) {
-        return response.data.data;
       }
       
       return [];

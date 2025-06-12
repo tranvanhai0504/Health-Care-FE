@@ -63,7 +63,9 @@ export default function BookingPage() {
       try {
         const data = await consultationPackageService.getDetailById(packageId);
         setPackageData(data);
-        setDescription(await convertMarkdown(data.description));
+        // Use content if available, otherwise use description
+        const contentToConvert = data.content || data.description;
+        setDescription(await convertMarkdown(contentToConvert));
 
         // Set default price option if available
         if (data.priceOptions && data.priceOptions.length > 0) {
@@ -94,15 +96,14 @@ export default function BookingPage() {
 
   // Handle booking submission
   const processBooking = async () => {
-    if (
-      !packageData ||
-      !selectedDate ||
-      !selectedTimeSlot ||
-      !selectedPriceOption
-    ) {
-      toast.error(
-        "Please select date, time, and package option for your appointment"
-      );
+    if (!packageData || !selectedDate || !selectedTimeSlot) {
+      toast.error("Please select date and time for your appointment");
+      return;
+    }
+
+    // Check if price option is required (when priceOptions exist)
+    if (packageData.priceOptions && packageData.priceOptions.length > 0 && !selectedPriceOption) {
+      toast.error("Please select a package option for your appointment");
       return;
     }
 
@@ -114,16 +115,23 @@ export default function BookingPage() {
     setBookingInProgress(true);
 
     try {
-      // Get the selected price option object
-      const priceOption = packageData.priceOptions.find(
-        (option) =>
-          option._id === selectedPriceOption ||
-          option.tier === selectedPriceOption
-      );
+      // Handle price options if they exist, otherwise use package price
+      let packagePeriodId = selectedPriceOption;
 
-      if (!priceOption) {
-        toast.error("Invalid price option selected");
-        return;
+      if (packageData.priceOptions && packageData.priceOptions.length > 0) {
+        // Get the selected price option object
+        const priceOption = packageData.priceOptions.find(
+          (option) =>
+            option._id === selectedPriceOption ||
+            option.tier === selectedPriceOption
+        );
+
+        if (!priceOption) {
+          toast.error("Invalid price option selected");
+          return;
+        }
+
+        packagePeriodId = priceOption._id || selectedPriceOption;
       }
 
       // Create booking data
@@ -134,7 +142,7 @@ export default function BookingPage() {
         endTime: selectedTimeSlot.end,
         status: "pending",
         package_id: packageId,
-        packagePeriodId: priceOption._id || selectedPriceOption, // Add the package_period_id
+        packagePeriodId: packagePeriodId || "", // Ensure packagePeriodId is always a string
       };
 
       // Submit booking
@@ -179,13 +187,14 @@ export default function BookingPage() {
     );
   }
 
-  // Calculate price based on selected tier
-  const selectedPrice =
-    packageData.priceOptions.find(
-      (option) =>
-        option._id === selectedPriceOption ||
-        option.tier === selectedPriceOption
-    )?.price || 0;
+  // Calculate price based on selected tier or package price
+  const selectedPrice = packageData.priceOptions && packageData.priceOptions.length > 0
+    ? packageData.priceOptions.find(
+        (option) =>
+          option._id === selectedPriceOption ||
+          option.tier === selectedPriceOption
+      )?.price || 0
+    : packageData.price;
 
   return (
     <div className="container mx-auto px-4 max-w-6xl">

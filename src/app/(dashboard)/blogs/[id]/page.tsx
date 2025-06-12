@@ -20,7 +20,6 @@ const BlogDetailPage = () => {
 
   const [content, setContent] = useState("");
 
-
   useEffect(() => {
     const fetchBlog = async () => {
       try {
@@ -111,12 +110,13 @@ const BlogDetailPage = () => {
           {blog.coverImage && (
             <div className="relative h-64 md:h-96 w-full mb-8 overflow-hidden rounded-lg">
               <Image
-                src={"/images/sample-blog-image.png"}
+                src={blog.coverImage}
                 alt={blog.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 priority
+                quality={100}
               />
             </div>
           )}

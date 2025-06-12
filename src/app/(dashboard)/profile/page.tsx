@@ -91,7 +91,6 @@ export default function ProfilePage() {
       try {
         setLoading(true);
         const userData = await userService.getProfile();
-        console.log(userData);
         setUser(userData);
         
         // Populate form with user data

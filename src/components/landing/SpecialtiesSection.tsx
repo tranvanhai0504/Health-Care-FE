@@ -11,7 +11,7 @@ import Image from "next/image";
 
 // Define specialty icons mapping (mapping first letter to an icon)
 const specialtyIcons: Record<string, React.ReactNode> = {
-  "C": <Activity className="h-6 w-6 text-primary" />,
+  C: <Activity className="h-6 w-6 text-primary" />,
   // Add more mappings as needed
 };
 
@@ -42,7 +42,10 @@ export function SpecialtiesSection() {
     <section className="py-20 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="text-center mb-12">
-          <Badge variant="outline" className="mb-4 px-4 py-1 border-primary/20 bg-primary/5 text-primary">
+          <Badge
+            variant="outline"
+            className="mb-4 px-4 py-1 border-primary/20 bg-primary/5 text-primary"
+          >
             Expert Care
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -55,21 +58,24 @@ export function SpecialtiesSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {specialties.map((specialty) => (
-            <Link 
+          {specialties.slice(0, 8).map((specialty) => (
+            <Link
               href={`/specialties/${specialty._id}`}
               key={specialty._id}
               className="block transform transition-transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg"
             >
-              <Card
-                className="group h-full overflow-hidden border border-gray-200 hover:border-primary/20 hover:shadow-lg transition-all duration-300"
-              >
+              <Card className="group h-full overflow-hidden border border-gray-200 hover:border-primary/20 hover:shadow-lg transition-all duration-300">
                 <div className="absolute -right-4 -top-4 h-20 w-20 bg-primary/5 rounded-full transform transition-transform group-hover:scale-110"></div>
                 <CardContent className="p-6 pt-8 relative h-full flex flex-col">
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 transform transition-transform group-hover:rotate-3 group-hover:scale-110 group-hover:bg-primary/20">
                     {specialtyIcons[specialty.name.charAt(0)] || (
                       <span className="text-primary text-xl font-semibold">
-                        <Image src={"/icons/specialties/tongquat.svg"} alt={specialty.name} width={50} height={50} />
+                        <Image
+                          src={`/icons/specialties/${specialty._id}.svg`}
+                          alt={specialty.name}
+                          width={60}
+                          height={60}
+                        />
                       </span>
                     )}
                   </div>
@@ -80,7 +86,9 @@ export function SpecialtiesSection() {
                     {specialty.description}
                   </p>
                   <div className="mt-auto inline-flex items-center text-primary text-sm font-medium">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">View details</span>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      View details
+                    </span>
                     <ArrowRight className="ml-2 h-4 w-4 transform translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
                   </div>
                 </CardContent>
@@ -91,10 +99,10 @@ export function SpecialtiesSection() {
 
         {specialties.length > 0 && (
           <div className="mt-14 text-center">
-            <Button 
-              asChild 
-              size="lg" 
-              variant="default" 
+            <Button
+              asChild
+              size="lg"
+              variant="default"
               className="shadow-md hover:shadow-lg transition-shadow px-6 group"
             >
               <Link href="/specialties" className="flex items-center gap-2">

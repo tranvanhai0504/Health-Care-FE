@@ -66,7 +66,9 @@ const HealthPackageDetailsPage = () => {
         setLoading(true);
         const data = await consultationPackageService.getById(id);
         setPackageData(data);
-        setDescription(await convertMarkdown(data.description));
+        // Use content if available, otherwise use description
+        const contentToConvert = data.content || data.description;
+        setDescription(await convertMarkdown(contentToConvert));
         // Default to first price option
         if (data.priceOptions && data.priceOptions.length > 0) {
           setSelectedPriceOption(data.priceOptions[0].tier);
@@ -87,7 +89,7 @@ const HealthPackageDetailsPage = () => {
   // Fetch test services when the tests tab is selected
   useEffect(() => {
     const fetchTestServices = async () => {
-      if (activeTab === "tests" && packageData && packageData.tests.length > 0 && testServices.length === 0) {
+      if (activeTab === "tests" && packageData && packageData.tests && packageData.tests.length > 0 && testServices.length === 0) {
         try {
           setTestsLoading(true);
           const servicesData = await consultationServiceApi.getByIds(packageData.tests);
@@ -181,7 +183,7 @@ const HealthPackageDetailsPage = () => {
     );
   }
 
-  const selectedOption = packageData.priceOptions.find(
+  const selectedOption = packageData.priceOptions?.find(
     (option) => option.tier === selectedPriceOption
   );
 
@@ -197,7 +199,7 @@ const HealthPackageDetailsPage = () => {
                 className="gap-1 px-2 py-1 border-primary/20 bg-primary/5 text-primary"
               >
                 <Package className="h-3.5 w-3.5" />
-                Health Package
+                {packageData.category}
               </Badge>
             </div>
             <h1 className="text-3xl font-bold mb-4 text-foreground/90">{packageData.title}</h1>
@@ -205,6 +207,16 @@ const HealthPackageDetailsPage = () => {
               className="max-w-none text-muted-foreground blog-content [&_p]:indent-0 rounded-lg"
               dangerouslySetInnerHTML={{ __html: description }}
             />
+            <div className="mt-4 p-4 bg-primary/10 rounded-lg">
+              <p className="text-lg font-semibold text-primary">
+                Price: {packageData.price === 0 ? "Free" : formatCurrency(packageData.price)}
+              </p>
+              {packageData.maxSlotPerPeriod && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Max slots per period: {packageData.maxSlotPerPeriod}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Features highlight */}
@@ -214,7 +226,7 @@ const HealthPackageDetailsPage = () => {
               Package Features
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {packageData.features.map((feature, index) => (
+              {packageData.features?.map((feature, index) => (
                 <div key={index} className="flex items-start gap-3 group p-3 rounded-md hover:bg-muted/30 transition-colors">
                   <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                     <Check className="h-3.5 w-3.5 text-primary" />
@@ -223,7 +235,11 @@ const HealthPackageDetailsPage = () => {
                     {feature}
                   </p>
                 </div>
-              ))}
+              )) || (
+                <div className="col-span-2 text-center py-8 text-muted-foreground">
+                  No features information available
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -240,37 +256,53 @@ const HealthPackageDetailsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-5">
-              {/* Price options selection */}
+              {/* Package pricing */}
               <div className="mb-4">
-                <div className="flex flex-col space-y-3">
-                  {packageData.priceOptions.map((option) => (
-                    <div
-                      key={option.tier}
-                      className={cn(
-                        "border rounded-lg p-4 cursor-pointer transition-all",
-                        selectedPriceOption === option.tier
-                          ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
-                          : "hover:border-primary/40 hover:bg-muted/30"
-                      )}
-                      onClick={() => setSelectedPriceOption(option.tier)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium">{option.tier}</h3>
+                {packageData.priceOptions && packageData.priceOptions.length > 0 ? (
+                  <div className="flex flex-col space-y-3">
+                    {packageData.priceOptions.map((option) => (
+                      <div
+                        key={option.tier}
+                        className={cn(
+                          "border rounded-lg p-4 cursor-pointer transition-all",
+                          selectedPriceOption === option.tier
+                            ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
+                            : "hover:border-primary/40 hover:bg-muted/30"
+                        )}
+                        onClick={() => setSelectedPriceOption(option.tier)}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium">{option.tier}</h3>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                              <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                              <span>{option.testsIncluded} tests included</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                            <span>{option.testsIncluded} tests included</span>
-                          </div>
+                          <p className="text-xl font-bold text-primary">
+                            {formatCurrency(option.price)}
+                          </p>
                         </div>
-                        <p className="text-xl font-bold text-primary">
-                          {formatCurrency(option.price)}
-                        </p>
                       </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-4 bg-primary/5">
+                    <div className="text-center">
+                      <h3 className="font-medium mb-2">Package Price</h3>
+                      <p className="text-2xl font-bold text-primary">
+                        {packageData.price === 0 ? "Free" : formatCurrency(packageData.price)}
+                      </p>
+                      {packageData.bookingOption && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Booking Type: {packageData.bookingOption}
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex-col items-stretch space-y-3 pt-2 pb-4">
@@ -283,7 +315,7 @@ const HealthPackageDetailsPage = () => {
                 <Calendar className="h-5 w-5" />
               </BookPackageButton>
 
-              {packageData.bookingOptions.map((option, index) => (
+              {packageData.bookingOptions?.map((option, index) => (
                 <Button
                   key={index}
                   className="w-full h-11 flex gap-2 justify-center"
@@ -302,7 +334,7 @@ const HealthPackageDetailsPage = () => {
                     <span className="text-center">{option.description}</span>
                   </a>
                 </Button>
-              ))}
+              )) || null}
             </CardFooter>
           </Card>
         </div>
@@ -360,7 +392,7 @@ const HealthPackageDetailsPage = () => {
                     </div>
                   ))}
                 </div>
-              ) : packageData.tests.length > 0 ? (
+              ) : packageData.tests && packageData.tests.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {testServices.length > 0 ? (
                     testServices.map((service) => (
@@ -432,7 +464,7 @@ const HealthPackageDetailsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              {packageData.faq.length > 0 ? (
+              {packageData.faq && packageData.faq.length > 0 ? (
                 <div className="space-y-6 divide-y divide-border/60">
                   {packageData.faq.map((item, index) => (
                     <div
@@ -479,7 +511,7 @@ const HealthPackageDetailsPage = () => {
             <Calendar className="h-5 w-5" />
           </BookPackageButton>
 
-          {packageData.bookingOptions.map((option, index) => (
+          {packageData.bookingOptions && packageData.bookingOptions.map((option, index) => (
             <Button
               key={index}
               size="lg"

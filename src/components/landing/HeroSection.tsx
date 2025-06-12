@@ -1,11 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white py-16 md:py-24">
+    <section className="flex justify-center items-center relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white py-16 md:py-24">
       {/* Background decorative elements */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
       <div className="absolute top-1/3 -right-24 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
@@ -59,7 +58,7 @@ export function HeroSection() {
             <div className="absolute inset-0 bg-primary/10 rounded-tl-[100px] rounded-br-[100px]"></div>
             <div className="absolute inset-2 overflow-hidden rounded-tl-[90px] rounded-br-[90px] shadow-xl">
               <Image 
-                src="/images/doctor-with-patient.jpg" 
+                src="/images/sign-in-background.png" 
                 alt="Doctor with patient" 
                 fill
                 className="object-cover"

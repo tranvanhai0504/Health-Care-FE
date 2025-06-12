@@ -56,7 +56,6 @@ const PasswordPage = () => {
     startTransition(async () => {
       try {
         // Here you would normally call your API service to save the password
-        console.log(data);
         const phoneNumber = localStorage.getItem("phoneNumber");
         if (!phoneNumber) {
           toast.error("Phone number not found");

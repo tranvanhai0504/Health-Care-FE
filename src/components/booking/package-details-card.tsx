@@ -47,37 +47,65 @@ export function PackageDetailsCard({
 
           {/* Price Options */}
           <div className="mt-6">
-            <Label htmlFor="price-options" className="text-base font-medium flex items-center gap-2 mb-3">
-              <CheckCircle className="h-4 w-4 text-primary" />
-              Select Package Tier
-            </Label>
-            <div className="grid grid-cols-1 gap-3 mt-2">
-              {packageData.priceOptions.map((option) => (
-                <div
-                  key={option._id || option.tier}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    option._id === selectedPriceOption ||
-                    option.tier === selectedPriceOption
-                      ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
-                      : "border-border/60 hover:border-primary/40 hover:bg-muted/30"
-                  }`}
-                  onClick={() =>
-                    setSelectedPriceOption(option._id || option.tier)
-                  }
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{option.tier}</span>
-                    <span className="text-lg font-bold text-primary">
-                      {formatCurrency(option.price)}
+            {packageData.priceOptions && packageData.priceOptions.length > 0 ? (
+              <>
+                <Label htmlFor="price-options" className="text-base font-medium flex items-center gap-2 mb-3">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  Select Package Tier
+                </Label>
+                <div className="grid grid-cols-1 gap-3 mt-2">
+                  {packageData.priceOptions.map((option) => (
+                    <div
+                      key={option._id || option.tier}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        option._id === selectedPriceOption ||
+                        option.tier === selectedPriceOption
+                          ? "border-primary ring-1 ring-primary/20 bg-primary/5 shadow-sm"
+                          : "border-border/60 hover:border-primary/40 hover:bg-muted/30"
+                      }`}
+                      onClick={() =>
+                        setSelectedPriceOption(option._id || option.tier)
+                      }
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{option.tier}</span>
+                        <span className="text-lg font-bold text-primary">
+                          {formatCurrency(option.price)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
+                        <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                        <span>{option.testsIncluded} tests included</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <Label className="text-base font-medium flex items-center gap-2 mb-3">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  Package Price
+                </Label>
+                <div className="p-4 border border-primary/20 rounded-lg bg-primary/5">
+                  <div className="text-center">
+                    <span className="text-2xl font-bold text-primary">
+                      {packageData.price === 0 ? "Free" : formatCurrency(packageData.price)}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
-                    <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                    <span>{option.testsIncluded} tests included</span>
+                    {packageData.category && (
+                      <p className="text-sm text-muted-foreground mt-1 capitalize">
+                        {packageData.category}
+                      </p>
+                    )}
+                    {packageData.bookingOption && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Booking Type: {packageData.bookingOption}
+                      </p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         </div>
       </CardContent>
