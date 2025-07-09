@@ -23,13 +23,13 @@ export function BookPackageButton({
   variant = "default",
   size = "default",
   showIcon = true,
-  label = "Book Appointment",
+  label = "Book Schedule",
   ...props
 }: BookPackageButtonProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    router.push(`/booking/${packageId}`);
+    router.push(`/booking?type=package&packageId=${packageId}`);
   };
 
   return (

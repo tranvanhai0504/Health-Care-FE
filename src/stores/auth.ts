@@ -1,46 +1,44 @@
 import { create } from "zustand";
-import authService, { UserProfile } from "@/services/auth";
+import authService from "@/services/auth.service";
+import { UserProfile } from "@/types";
 import api from "@/lib/axios";
 import { AuthState } from "@/types/auth";
+import { AxiosError } from "axios";
 
 export const useAuthStore = create<AuthState>((set, get) => {
-  // Initialize store state from localStorage if available
-  let initialToken: string | null = null;
-  let initialUser: UserProfile | null = null;
-  let initialIsAuthenticated = false;
-
-  // Only run in browser environment
-  if (typeof window !== 'undefined') {
-    // Check for token in localStorage
-    const jwtToken = localStorage.getItem('jwt_token');
-    const authStorageStr = localStorage.getItem('auth-storage');
-    
-    if (jwtToken && authStorageStr) {
-      try {
-        const authStorage = JSON.parse(authStorageStr);
-        if (authStorage?.state?.token) {
-          initialToken = authStorage.state.token;
-          initialIsAuthenticated = true;
-          
-          // Also grab the user if available
-          if (authStorage.state.user) {
-            initialUser = authStorage.state.user;
-          }
-          
-          // Set authorization header
-          api.defaults.headers.common.Authorization = `Bearer ${initialToken}`;
-        }
-      } catch (error) {
-        console.error('Error parsing auth storage', error);
-      }
-    }
-  }
-
   return {
-    user: initialUser,
-    isAuthenticated: initialIsAuthenticated,
+    user: null,
+    isAuthenticated: false,
     loading: false,
-    token: initialToken,
+    token: null,
+
+    initializeFromStorage: () => {
+      if (typeof window !== 'undefined') {
+        const jwtToken = localStorage.getItem('jwt_token');
+        const authStorageStr = localStorage.getItem('auth-storage');
+        
+        if (jwtToken && authStorageStr) {
+          try {
+            const authStorage = JSON.parse(authStorageStr);
+            if (authStorage?.state?.token) {
+              const token = authStorage.state.token;
+              const user = authStorage.state.user || null;
+              
+              set({
+                token,
+                user,
+                isAuthenticated: true,
+              });
+              
+              // Set authorization header
+              api.defaults.headers.common.Authorization = `Bearer ${token}`;
+            }
+          } catch (error) {
+            console.error('Error parsing auth storage', error);
+          }
+        }
+      }
+    },
 
     signup: async (data) => {
       set({ loading: true });
@@ -158,11 +156,25 @@ export const useAuthStore = create<AuthState>((set, get) => {
           );
         }
 
-        set({ user: userData });
-      } catch (err) {
+        set({ user: userData, isAuthenticated: true });
+      } catch (err: unknown) {
         console.error("Fetch profile error:", err);
-        if (get().isAuthenticated) {
+        
+        // Only logout for authentication-related errors (401, 403)
+        // Don't logout for network errors, server errors, etc.
+        let isAuthError = false;
+        
+        if (err instanceof AxiosError) {
+          isAuthError = err.response?.status === 401 || err.response?.status === 403;
+        }
+        
+        if (isAuthError && get().isAuthenticated) {
+          console.log("Authentication error detected, logging out user");
           get().signout();
+        } else {
+          console.log("Non-auth error occurred, keeping user logged in");
+          // For non-auth errors, just mark as not loading but keep user authenticated
+          // This prevents logout on network issues or temporary server problems
         }
       } finally {
         set({ loading: false });

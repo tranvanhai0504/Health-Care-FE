@@ -21,14 +21,14 @@ export function BookingSteps() {
             <span className="text-primary font-medium">2</span>
           </div>
           <h3 className="font-medium mb-2">Pick Date & Time</h3>
-          <p className="text-sm text-muted-foreground">Select a convenient time slot for your appointment</p>
+                      <p className="text-sm text-muted-foreground">Select a convenient time slot for your schedule</p>
         </div>
         <div className="p-4 rounded-lg border border-border/60 bg-muted/10 flex flex-col items-center text-center">
           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mb-3">
             <span className="text-primary font-medium">3</span>
           </div>
           <h3 className="font-medium mb-2">Confirm Booking</h3>
-          <p className="text-sm text-muted-foreground">Review your details and confirm your appointment</p>
+                      <p className="text-sm text-muted-foreground">Review your details and confirm your schedule</p>
         </div>
       </div>
     </div>

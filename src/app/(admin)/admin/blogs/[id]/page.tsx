@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { Blog, BlogService } from "@/services/blogs";
-import { Specialty, SpecialtyService } from "@/services/specialties";
+import { BlogService } from "@/services/blogs.service";
+import { specialtyService } from "@/services/specialties.service";
+import { Blog, Specialty } from "@/types";
 import {
   Card,
   CardContent,
@@ -40,7 +41,7 @@ import {
 
 // Create services outside the component
 const blogService = new BlogService();
-const specialtyService = new SpecialtyService();
+  // Use the imported specialtyService instance
 
 export default function ViewBlogPage({
   params,

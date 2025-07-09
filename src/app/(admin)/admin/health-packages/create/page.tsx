@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CreateConsultationPackageData,
   consultationPackageService,
-} from "@/services/consultationPackage";
+} from "@/services/consultationPackage.service";
 import {
   Form,
   FormControl,
@@ -42,12 +41,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+// Accordion components removed as they're not used in this file
 
 // Schema for price option
 const priceOptionSchema = z.object({
@@ -208,11 +202,15 @@ export default function CreateHealthPackagePage() {
     try {
       setIsSubmitting(true);
       
-      // Remove any empty features
+      // Remove any empty features and add required fields
       const sanitizedData = {
         ...data,
         features: data.features.filter(feature => feature.trim() !== ""),
         tests: data.tests.filter(test => test.trim() !== ""),
+        // Add required fields with default values
+        category: "general",
+        titleImage: "",
+        price: data.priceOptions[0]?.price || 0,
       };
       
       await consultationPackageService.create(sanitizedData);
@@ -351,7 +349,7 @@ export default function CreateHealthPackagePage() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Maximum number of appointments that can be booked for this package per period
+                          Maximum number of schedules that can be booked for this package per period
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

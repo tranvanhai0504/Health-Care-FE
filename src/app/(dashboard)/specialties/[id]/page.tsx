@@ -1,17 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Search, Stethoscope, Clock, Grid, List } from "lucide-react";
-import { specialtyService, Specialty } from "@/services/specialties";
-import { consultationServiceApi, ConsultationService } from "@/services/consultationService";
+import {
+  ArrowLeft,
+  Search,
+  Stethoscope,
+  Clock,
+  Grid,
+  List,
+  ShoppingCart,
+} from "lucide-react";
+import { specialtyService } from "@/services/specialties.service";
+import { consultationServiceApi } from "@/services/consultationService.service";
+import { Specialty, ConsultationService, PaginationInfo } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
+import { AddToListButton } from "@/components/services-list";
+import { useServiceListSafe } from "@/hooks/useServiceListSafe";
+import { formatPrice, formatDuration } from "@/utils";
 import Image from "next/image";
 
 export default function SpecialtyDetailPage() {
@@ -20,20 +46,38 @@ export default function SpecialtyDetailPage() {
   const specialtyId = params.id as string;
 
   const [specialty, setSpecialty] = useState<Specialty | null>(null);
-  const [consultationServices, setConsultationServices] = useState<ConsultationService[]>([]);
-  const [filteredServices, setFilteredServices] = useState<ConsultationService[]>([]);
+  const [consultationServices, setConsultationServices] = useState<
+    ConsultationService[]
+  >([]);
+  const [allServicesCount, setAllServicesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [servicesLoading, setServicesLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [error, setError] = useState<string | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
+    total: 0,
+    page: 1,
+    limit: 9,
+    totalPages: 0,
+  });
+
+  // Service list store for cart functionality
+  const { getTotalServices, getTotalPrice, toggleList } = useServiceListSafe();
+
   useEffect(() => {
     const fetchSpecialtyData = async () => {
       try {
         setLoading(true);
-        const specialtyData = await specialtyService.getSpecialtyOnly(specialtyId);
+        const specialtyData = await specialtyService.getSpecialtyOnly(
+          specialtyId
+        );
         setSpecialty(specialtyData);
         setError(null);
       } catch (error) {
@@ -47,61 +91,68 @@ export default function SpecialtyDetailPage() {
     fetchSpecialtyData();
   }, [specialtyId]);
 
+  // Fetch all services count for display (non-paginated)
   useEffect(() => {
-    const fetchConsultationServices = async () => {
+    const fetchAllServicesCount = async () => {
       try {
-        setServicesLoading(true);
-        const services = await consultationServiceApi.getBySpecialization(specialtyId);
-        setConsultationServices(services);
-        setFilteredServices(services);
+        const params: Record<string, string | number> = {
+          page: currentPage,
+          limit: itemsPerPage,
+        };
+
+        if (searchQuery.trim()) {
+          params.search = searchQuery.trim();
+        }
+
+        if (sortBy !== "name") {
+          params.sortBy = sortBy;
+        }
+
+        const response = await consultationServiceApi.getBySpecialization(
+          specialtyId,
+          params
+        );
+
+        console.log(response);
+
+        setConsultationServices(
+          Array.isArray(response.data) ? response.data : []
+        );
+        setPaginationInfo(response.pagination);
+
+        setAllServicesCount(response.pagination.total);
       } catch (error) {
-        console.error("Failed to fetch consultation services:", error);
-        // Don't set error here, just show empty services
+        console.error("Failed to fetch all services count:", error);
+        setAllServicesCount(0);
         setConsultationServices([]);
-        setFilteredServices([]);
+        setPaginationInfo({
+          total: 0,
+          page: 1,
+          limit: itemsPerPage,
+          totalPages: 0,
+        });
       } finally {
         setServicesLoading(false);
       }
     };
 
     if (specialtyId) {
-      fetchConsultationServices();
+      startTransition(() => {
+        fetchAllServicesCount();
+      });
     }
-  }, [specialtyId]);
+  }, [specialtyId, currentPage, itemsPerPage, searchQuery, sortBy]);
 
+  // Reset to first page when filters change
   useEffect(() => {
-    let filtered = consultationServices.filter(
-      (service) =>
-        service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    setCurrentPage(1);
+  }, [searchQuery, sortBy]);
 
-    // Sort services
-    filtered = filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "price":
-          return a.price - b.price;
-        case "duration":
-          return a.duration - b.duration;
-        case "name":
-        default:
-          return a.name.localeCompare(b.name);
-      }
-    });
+  // Pagination helpers
+  const totalPages = paginationInfo?.totalPages || 0;
 
-    setFilteredServices(filtered);
-  }, [searchQuery, sortBy, consultationServices]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatDuration = (duration: number) => {
-    return `${duration} minutes`;
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (loading) {
@@ -139,7 +190,7 @@ export default function SpecialtyDetailPage() {
           <p className="text-muted-foreground mb-4">
             {error || "The specialty you're looking for doesn't exist."}
           </p>
-          <Button onClick={() => router.push('/specialties')}>
+          <Button onClick={() => router.push("/specialties")}>
             Back to Specialties
           </Button>
         </div>
@@ -148,7 +199,7 @@ export default function SpecialtyDetailPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2 mb-8">
         <Link href="/specialties">
@@ -192,8 +243,28 @@ export default function SpecialtyDetailPage() {
             <p className="text-muted-foreground">
               Browse consultation services for {specialty.name}
             </p>
+            <div className="flex items-center gap-3 mt-2">
+              <Badge variant="outline" className="text-sm">
+                {allServicesCount} total services
+              </Badge>
+              {getTotalServices() > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleList}
+                  className="gap-2 bg-primary/5 hover:bg-primary/10 border-primary/20"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="font-medium">{getTotalServices()}</span>
+                  <span className="text-muted-foreground">|</span>
+                  <span className="font-semibold text-primary">
+                    {formatPrice(getTotalPrice())}
+                  </span>
+                </Button>
+              )}
+            </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -201,10 +272,10 @@ export default function SpecialtyDetailPage() {
                 placeholder="Search services..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full sm:w-64"
+                className="pl-10 h-full w-full sm:w-64"
               />
             </div>
-            
+
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue />
@@ -216,12 +287,12 @@ export default function SpecialtyDetailPage() {
               </SelectContent>
             </Select>
 
-            <div className="flex border rounded-md">
+            <div className="flex rounded-md">
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("grid")}
-                className="rounded-r-none"
+                className="rounded-r-none h-full aspect-square"
               >
                 <Grid className="h-4 w-4" />
               </Button>
@@ -229,7 +300,7 @@ export default function SpecialtyDetailPage() {
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className="rounded-l-none"
+                className="rounded-l-none h-full aspect-square border"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -237,8 +308,14 @@ export default function SpecialtyDetailPage() {
           </div>
         </div>
 
-        {servicesLoading ? (
-          <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
+        {servicesLoading || isPending ? (
+          <div
+            className={`grid gap-6 ${
+              viewMode === "grid"
+                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                : "grid-cols-1"
+            }`}
+          >
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <CardContent className="p-6">
@@ -250,17 +327,16 @@ export default function SpecialtyDetailPage() {
               </Card>
             ))}
           </div>
-        ) : filteredServices.length === 0 ? (
+        ) : consultationServices.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <Stethoscope className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium mb-2">No services available</h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery 
+              {searchQuery
                 ? "No services found matching your search. Try adjusting your search terms."
-                : `No consultation services are currently available for ${specialty.name}.`
-              }
+                : `No consultation services are currently available for ${specialty.name}.`}
             </p>
             {searchQuery && (
               <Button variant="outline" onClick={() => setSearchQuery("")}>
@@ -272,29 +348,49 @@ export default function SpecialtyDetailPage() {
           <>
             <div className="mb-4">
               <Badge variant="outline" className="text-sm">
-                {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} available
+                Showing {consultationServices.length} of {paginationInfo.total}{" "}
+                service{paginationInfo.total !== 1 ? "s" : ""}
               </Badge>
             </div>
 
-            <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
-              {filteredServices.map((service) => (
+            <div
+              className={`grid gap-6 ${
+                viewMode === "grid"
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                  : "grid-cols-1"
+              }`}
+            >
+              {consultationServices.map((service) => (
                 <Card
                   key={service._id}
                   className={`group hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-primary/20 ${
-                    viewMode === "list" ? "flex flex-col sm:flex-row" : ""
+                    viewMode === "list"
+                      ? "flex flex-col sm:flex-row"
+                      : "flex flex-col"
                   }`}
                 >
                   <div className={`${viewMode === "list" ? "flex-1" : ""}`}>
-                    <CardHeader className={`${viewMode === "list" ? "pb-2" : ""}`}>
-                      <div className="flex items-start justify-between gap-2">
+                    <CardHeader
+                      className={`${viewMode === "list" ? "pb-2" : ""}`}
+                    >
+                      <div
+                        className={`flex gap-2 ${
+                          viewMode === "list"
+                            ? "items-center"
+                            : "justify-between items-start"
+                        }`}
+                      >
                         <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                           <Stethoscope className="h-6 w-6 text-primary" />
                         </div>
-                        <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
+                        <Badge
+                          variant="outline"
+                          className="bg-primary/10 text-primary font-medium"
+                        >
                           {formatPrice(service.price)}
                         </Badge>
                       </div>
-                      <CardTitle className="mt-3 group-hover:text-primary transition-colors">
+                      <CardTitle className="mt-3 group-hover:text-primary transition-colors leading-snug">
                         {service.name}
                       </CardTitle>
                       <CardDescription className="line-clamp-2">
@@ -302,7 +398,11 @@ export default function SpecialtyDetailPage() {
                       </CardDescription>
                     </CardHeader>
 
-                    <CardContent className={`space-y-3 ${viewMode === "list" ? "pt-0" : ""}`}>
+                    <CardContent
+                      className={`space-y-3 ${
+                        viewMode === "list" ? "pt-0" : ""
+                      }`}
+                    >
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
@@ -312,42 +412,69 @@ export default function SpecialtyDetailPage() {
                     </CardContent>
                   </div>
 
-                  <CardFooter className={`pt-2 ${viewMode === "list" ? "flex-col justify-center gap-2 min-w-[160px]" : "flex-row gap-2"}`}>
-                    <Button
+                  <CardFooter
+                    className={`pt-2 flex-grow ${
+                      viewMode === "list"
+                        ? "flex-col justify-center gap-2 min-w-[160px] grow-0"
+                        : "flex-col gap-2 justify-end"
+                    }`}
+                  >
+                    <div
+                      className={`flex w-full ${
+                        viewMode === "list" ? "flex-col" : "flex-row"
+                      } gap-2`}
+                    >
+                      <Button
+                        variant="outline"
+                        size={viewMode === "list" ? "sm" : "default"}
+                        className={viewMode === "list" ? "w-full" : "flex-1"}
+                        onClick={() =>
+                          router.push(`/consultations/${service._id}`)
+                        }
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        size={viewMode === "list" ? "sm" : "default"}
+                        className={viewMode === "list" ? "w-full" : "flex-1"}
+                        onClick={() =>
+                          router.push(
+                            `/booking?type=service&serviceId=${service._id}`
+                          )
+                        }
+                      >
+                        Book Now
+                      </Button>
+                    </div>
+                    <AddToListButton
+                      service={service}
+                      size={viewMode === "list" ? "sm" : "default"}
+                      className="w-full"
                       variant="outline"
-                      size={viewMode === "list" ? "sm" : "default"}
-                      className={viewMode === "list" ? "w-full" : "flex-1"}
-                      onClick={() => router.push(`/consultations/${service._id}`)}
-                    >
-                      View Details
-                    </Button>
-                    <Button
-                      size={viewMode === "list" ? "sm" : "default"}
-                      className={viewMode === "list" ? "w-full" : "flex-1"}
-                      onClick={() => router.push(`/consultations/${service._id}/schedule`)}
-                    >
-                      Book Now
-                    </Button>
+                    />
                   </CardFooter>
                 </Card>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            <PaginationWrapper
+              paginationInfo={paginationInfo}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={(newItemsPerPage) => {
+                setCurrentPage(1);
+                setItemsPerPage(newItemsPerPage);
+              }}
+              itemName="services"
+              showItemsPerPage={true}
+              showJumpToPage={true}
+            />
           </>
         )}
       </div>
-
-      <style jsx global>{`
-        .specialty-icon {
-          color: #24ae7c;
-        }
-
-        .specialty-icon path,
-        .specialty-icon rect,
-        .specialty-icon circle {
-          stroke: #1a7f5a !important;
-          fill: #24ae7c !important;
-        }
-      `}</style>
     </div>
   );
 }

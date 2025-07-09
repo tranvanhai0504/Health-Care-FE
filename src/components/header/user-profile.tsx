@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, LogOut, User, LayoutDashboard } from "lucide-react";
-import { UserProfile as UserProfileType } from "@/services/auth";
+import { UserProfile as UserProfileType } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 
 interface UserProfileProps {
@@ -37,7 +37,7 @@ const UserProfile = ({ user }: UserProfileProps) => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild suppressHydrationWarning>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage

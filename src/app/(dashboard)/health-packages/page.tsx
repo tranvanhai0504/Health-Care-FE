@@ -1,10 +1,8 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
-import {
-  ConsultationPackage as BaseConsultationPackage,
-  consultationPackageService,
-} from "@/services/consultationPackage";
+import { consultationPackageService } from "@/services/consultationPackage.service";
+import { PaginationInfo, ConsultationPackage as BaseConsultationPackage } from "@/types";
 import {
   Card,
   CardContent,
@@ -14,16 +12,21 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/utils";
 import {
-  Search,
-  PackageCheck,
+  Calendar,
+  Star,
+  Users,
+  Clock,
   ArrowRight,
   Filter,
+  Search,
+  PackageCheck,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  X,
   Tag,
-  Calendar,
-  Clock,
-  Users,
-  Star,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BookPackageButton } from "@/components/packages/book-package-button";
@@ -49,98 +52,89 @@ interface ConsultationPackage extends BaseConsultationPackage {
 
 const HealthPackagesPage = () => {
   const [packages, setPackages] = useState<ConsultationPackage[]>([]);
+  const [allPackages, setAllPackages] = useState<ConsultationPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<string>("default");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
+    total: 0,
+    page: 1,
+    limit: 12,
+    totalPages: 0
+  });
   const router = useRouter();
 
+  const itemsPerPage = 12;
+
+  // Fetch initial data for categories
   useEffect(() => {
-    async function fetchPackages() {
+    async function fetchAllPackages() {
       try {
         setLoading(true);
         const data = await consultationPackageService.getAll();
-        // Cast as ConsultationPackage[] since we're extending the base type
-        setPackages(data as ConsultationPackage[]);
+        setAllPackages(data as ConsultationPackage[]);
       } catch (error) {
-        console.error("Error fetching packages:", error);
+        console.error("Error fetching all packages:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchPackages();
+    fetchAllPackages();
   }, []);
 
-  // Format currency helper
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
+  // Fetch paginated packages
+  useEffect(() => {
+    async function fetchPaginatedPackages() {
+      try {
+        if (loading) return; // Don't fetch if still loading all packages
+        
+        // Build query parameters
+        const params: Record<string, string | number> = {
+          page: currentPage,
+          limit: itemsPerPage
+        };
 
-  // Get categories from packages
+        if (searchQuery.trim()) {
+          params.search = searchQuery.trim();
+        }
+
+        if (activeCategory !== "all") {
+          params.category = activeCategory;
+        }
+
+        if (sortOption !== "default") {
+          params.sortBy = sortOption;
+        }
+
+        const response = await consultationPackageService.getPaginated(params);
+        console.log(response);
+        setPackages(response.data as ConsultationPackage[]);
+        setPaginationInfo(response.pagination);
+      } catch (error) {
+        console.error("Error fetching paginated packages:", error);
+      }
+    }
+
+    fetchPaginatedPackages();
+  }, [currentPage, searchQuery, sortOption, activeCategory, loading]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortOption, activeCategory]);
+
+  // Get categories from all packages
   const getCategories = () => {
-    const categories = packages.map((pkg) => pkg.category);
+    const categories = allPackages.map((pkg) => pkg.category);
     return ["all", ...Array.from(new Set(categories))];
   };
-
-  // Filter packages based on search query and category
-  const filterPackages = () => {
-    let filtered = packages;
-
-    // Apply category filter (if not 'all')
-    if (activeCategory !== "all") {
-      filtered = filtered.filter((pkg) => pkg.category === activeCategory);
-    }
-
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (pkg) =>
-          pkg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (pkg.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
-            false)
-      );
-    }
-
-    // Apply sorting
-    switch (sortOption) {
-      case "price-low":
-        return filtered.sort((a, b) => {
-          const aPrice = a.price || 0;
-          const bPrice = b.price || 0;
-          return aPrice - bPrice;
-        });
-      case "price-high":
-        return filtered.sort((a, b) => {
-          const aPrice = a.price || 0;
-          const bPrice = b.price || 0;
-          return bPrice - aPrice;
-        });
-      case "popular":
-        return filtered.sort(
-          (a, b) => (b.popularity || 0) - (a.popularity || 0)
-        );
-      case "newest":
-        return filtered.sort(
-          (a, b) =>
-            new Date(b.createdAt || "").getTime() -
-            new Date(a.createdAt || "").getTime()
-        );
-      default:
-        return filtered;
-    }
-  };
-
-  const filteredPackages = filterPackages();
 
   const navigateToDetails = (id: string) => {
     router.push(`/health-packages/${id}`);
   };
-
-  // Get a random badge type for visual variety
 
   // Get a suitable background gradient for a package category
   const getCategoryGradient = (category?: string) => {
@@ -158,6 +152,31 @@ const HealthPackagesPage = () => {
       default:
         return "from-primary/10 to-primary/5";
     }
+  };
+
+  // Pagination helpers
+  const totalPages = paginationInfo?.totalPages || 0;
+  const canGoPrevious = currentPage > 1;
+  const canGoNext = currentPage < totalPages;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getVisiblePages = () => {
+    if (totalPages === 0) return [];
+    
+    const maxVisible = 5;
+    const halfVisible = Math.floor(maxVisible / 2);
+    
+    let start = Math.max(1, currentPage - halfVisible);
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   return (
@@ -179,6 +198,14 @@ const HealthPackagesPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <Select value={sortOption} onValueChange={setSortOption}>
             <SelectTrigger className="w-full sm:w-[180px] h-12 gap-2">
@@ -193,6 +220,18 @@ const HealthPackagesPage = () => {
               <SelectItem value="newest">Newest</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSearchQuery("");
+              setSortOption("default");
+              setActiveCategory("all");
+            }}
+            className="h-12 gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Reset
+          </Button>
         </div>
       </div>
 
@@ -228,6 +267,55 @@ const HealthPackagesPage = () => {
         </Tabs>
       </div>
 
+      {/* Active filters display */}
+      {(searchQuery || activeCategory !== "all" || sortOption !== "default") && (
+        <div className="flex items-center gap-2 mb-6 p-4 bg-muted/50 rounded-lg">
+          <span className="text-sm text-muted-foreground">Active filters:</span>
+          {searchQuery && (
+            <Badge variant="secondary" className="gap-1">
+              Search: &quot;{searchQuery}&quot;
+              <button
+                onClick={() => setSearchQuery("")}
+                className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+          {activeCategory !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              Category: {activeCategory}
+              <button
+                onClick={() => setActiveCategory("all")}
+                className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+          {sortOption !== "default" && (
+            <Badge variant="secondary" className="gap-1">
+              Sort: {sortOption}
+              <button
+                onClick={() => setSortOption("default")}
+                className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+              >
+                ×
+              </button>
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Results Count */}
+      {paginationInfo && (
+        <div className="mb-6">
+          <Badge variant="outline" className="text-sm">
+            Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-{Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of {paginationInfo.total} package{paginationInfo.total !== 1 ? "s" : ""}
+          </Badge>
+        </div>
+      )}
+
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -261,19 +349,20 @@ const HealthPackagesPage = () => {
             </Card>
           ))}
         </div>
-      ) : filteredPackages.length === 0 ? (
+      ) : packages.length === 0 ? (
         <div className="text-center py-16 px-4 rounded-xl border border-dashed border-border bg-muted/20">
           <PackageCheck className="mx-auto h-16 w-16 text-muted-foreground mb-6 opacity-70" />
           <h3 className="text-xl font-semibold mb-3">No packages found</h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            {searchQuery
+            {searchQuery || activeCategory !== "all" || sortOption !== "default"
               ? "We couldn't find any packages matching your search criteria."
-              : "There are currently no health packages available in this category."}
+              : "There are currently no health packages available."}
           </p>
           <Button
             onClick={() => {
               setSearchQuery("");
               setActiveCategory("all");
+              setSortOption("default");
             }}
             variant="outline"
             size="lg"
@@ -285,18 +374,8 @@ const HealthPackagesPage = () => {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-sm text-muted-foreground">
-              Showing{" "}
-              <span className="font-medium text-foreground">
-                {filteredPackages.length}
-              </span>{" "}
-              packages
-            </p>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPackages.map((pkg) => (
+            {packages.map((pkg) => (
               <Card
                 key={pkg._id}
                 className="overflow-hidden flex flex-col h-full border border-border/40 hover:border-primary/30 hover:shadow-md transition-all group"
@@ -390,11 +469,50 @@ const HealthPackagesPage = () => {
               </Card>
             ))}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8 pt-6 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={!canGoPrevious}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+
+              <div className="flex items-center gap-1">
+                {getVisiblePages().map((page) => (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    className="w-10"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={!canGoNext}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </>
       )}
 
       {/* Call to action section */}
-      {!loading && filteredPackages.length > 0 && (
+      {!loading && packages.length > 0 && (
         <div className="mt-16 py-8 px-6 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 text-center">
           <h2 className="text-2xl font-bold mb-3">
             Need a custom health plan?

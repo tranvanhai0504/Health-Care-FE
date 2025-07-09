@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ConsultationPackage,
-  consultationPackageService,
-} from "@/services/consultationPackage";
+import { ConsultationPackage } from "@/types";
+import { consultationPackageService } from "@/services/consultationPackage.service";
 import {
   Form,
   FormControl,
@@ -25,8 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
+import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -49,12 +46,13 @@ const formSchema = z.object({
   maxSlotPerPeriod: z.number().optional(),
 });
 
-export default function EditHealthPackagePage({ params }: { params: { id: string } }) {
+export default function EditHealthPackagePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalPackage, setOriginalPackage] = useState<ConsultationPackage | null>(null);
   const [activeTab, setActiveTab] = useState("basic");
+  const [id, setId] = useState<string>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,33 +65,39 @@ export default function EditHealthPackagePage({ params }: { params: { id: string
   });
 
   useEffect(() => {
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) return;
+    
     const fetchPackageData = async () => {
       try {
         setLoading(true);
-        const data = await consultationPackageService.getById(params.id);
+        const data = await consultationPackageService.getById(id);
         setOriginalPackage(data);
         
         // Set form values from fetched data
         form.reset({
           title: data.title,
           description: data.description,
-          features: data.features.length > 0 ? data.features : [""],
+          features: data.features && data.features.length > 0 ? data.features : [""],
           maxSlotPerPeriod: data.maxSlotPerPeriod || 10,
         });
       } catch (error) {
         console.error("Error fetching package details:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch package details",
-          variant: "destructive",
-        });
+        toast.error("Failed to fetch package details");
       } finally {
         setLoading(false);
       }
     };
 
     fetchPackageData();
-  }, [params.id, form]);
+  }, [id, form]);
 
   // Watch form values to enable dynamic updates
   const features = form.watch("features");
@@ -122,7 +126,7 @@ export default function EditHealthPackagePage({ params }: { params: { id: string
         features: data.features.filter(feature => feature.trim() !== ""),
       };
       
-      await consultationPackageService.update(params.id, {
+      await consultationPackageService.update(id, {
         ...sanitizedData,
         // Preserve other fields from the original package
         icon: originalPackage.icon,
@@ -132,20 +136,13 @@ export default function EditHealthPackagePage({ params }: { params: { id: string
         bookingOptions: originalPackage.bookingOptions,
       });
       
-      toast({
-        title: "Success",
-        description: "Health package updated successfully",
-      });
+      toast.success("Health package updated successfully");
       
       // Redirect to the package details
-      router.push(`/admin/health-packages/${params.id}`);
+      router.push(`/admin/health-packages/${id}`);
     } catch (error) {
       console.error("Error updating health package:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update health package",
-        variant: "destructive",
-      });
+      toast.error("Failed to update health package");
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +174,7 @@ export default function EditHealthPackagePage({ params }: { params: { id: string
       <Button 
         variant="ghost" 
         className="mb-6"
-        onClick={() => router.push(`/admin/health-packages/${params.id}`)}
+        onClick={() => router.push(`/admin/health-packages/${id}`)}
       >
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Package Details
       </Button>
@@ -249,7 +246,7 @@ export default function EditHealthPackagePage({ params }: { params: { id: string
                           />
                         </FormControl>
                         <FormDescription>
-                          Maximum number of appointments that can be booked for this package per period
+                          Maximum number of schedules that can be booked for this package per period
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -341,8 +338,6 @@ export default function EditHealthPackagePage({ params }: { params: { id: string
           </Form>
         </CardContent>
       </Card>
-      
-      <Toaster />
     </div>
   );
 } 

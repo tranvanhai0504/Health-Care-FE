@@ -35,7 +35,7 @@ const MainNav = () => {
                   </Link>
                 </NavigationMenuLink>
               </li>
-              <NavigationListItem href="/tests" title="Medical Tests">
+              <NavigationListItem href="/medical-services" title="Medical Services">
                 Schedule health checks and laboratory tests
               </NavigationListItem>
               <NavigationListItem href="/pharmacy" title="Pharmacy">

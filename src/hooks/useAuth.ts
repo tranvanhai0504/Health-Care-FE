@@ -3,7 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth";
-import { LoginCredentials } from "@/services/auth";
+import { LoginCredentials } from "@/types";
 import { useToast } from "@/hooks/useToast";
 import { useLoginModal } from "@/hooks/useLoginModal";
 
@@ -23,24 +23,12 @@ export function useAuth() {
     fetchProfile
   } = useAuthStore();
 
-  // Initialize auth state from localStorage on client-side
+  // Fetch profile if we have a token but no user data
   useEffect(() => {
-    if (typeof window !== 'undefined' && !isAuthenticated && !token) {
-      const storedAuthData = localStorage.getItem('auth-storage');
-      if (storedAuthData) {
-        try {
-          const { state } = JSON.parse(storedAuthData);
-          if (state.token) {
-            // If there's a token in storage but our state doesn't have it,
-            // fetch the user profile to validate and update state
-            fetchProfile();
-          }
-        } catch (error) {
-          console.error('Error parsing auth data from localStorage', error);
-        }
-      }
+    if (token && isAuthenticated && !user && !loading) {
+      fetchProfile();
     }
-  }, [isAuthenticated, token, fetchProfile]);
+  }, [token, isAuthenticated, user, loading, fetchProfile]);
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {

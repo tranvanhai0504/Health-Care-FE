@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { blogService } from "@/services";
-import { Blog } from "@/services/blogs";
-import { Specialty, specialtyService } from "@/services/specialties";
+import { specialtyService } from "@/services/specialties.service";
+import { Blog, Specialty, PaginationInfo } from "@/types";
 import {
   Card,
   CardContent,
@@ -28,6 +28,8 @@ import {
   Filter,
   BookOpen,
   Mail,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface BlogWithSpecialties extends Blog {
@@ -36,20 +38,27 @@ interface BlogWithSpecialties extends Blog {
 
 const BlogsPage = () => {
   const [blogs, setBlogs] = useState<BlogWithSpecialties[]>([]);
+  const [allBlogs, setAllBlogs] = useState<BlogWithSpecialties[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(
-    null
-  );
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
+  const itemsPerPage = 10;
 
+  // Fetch initial data without pagination for featured blog and specialty filter
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
         setLoading(true);
-        // Fetch blogs and specialties in parallel
         const [blogsResponse, specialtiesResponse] = await Promise.all([
           blogService.getAllBlogsActive(),
           specialtyService.getAll(),
@@ -61,24 +70,17 @@ const BlogsPage = () => {
         const blogsWithDetails = await Promise.all(
           blogsResponse.data.map(async (blogPreview) => {
             try {
-              const fullBlogResponse = await blogService.getBlogById(
-                blogPreview._id
-              );
+              const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
               return fullBlogResponse.data;
             } catch (err) {
-              console.error(
-                `Error fetching details for blog ${blogPreview._id}:`,
-                err
-              );
+              console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
               return null;
             }
           })
         );
 
         // Filter out any null responses and enhance blogs with specialty details
-        const validBlogs = blogsWithDetails.filter(
-          (blog): blog is Blog => blog !== null
-        );
+        const validBlogs = blogsWithDetails.filter((blog): blog is Blog => blog !== null);
 
         const enhancedBlogs = validBlogs.map((blog) => {
           const blogSpecialties = specialtiesResponse.filter((specialty) =>
@@ -91,18 +93,77 @@ const BlogsPage = () => {
           };
         });
 
-        setBlogs(enhancedBlogs);
+        setAllBlogs(enhancedBlogs);
         setError(null);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        console.error("Error fetching initial data:", err);
         setError("Failed to load blogs. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []); // Only run once on mount
+    fetchInitialData();
+  }, []);
+
+  // Fetch paginated blogs for the grid
+  useEffect(() => {
+    const fetchPaginatedBlogs = async () => {
+      try {
+        const params: Record<string, string | number> = {
+          page: currentPage,
+          limit: itemsPerPage
+        };
+
+        if (searchQuery.trim()) {
+          params.search = searchQuery.trim();
+        }
+
+        if (selectedSpecialty) {
+          params.specialty = selectedSpecialty;
+        }
+
+        const response = await blogService.getActiveBlogsPaginated(params);
+        
+        // Get full blog details and enhance with specialty information
+        const blogsWithDetails = await Promise.all(
+          response.data.map(async (blogPreview) => {
+            try {
+              const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
+              const blog = fullBlogResponse.data;
+              
+              const blogSpecialties = specialties.filter((specialty) =>
+                blog.specialties?.includes(specialty._id)
+              );
+
+              return {
+                ...blog,
+                specialtyDetails: blogSpecialties,
+              };
+            } catch (err) {
+              console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
+              return null;
+            }
+          })
+        );
+
+        const validBlogs = blogsWithDetails.filter(blog => blog !== null) as BlogWithSpecialties[];
+        setBlogs(validBlogs);
+        setPaginationInfo(response.pagination);
+      } catch (err) {
+        console.error("Error fetching paginated blogs:", err);
+      }
+    };
+
+    if (specialties.length > 0) {
+      fetchPaginatedBlogs();
+    }
+  }, [currentPage, itemsPerPage, searchQuery, selectedSpecialty, specialties]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedSpecialty]);
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
@@ -113,22 +174,8 @@ const BlogsPage = () => {
     });
   }
 
-  // Get featured blog (first blog or null if no blogs)
-  const featuredBlog = blogs.length > 0 ? blogs[0] : null;
-  // Get rest of the blogs for the grid
-  const gridBlogs = blogs.length > 1 ? blogs.slice(1) : [];
-
-  // Filter blogs based on search query and selected specialty
-  const filteredBlogs = gridBlogs.filter((blog) => {
-    const matchesSearch = blog.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesSpecialty = selectedSpecialty
-      ? blog.specialties?.includes(selectedSpecialty)
-      : true;
-
-    return matchesSearch && matchesSpecialty;
-  });
+  // Get featured blog (first blog from all blogs or null if no blogs)
+  const featuredBlog = allBlogs.length > 0 ? allBlogs[0] : null;
 
   // Handle specialty selection
   const handleSpecialtyClick = (specialtyId: string) => {
@@ -139,10 +186,33 @@ const BlogsPage = () => {
     }
   };
 
+  // Pagination helpers
+  const totalPages = paginationInfo?.totalPages || 0;
+  const canGoPrevious = currentPage > 1;
+  const canGoNext = currentPage < totalPages;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const getVisiblePages = () => {
+    if (totalPages === 0) return [];
+    
+    const maxVisible = 5;
+    const halfVisible = Math.floor(maxVisible / 2);
+    
+    let start = Math.max(1, currentPage - halfVisible);
+    const end = Math.min(totalPages, start + maxVisible - 1);
+    
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  };
+
   return (
     <div className="container mx-auto pb-8 px-4">
-      {/* Hero section with header */}
-
       {/* Search and filter section */}
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -268,7 +338,7 @@ const BlogsPage = () => {
             Try Again
           </Button>
         </div>
-      ) : blogs.length === 0 ? (
+      ) : allBlogs.length === 0 ? (
         <div className="text-center p-12 bg-gray-50 rounded-lg border">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
             <BookOpen className="h-8 w-8 text-gray-400" />
@@ -343,10 +413,9 @@ const BlogsPage = () => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                   <h2 className="text-2xl font-bold">Latest Articles</h2>
-                  {filteredBlogs.length > 0 && (
+                  {paginationInfo && (
                     <p className="text-gray-600 text-sm mt-1">
-                      Showing {filteredBlogs.length} article
-                      {filteredBlogs.length !== 1 ? "s" : ""}
+                      Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-{Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of {paginationInfo.total} article{paginationInfo.total !== 1 ? "s" : ""}
                       {selectedSpecialty ? " in selected specialty" : ""}
                     </p>
                   )}
@@ -365,14 +434,16 @@ const BlogsPage = () => {
               </div>
 
               <TabsContent value="all" className="mt-0">
-                {filteredBlogs.length === 0 ? (
+                {blogs.length === 0 ? (
                   <div className="text-center p-8 bg-gray-50 rounded-lg border">
                     <p className="text-gray-600">
                       {searchQuery && selectedSpecialty
                         ? `No articles found matching "${searchQuery}" in the selected specialty.`
                         : searchQuery
                         ? `No articles found matching "${searchQuery}".`
-                        : "No articles found in the selected specialty."}
+                        : selectedSpecialty
+                        ? "No articles found in the selected specialty."
+                        : "No articles available."}
                     </p>
                     <Button
                       variant="ghost"
@@ -386,76 +457,117 @@ const BlogsPage = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredBlogs.map((blog) => (
-                      <Card
-                        key={blog._id}
-                        className="h-full flex flex-col overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 group"
-                      >
-                        <div className="relative h-48 w-full overflow-hidden">
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10"></div>
-                          <Image
-                            src={
-                              blog.coverImage || "/images/sample-blog-image.png"
-                            }
-                            alt={blog.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                          <div className="absolute top-3 left-3 z-20">
-                            <span className="bg-white/80 backdrop-blur-sm text-primary text-xs font-medium py-1 px-2 rounded-md">
-                              {formatDate(blog.createdAt)}
-                            </span>
-                          </div>
-                        </div>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">
-                            {blog.title}
-                          </CardTitle>
-                          <div className="flex items-center text-sm text-gray-500 mt-2">
-                            <Clock className="h-4 w-4 mr-1" />
-                            <span>5 min read</span>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="flex-grow">
-                          <div className="flex items-center mt-2">
-                            <div className="flex flex-wrap gap-1.5">
-                              {blog.specialtyDetails &&
-                              blog.specialtyDetails.length > 0 ? (
-                                blog.specialtyDetails.map((specialty) => (
-                                  <span
-                                    key={specialty._id}
-                                    className={`text-xs px-2 py-0.5 rounded-full ${
-                                      selectedSpecialty === specialty._id
-                                        ? "bg-primary text-white"
-                                        : "bg-primary/10 text-primary"
-                                    }`}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      handleSpecialtyClick(specialty._id);
-                                    }}
-                                    style={{ cursor: "pointer" }}
-                                  >
-                                    {specialty.name}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                  Healthcare
-                                </span>
-                              )}
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {blogs.map((blog) => (
+                        <Card
+                          key={blog._id}
+                          className="h-full flex flex-col overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 group"
+                        >
+                          <div className="relative h-48 w-full overflow-hidden">
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10"></div>
+                            <Image
+                              src={
+                                blog.coverImage || "/images/sample-blog-image.png"
+                              }
+                              alt={blog.title}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-110"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                            <div className="absolute top-3 left-3 z-20">
+                              <span className="bg-white/80 backdrop-blur-sm text-primary text-xs font-medium py-1 px-2 rounded-md">
+                                {formatDate(blog.createdAt)}
+                              </span>
                             </div>
                           </div>
-                        </CardContent>
-                        <CardFooter>
-                          <Button asChild variant="default" className="w-full">
-                            <Link href={`/blogs/${blog._id}`}>Read More</Link>
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">
+                              {blog.title}
+                            </CardTitle>
+                            <div className="flex items-center text-sm text-gray-500 mt-2">
+                              <Clock className="h-4 w-4 mr-1" />
+                              <span>5 min read</span>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="flex-grow">
+                            <div className="flex items-center mt-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {blog.specialtyDetails &&
+                                blog.specialtyDetails.length > 0 ? (
+                                  blog.specialtyDetails.map((specialty) => (
+                                    <span
+                                      key={specialty._id}
+                                      className={`text-xs px-2 py-0.5 rounded-full ${
+                                        selectedSpecialty === specialty._id
+                                          ? "bg-primary text-white"
+                                          : "bg-primary/10 text-primary"
+                                      }`}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleSpecialtyClick(specialty._id);
+                                      }}
+                                      style={{ cursor: "pointer" }}
+                                    >
+                                      {specialty.name}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                    Healthcare
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                          <CardFooter>
+                            <Button asChild variant="default" className="w-full">
+                              <Link href={`/blogs/${blog._id}`}>Read More</Link>
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mt-8 pt-6 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={!canGoPrevious}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Previous
+                        </Button>
+
+                        <div className="flex items-center gap-1">
+                          {getVisiblePages().map((page) => (
+                            <Button
+                              key={page}
+                              variant={page === currentPage ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handlePageChange(page)}
+                              className="w-10"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={!canGoNext}
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </TabsContent>
 

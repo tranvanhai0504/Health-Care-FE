@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-10 md:py-10 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-6 md:px-8 relative">
         {/* Decorative elements */}
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>

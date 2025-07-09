@@ -8,7 +8,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 seconds
+  timeout: 15000, // 15 seconds
   withCredentials: true, // Needed for cookies if your API uses cookie-based auth
 });
 
@@ -91,10 +91,16 @@ api.interceptors.response.use(
       }
     } else if (error.request) {
       // Request was made but no response was received
+      // Don't show toast for aborted requests (timeouts) as they might be handled by components
+      if (error.code !== 'ECONNABORTED') {
       toast.error('No response from server. Please check your connection.');
+      }
     } else {
       // Error in setting up the request
+      // Only show toast for actual setup errors, not aborted requests
+      if (error.code !== 'ECONNABORTED') {
       toast.error('Error setting up request. Please try again.');
+      }
     }
     
     return Promise.reject(error);

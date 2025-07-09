@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       trend: <TrendingUp className="h-4 w-4 text-green-600" />
     },
     {
-      title: "Appointments",
+              title: "Schedules",
       value: "1,324",
       description: "+18% from last month",
       icon: <Calendar className="h-6 w-6 text-purple-600" />,
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
               </div>
               
               <div className="flex justify-between items-center mt-4">
-                <span className="text-sm font-medium">Monthly Appointments</span>
+                <span className="text-sm font-medium">Monthly Schedules</span>
                 <span className="font-bold">324 / 500</span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-2.5">
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
                   <p className="text-2xl font-bold">24</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500">Appointments Today</p>
+                  <p className="text-sm text-gray-500">Schedules Today</p>
                   <p className="text-2xl font-bold">48</p>
                 </div>
               </div>

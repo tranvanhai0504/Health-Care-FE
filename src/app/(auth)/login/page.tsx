@@ -1,4 +1,9 @@
+import { Suspense } from "react";
 import SignInForm from "@/components/auth/signin-form";
+
+function SignInFormWrapper() {
+  return <SignInForm />;
+}
 
 export default function LoginPage() {
   return (
@@ -13,7 +18,9 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <SignInForm />
+        <Suspense fallback={<div className="flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+          <SignInFormWrapper />
+        </Suspense>
       </div>
     </div>
   );

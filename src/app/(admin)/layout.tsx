@@ -11,7 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen pt-10">
         <AdminSidebar />
         <main className="flex-1 p-6">{children}</main>
       </div>

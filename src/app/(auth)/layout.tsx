@@ -21,7 +21,7 @@ export default function AuthLayout({
   }, [isAuthenticated, router]);
 
   return (
-    <div className="container flex min-h-[calc(100vh-80px)] mx-auto justify-center items-center">
+    <div className="container flex mx-auto justify-center pt-8 items-center">
       {children}
     </div>
   );

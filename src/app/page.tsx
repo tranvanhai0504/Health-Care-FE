@@ -55,11 +55,11 @@ const CTASection = dynamic(
 export const metadata: Metadata = {
   title: "Health Care Solutions | Modern Healthcare Services",
   description:
-    "Providing quality healthcare services to improve your wellbeing and quality of life. Book appointments, consult with specialists, and access personalized care.",
+              "Providing quality healthcare services to improve your wellbeing and quality of life. Book schedules, consult with specialists, and access personalized care.",
   keywords: [
     "healthcare",
     "medical care",
-    "doctor appointments",
+              "doctor schedules",
     "healthcare solutions",
     "wellness",
   ],

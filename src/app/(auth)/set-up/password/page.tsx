@@ -26,7 +26,7 @@ import {
   passwordFormSchema,
   type PasswordFormValues,
 } from "@/schemas/password";
-import authService from "@/services/auth";
+import authService from "@/services/auth.service";
 
 const PasswordPage = () => {
   const router = useRouter();

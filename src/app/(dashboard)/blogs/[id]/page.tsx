@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { blogService } from "@/services";
-import { Blog } from "@/services/blogs";
+import { Blog } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ArrowLeft, User, Tag } from "lucide-react";

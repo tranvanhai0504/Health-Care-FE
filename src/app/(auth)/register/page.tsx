@@ -172,7 +172,7 @@ const SignUpPage = () => {
           <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
             <blockquote className="text-white font-medium text-lg mb-4">
               &ldquo;The HealthCare app has transformed how I manage my medical
-              needs. Booking appointments is now effortless.&rdquo;
+                                needs. Booking schedules is now effortless.&rdquo;
             </blockquote>
             <footer className="flex items-center space-x-4">
               <div className="rounded-full bg-primary/20 p-1">

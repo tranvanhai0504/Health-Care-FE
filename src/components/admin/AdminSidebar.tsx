@@ -47,8 +47,8 @@ const AdminSidebar = () => {
       icon: <FileText className="w-5 h-5" />
     },
     {
-      title: "Appointments",
-      href: "/admin/appointments",
+      title: "Schedules",
+      href: "/admin/schedules",
       icon: <Calendar className="w-5 h-5" />
     },
     {

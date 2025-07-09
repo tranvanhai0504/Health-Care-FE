@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookAppointmentButton } from "@/components/doctors/book-appointment-button";
+import { BookScheduleButton } from "@/components/doctors/book-schedule-button";
 
 // Mock data for a doctor - in a real app this would come from an API
 const mockDoctor = {
@@ -140,7 +140,7 @@ export default function DoctorDetailsPage() {
                 </div>
 
                 <div className="mt-4 flex w-full flex-col gap-2">
-                  <BookAppointmentButton
+                  <BookScheduleButton
                     doctorId={doctor.id}
                     doctorName={doctor.name}
                     className="w-full"
@@ -249,14 +249,14 @@ export default function DoctorDetailsPage() {
               </div>
 
               <div className="mt-6 text-center">
-                <BookAppointmentButton
+                <BookScheduleButton
                   doctorId={doctor.id}
                   doctorName={doctor.name}
                   size="lg"
                   className="px-8"
                 >
-                  Book an Appointment
-                </BookAppointmentButton>
+                  Book a Schedule
+                </BookScheduleButton>
               </div>
             </CardContent>
           </Card>

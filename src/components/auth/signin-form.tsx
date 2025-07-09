@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/card";
 
 import { useAuth } from "@/hooks/useAuth";
-import { LoginCredentials } from "@/services/auth";
+import { LoginCredentials } from "@/types";
 
 export default function SignInForm() {
   const router = useRouter();

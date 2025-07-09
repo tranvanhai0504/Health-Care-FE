@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/utils";
 import {
   Check,
   Calendar,
@@ -23,17 +24,16 @@ import {
   HelpCircle,
   Clock,
 } from "lucide-react";
-import {
-  ConsultationPackage,
-  consultationPackageService,
-} from "@/services/consultationPackage";
+import { consultationPackageService } from "@/services/consultationPackage.service";
+import { ConsultationPackage } from "@/types";
 import { BookPackageButton } from "@/components/packages/book-package-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { convertMarkdown } from "@/utils/markdown";
-import { ConsultationService, consultationServiceApi } from "@/services/consultationService";
+import { consultationServiceApi } from "@/services/consultationService.service";
+import { ConsultationService } from "@/types";
 
 const HealthPackageDetailsPage = () => {
   const params = useParams();
@@ -51,14 +51,7 @@ const HealthPackageDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("tests");
   const [description, setDescription] = useState<string>("");
 
-  // Simple function to format currency
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+
 
   useEffect(() => {
     const fetchPackageData = async () => {
@@ -414,7 +407,7 @@ const HealthPackageDetailsPage = () => {
                             </Badge>
                             {service.specialization && (
                               <Badge variant="secondary" className="text-xs ml-2 px-1.5 py-0">
-                                {service.specialization.name}
+                                {typeof service.specialization === 'string' ? service.specialization : service.specialization.name}
                               </Badge>
                             )}
                           </div>

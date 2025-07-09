@@ -23,14 +23,14 @@ interface NotificationsProps {
 const Notifications = ({ 
   count = 0, 
   notifications = [
-    { id: 1, title: "Appointment Reminder", message: "Your appointment with Dr. Smith is tomorrow at 10:00 AM", time: "2 hours ago" },
-    { id: 2, title: "Appointment Reminder", message: "Your appointment with Dr. Smith is tomorrow at 10:00 AM", time: "2 hours ago" },
-    { id: 3, title: "Appointment Reminder", message: "Your appointment with Dr. Smith is tomorrow at 10:00 AM", time: "2 hours ago" }
+    { id: 1, title: "Schedule Reminder", message: "Your schedule with Dr. Smith is tomorrow at 10:00 AM", time: "2 hours ago" },
+    { id: 2, title: "Schedule Reminder", message: "Your schedule with Dr. Smith is tomorrow at 10:00 AM", time: "2 hours ago" },
+    { id: 3, title: "Schedule Reminder", message: "Your schedule with Dr. Smith is tomorrow at 10:00 AM", time: "2 hours ago" }
   ] 
 }: NotificationsProps) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild suppressHydrationWarning>
         <Button variant="ghost" size="icon" className="relative">
           <BellIcon className="h-5 w-5" />
           {count > 0 && (

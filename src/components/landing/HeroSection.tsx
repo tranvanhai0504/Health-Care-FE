@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
-    <section className="flex justify-center items-center relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white py-16 md:py-24">
+    <section className="flex h-screen justify-center items-center relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white">
       {/* Background decorative elements */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
       <div className="absolute top-1/3 -right-24 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
@@ -25,7 +25,7 @@ export function HeroSection() {
             <div className="flex flex-wrap gap-4">
               <Button size="lg" className="gap-2 shadow-md">
                 <Calendar className="h-5 w-5" />
-                Book Appointment
+                                  Book Schedule
               </Button>
               <Button size="lg" variant="outline" className="group">
                 Learn More

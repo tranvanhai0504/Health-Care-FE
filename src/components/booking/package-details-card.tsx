@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Package } from "lucide-react";
-import { ConsultationPackage } from "@/services/consultationPackage";
+import { ConsultationPackage } from "@/types";
 
 interface PackageDetailsCardProps {
   packageData: ConsultationPackage;

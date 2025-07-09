@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { userService, type User, type UpdateUserData } from "@/services/user";
+import { userService } from "@/services/user.service";
+import { type User, type UpdateUserData } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   Form,

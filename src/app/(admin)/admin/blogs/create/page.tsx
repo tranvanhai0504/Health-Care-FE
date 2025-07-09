@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { BlogService } from "@/services/blogs";
-import { Specialty, specialtyService } from "@/services/specialties";
+import { BlogService } from "@/services/blogs.service";
+import { specialtyService } from "@/services/specialties.service";
+import { Specialty } from "@/types";
 import {
   Form,
   FormControl,

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BlogService, BlogGetAllResponse } from "@/services/blogs";
+import { blogService } from "@/services";
+import { BlogGetAllResponse } from "@/types";
 import {
   Card,
   CardContent,
@@ -23,11 +24,47 @@ export function BlogSection() {
     const fetchLatestBlogs = async () => {
       try {
         setLoading(true);
-        const blogService = new BlogService();
-        const latestBlogs = await blogService.getLatestBlogPosts(4);
-        setBlogs(latestBlogs);
+        // Use the latest blog posts method with a limit of 4
+        const response = await blogService.getActiveBlogsPaginated({ 
+          page: 1, 
+          limit: 4
+        });
+          
+        // Handle different response structures
+        let blogsData: BlogGetAllResponse[] = [];
+        
+        if (Array.isArray(response.data)) {
+          // Direct array response
+          blogsData = response.data;
+        } else if (response && typeof response === 'object' && 'data' in response) {
+          // Response with data property
+          const dataProperty = (response as { data: unknown }).data;
+          if (Array.isArray(dataProperty)) {
+            blogsData = dataProperty;
+          } else {
+            console.error("Expected blogs data to be array but got:", typeof dataProperty, dataProperty);
+          }
+        } else {
+          console.error("Unexpected blogs response structure:", typeof response, response);
+        }
+        
+        setBlogs(Array.isArray(blogsData) ? blogsData : []);
       } catch (error) {
         console.error("Error fetching latest blogs:", error);
+        // Fallback to the older method if the new one fails
+        try {
+          const latestBlogs = await blogService.getLatestBlogPosts(4);
+          // Handle the fallback response structure too
+          if (Array.isArray(latestBlogs)) {
+            setBlogs(latestBlogs);
+          } else {
+            console.error("Fallback blogs response is not an array:", typeof latestBlogs, latestBlogs);
+            setBlogs([]);
+          }
+        } catch (fallbackError) {
+          console.error("Error fetching blogs with fallback method:", fallbackError);
+          setBlogs([]);
+        }
       } finally {
         setLoading(false);
       }
@@ -52,7 +89,7 @@ export function BlogSection() {
   };
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-10 md:py-10 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="flex flex-col items-center mb-16">
           <Badge className="mb-4 px-3 py-1 bg-primary/10 text-primary hover:bg-primary/15">
@@ -144,7 +181,7 @@ export function BlogSection() {
 
             {/* Regular Articles */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {blogs.slice(blogs.length > 1 ? 1 : 0).map((blog, index) => (
+              {Array.isArray(blogs) && blogs.length > 1 ? blogs.slice(1).map((blog, index) => (
                 <Card
                   key={blog._id}
                   className="h-full flex flex-col overflow-hidden rounded-xl border border-gray-100 transition-all duration-300 hover:shadow-md hover:border-primary/20 group"
@@ -187,7 +224,7 @@ export function BlogSection() {
                     </CardFooter>
                   </Link>
                 </Card>
-              ))}
+              )) : null}
             </div>
           </>
         )}

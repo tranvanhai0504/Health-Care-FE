@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ConsultationPackage,
-  consultationPackageService,
-} from "@/services/consultationPackage";
+import { ConsultationPackage } from "@/types";
+import { consultationPackageService } from "@/services/consultationPackage.service";
 import {
   Card,
   CardContent,
@@ -14,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -48,21 +47,32 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function ViewHealthPackagePage({ params }: { params: { id: string } }) {
+export default function ViewHealthPackagePage({ params }: { params: Promise<{ id: string }> }) {
   const [packageData, setPackageData] = useState<ConsultationPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [id, setId] = useState<string>("");
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPackageData();
-  }, [params.id]);
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (id) {
+      fetchPackageData();
+    }
+  }, [id]);
 
   const fetchPackageData = async () => {
     try {
       setLoading(true);
-      const data = await consultationPackageService.getDetailById(params.id);
+      const data = await consultationPackageService.getDetailById(id);
       setPackageData(data);
     } catch (error) {
       console.error("Error fetching package details:", error);
@@ -77,12 +87,12 @@ export default function ViewHealthPackagePage({ params }: { params: { id: string
   };
 
   const handleEditPackage = () => {
-    router.push(`/admin/health-packages/edit/${params.id}`);
+    router.push(`/admin/health-packages/edit/${id}`);
   };
 
   const handleDeletePackage = async () => {
     try {
-      await consultationPackageService.delete(params.id);
+      await consultationPackageService.delete(id);
       toast({
         title: "Success",
         description: "Health package deleted successfully",
@@ -101,13 +111,7 @@ export default function ViewHealthPackagePage({ params }: { params: { id: string
     }
   };
 
-  // Format currency helper
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
+
 
   if (loading) {
     return (
@@ -194,7 +198,7 @@ export default function ViewHealthPackagePage({ params }: { params: { id: string
                     <h3 className="text-lg font-medium">Features</h3>
                   </div>
                   <ul className="space-y-2">
-                    {packageData.features.map((feature, i) => (
+                    {packageData.features?.map((feature, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                         <span>{feature}</span>
@@ -210,9 +214,9 @@ export default function ViewHealthPackagePage({ params }: { params: { id: string
                     <HelpCircle className="h-4 w-4 text-primary" />
                     <h3 className="text-lg font-medium">FAQ</h3>
                   </div>
-                  {packageData.faq.length > 0 ? (
+                  {packageData.faq && packageData.faq.length > 0 ? (
                     <Accordion type="single" collapsible className="w-full">
-                      {packageData.faq.map((item, i) => (
+                      {packageData.faq?.map((item, i) => (
                         <AccordionItem key={i} value={`item-${i}`}>
                           <AccordionTrigger className="text-left">
                             {item.question}
@@ -259,7 +263,7 @@ export default function ViewHealthPackagePage({ params }: { params: { id: string
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {packageData.priceOptions.map((option, i) => (
+                {packageData.priceOptions?.map((option, i) => (
                   <Card key={i} className="overflow-hidden">
                     <CardHeader className="bg-primary/5 py-3">
                       <CardTitle className="text-lg">{option.tier}</CardTitle>
@@ -290,11 +294,11 @@ export default function ViewHealthPackagePage({ params }: { params: { id: string
               <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Created At</h4>
-                  <p className="font-medium">{new Date(packageData.createdAt).toLocaleString()}</p>
+                  <p className="font-medium">{packageData.createdAt ? new Date(packageData.createdAt).toLocaleString() : 'N/A'}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Updated At</h4>
-                  <p className="font-medium">{new Date(packageData.updatedAt).toLocaleString()}</p>
+                  <p className="font-medium">{packageData.updatedAt ? new Date(packageData.updatedAt).toLocaleString() : 'N/A'}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Icon</h4>
