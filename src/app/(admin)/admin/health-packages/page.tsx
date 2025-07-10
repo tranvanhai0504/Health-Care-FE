@@ -126,7 +126,7 @@ export default function AdminHealthPackagesPage() {
     };
 
     fetchPackages();
-  }, [currentPage, searchQuery, categoryFilter, sortBy, toast]);
+  }, [categoryFilter, currentPage, searchQuery, sortBy, toast]);
 
   // Reset to first page when filters change
   useEffect(() => {

@@ -1,19 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BlogService } from "@/services/blogs.service";
-import { specialtyService } from "@/services/specialties.service";
-import { Specialty } from "@/types";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import {
   Card,
   CardContent,
@@ -21,101 +10,83 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/useToast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import {
-  FileText,
-  ArrowLeft,
-  Image as ImageIcon,
-  Tags,
-  FileCode,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import Image from "next/image";
+import { ArrowLeft, FileText, Save, X } from "lucide-react";
+import { useToast } from "@/hooks/useToast";
 
-// Create blog service outside the component
 const blogService = new BlogService();
 
-// Main form schema
-const formSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  content: z.string().min(10, "Content must be at least 10 characters"),
-  author: z.string().min(1, "Author name is required"),
-  coverImage: z.string().url("Please enter a valid URL").optional(),
-  specialties: z.array(z.string()).optional(),
-  active: z.boolean().default(true),
-});
-
 export default function CreateBlogPage() {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState("basic");
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [editorContent, setEditorContent] = useState("");
-  const { toast } = useToast();
-  
-  // Initialize the form with default values
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      content: "",
-      author: "",
-      coverImage: "",
-      specialties: [],
-      active: true,
-    },
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    author: "",
+    active: true,
+    coverImage: "",
+    specialties: [] as string[]
   });
-  
-  useEffect(() => {
-    const fetchSpecialties = async () => {
-      try {
-        const data = await specialtyService.getAll();
-        setSpecialties(data);
-      } catch (error) {
-        console.error("Error fetching specialties:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch specialties",
-          type: "error",
-        });
-      }
-    };
+  const [loading, setLoading] = useState(false);
+  const [specialtyInput, setSpecialtyInput] = useState("");
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleAddSpecialty = () => {
+    if (specialtyInput.trim() && !formData.specialties.includes(specialtyInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        specialties: [...prev.specialties, specialtyInput.trim()]
+      }));
+      setSpecialtyInput("");
+    }
+  };
+
+  const handleRemoveSpecialty = (specialty: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specialties: prev.specialties.filter(s => s !== specialty)
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    fetchSpecialties();
-  }, [toast]);
-  
-  // Update form when editor content changes
-  useEffect(() => {
-    form.setValue("content", editorContent);
-  }, [editorContent, form]);
-  
-  // Handle form submission
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Title and content are required",
+        type: "error",
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
-      setIsSubmitting(true);
-      
-      // Remove empty optional fields
-      const blogData = { ...data };
-      if (!blogData.coverImage) delete blogData.coverImage;
-      if (!blogData.specialties || blogData.specialties.length === 0) delete blogData.specialties;
-      
-      await blogService.create(blogData);
-      
+      await blogService.create({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        author: formData.author.trim() || "Admin",
+        active: formData.active,
+        coverImage: formData.coverImage.trim(),
+        specialties: formData.specialties
+      });
+
       toast({
         title: "Success",
         description: "Blog created successfully",
         type: "success",
       });
-      
-      // Redirect to the blogs list
+
       router.push("/admin/blogs");
     } catch (error) {
       console.error("Error creating blog:", error);
@@ -125,270 +96,183 @@ export default function CreateBlogPage() {
         type: "error",
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
-  
+
+  const handleCancel = () => {
+    router.push("/admin/blogs");
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <Button 
-        variant="ghost" 
-        className="mb-6"
-        onClick={() => router.push("/admin/blogs")}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blogs
-      </Button>
-      
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={handleCancel}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Blogs
+        </Button>
+      </div>
+
       <Card className="border-none shadow-sm">
         <CardHeader className="bg-muted/50 rounded-t-lg">
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <FileText className="h-5 w-5" /> Create New Blog
-            </CardTitle>
-            
-            <FormField
-              control={form.control}
-              name="active"
-              render={({ field }) => (
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="blog-active"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                  <label
-                    htmlFor="blog-active"
-                    className="text-sm font-medium cursor-pointer"
-                  >
-                    {field.value ? "Active" : "Inactive"}
-                  </label>
-                </div>
-              )}
-            />
-          </div>
+          <CardTitle className="text-2xl flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Create New Blog
+          </CardTitle>
           <CardDescription>
-            Add a new blog post with content, images, and specialties
+            Add a new blog post to your healthcare platform
           </CardDescription>
         </CardHeader>
-        
         <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <Tabs defaultValue="basic" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-4 mb-6">
-                  <TabsTrigger value="basic" className="flex items-center gap-1">
-                    <FileText className="h-4 w-4" />
-                    <span className="hidden sm:inline">Basic Info</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="content" className="flex items-center gap-1">
-                    <FileCode className="h-4 w-4" />
-                    <span className="hidden sm:inline">Content</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="media" className="flex items-center gap-1">
-                    <ImageIcon className="h-4 w-4" />
-                    <span className="hidden sm:inline">Media</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="specialties" className="flex items-center gap-1">
-                    <Tags className="h-4 w-4" />
-                    <span className="hidden sm:inline">Specialties</span>
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="basic" className="space-y-4 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Blog Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter blog title" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="author"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Author</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter author name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      type="button" 
-                      onClick={() => setActiveTab("content")}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-medium">
+                Title *
+              </Label>
+              <Input
+                id="title"
+                type="text"
+                placeholder="Enter blog title..."
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+
+            {/* Author */}
+            <div className="space-y-2">
+              <Label htmlFor="author" className="text-sm font-medium">
+                Author
+              </Label>
+              <Input
+                id="author"
+                type="text"
+                placeholder="Enter author name (defaults to Admin)..."
+                value={formData.author}
+                onChange={(e) => handleInputChange("author", e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Cover Image */}
+            <div className="space-y-2">
+              <Label htmlFor="coverImage" className="text-sm font-medium">
+                Cover Image URL
+              </Label>
+              <Input
+                id="coverImage"
+                type="url"
+                placeholder="Enter cover image URL..."
+                value={formData.coverImage}
+                onChange={(e) => handleInputChange("coverImage", e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="space-y-2">
+              <Label htmlFor="content" className="text-sm font-medium">
+                Content *
+              </Label>
+              <Textarea
+                id="content"
+                placeholder="Write your blog content here..."
+                value={formData.content}
+                onChange={(e) => handleInputChange("content", e.target.value)}
+                className="w-full min-h-[300px] resize-y"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                You can use Markdown formatting for rich text content.
+              </p>
+            </div>
+
+            {/* Specialties */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                Related Specialties
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Add specialty..."
+                  value={specialtyInput}
+                  onChange={(e) => setSpecialtyInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddSpecialty();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddSpecialty}
+                  disabled={!specialtyInput.trim()}
+                >
+                  Add
+                </Button>
+              </div>
+              {formData.specialties.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.specialties.map((specialty, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-sm"
                     >
-                      Next: Content
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="content" className="space-y-4 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Blog Content</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Enter blog content (HTML format is supported)"
-                            className="min-h-[300px] font-mono"
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setEditorContent(e.target.value);
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          You can use HTML to format your content
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-between">
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => setActiveTab("basic")}
-                    >
-                      Previous
-                    </Button>
-                    <Button 
-                      type="button" 
-                      onClick={() => setActiveTab("media")}
-                    >
-                      Next: Media
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="media" className="space-y-4 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="coverImage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cover Image URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/image.jpg" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Enter the URL for the blog cover image
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {form.watch("coverImage") && (
-                    <div className="mt-4">
-                      <FormLabel>Preview</FormLabel>
-                      <div className="mt-2 border rounded-md overflow-hidden">
-                        <Image 
-                          src={form.watch("coverImage") || ""}
-                          alt="Cover Preview" 
-                          width={600}
-                          height={400}
-                          className="w-full h-auto max-h-[200px] object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Invalid+Image+URL";
-                          }}
-                        />
-                      </div>
+                      <span>{specialty}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSpecialty(specialty)}
+                        className="hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </div>
-                  )}
-                  
-                  <div className="flex justify-between">
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => setActiveTab("content")}
-                    >
-                      Previous
-                    </Button>
-                    <Button 
-                      type="button" 
-                      onClick={() => setActiveTab("specialties")}
-                    >
-                      Next: Specialties
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="specialties" className="space-y-4 mt-4">
-                  <FormField
-                    control={form.control}
-                    name="specialties"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Specialties</FormLabel>
-                        <FormDescription>
-                          Select specialties relevant to this blog
-                        </FormDescription>
-                        <div className="mt-2 space-y-2">
-                          {specialties.map((specialty) => (
-                            <div key={specialty._id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={specialty._id}
-                                checked={field.value?.includes(specialty._id)}
-                                onCheckedChange={(checked: boolean) => {
-                                  const currentSpecialties = field.value || [];
-                                  if (checked) {
-                                    field.onChange([...currentSpecialties, specialty._id]);
-                                  } else {
-                                    field.onChange(
-                                      currentSpecialties.filter((id) => id !== specialty._id)
-                                    );
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor={specialty._id}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {specialty.name}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-between">
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => setActiveTab("media")}
-                    >
-                      Previous
-                    </Button>
-                    <Button 
-                      type="submit"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Creating..." : "Create Blog"}
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </form>
-          </Form>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Active Status */}
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="active"
+                checked={formData.active}
+                onCheckedChange={(checked) => handleInputChange("active", checked)}
+              />
+              <Label htmlFor="active" className="text-sm font-medium">
+                Publish immediately (Active)
+              </Label>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-6 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading || !formData.title.trim() || !formData.content.trim()}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {loading ? "Creating..." : "Create Blog"}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

@@ -192,3 +192,21 @@
 .blog-content th {
   @apply bg-muted font-semibold;
 }
+
+/* Horizontal scrollbar styles */
+.scroll-horizontal::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scroll-horizontal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-horizontal::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.scroll-horizontal::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

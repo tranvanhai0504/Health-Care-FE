@@ -16,8 +16,8 @@ export class SpecialtyService {
    * @returns Promise with array of specialties
    */
   async getAll(): Promise<Specialty[]> {
-    const response = await api.get<ApiResponse<Specialty[]>>(this.basePath);
-    return response.data.data;
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Specialty>>>(this.basePath);
+    return response.data.data.data;
   }
 
   /**

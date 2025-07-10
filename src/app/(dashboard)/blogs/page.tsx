@@ -3,34 +3,25 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { blogService } from "@/services";
-import { specialtyService } from "@/services/specialties.service";
+import { blogService, specialtyService } from "@/services";
 import { Blog, Specialty, PaginationInfo } from "@/types";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Calendar,
   Clock,
-  TrendingUp,
-  Award,
   Search,
   X,
-  Filter,
   BookOpen,
-  Mail,
-  ChevronLeft,
-  ChevronRight,
+  Eye,
+  Heart,
+  Share2,
+  Bookmark,
+  ArrowRight,
 } from "lucide-react";
+import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
 
 interface BlogWithSpecialties extends Blog {
   specialtyDetails?: Specialty[];
@@ -40,19 +31,20 @@ const BlogsPage = () => {
   const [blogs, setBlogs] = useState<BlogWithSpecialties[]>([]);
   const [allBlogs, setAllBlogs] = useState<BlogWithSpecialties[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
     total: 0,
     page: 1,
-    limit: 10,
-    totalPages: 0
+    limit: 6,
+    totalPages: 0,
   });
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   // Fetch initial data without pagination for featured blog and specialty filter
   useEffect(() => {
@@ -70,17 +62,24 @@ const BlogsPage = () => {
         const blogsWithDetails = await Promise.all(
           blogsResponse.data.map(async (blogPreview) => {
             try {
-              const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
+              const fullBlogResponse = await blogService.getBlogById(
+                blogPreview._id
+              );
               return fullBlogResponse.data;
             } catch (err) {
-              console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
+              console.error(
+                `Error fetching details for blog ${blogPreview._id}:`,
+                err
+              );
               return null;
             }
           })
         );
 
         // Filter out any null responses and enhance blogs with specialty details
-        const validBlogs = blogsWithDetails.filter((blog): blog is Blog => blog !== null);
+        const validBlogs = blogsWithDetails.filter(
+          (blog): blog is Blog => blog !== null
+        );
 
         const enhancedBlogs = validBlogs.map((blog) => {
           const blogSpecialties = specialtiesResponse.filter((specialty) =>
@@ -112,7 +111,7 @@ const BlogsPage = () => {
       try {
         const params: Record<string, string | number> = {
           page: currentPage,
-          limit: itemsPerPage
+          limit: itemsPerPage,
         };
 
         if (searchQuery.trim()) {
@@ -124,14 +123,16 @@ const BlogsPage = () => {
         }
 
         const response = await blogService.getActiveBlogsPaginated(params);
-        
+
         // Get full blog details and enhance with specialty information
         const blogsWithDetails = await Promise.all(
           response.data.map(async (blogPreview) => {
             try {
-              const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
+              const fullBlogResponse = await blogService.getBlogById(
+                blogPreview._id
+              );
               const blog = fullBlogResponse.data;
-              
+
               const blogSpecialties = specialties.filter((specialty) =>
                 blog.specialties?.includes(specialty._id)
               );
@@ -141,13 +142,18 @@ const BlogsPage = () => {
                 specialtyDetails: blogSpecialties,
               };
             } catch (err) {
-              console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
+              console.error(
+                `Error fetching details for blog ${blogPreview._id}:`,
+                err
+              );
               return null;
             }
           })
         );
 
-        const validBlogs = blogsWithDetails.filter(blog => blog !== null) as BlogWithSpecialties[];
+        const validBlogs = blogsWithDetails.filter(
+          (blog) => blog !== null
+        ) as BlogWithSpecialties[];
         setBlogs(validBlogs);
         setPaginationInfo(response.pagination);
       } catch (err) {
@@ -186,94 +192,76 @@ const BlogsPage = () => {
     }
   };
 
-  // Pagination helpers
-  const totalPages = paginationInfo?.totalPages || 0;
-  const canGoPrevious = currentPage > 1;
-  const canGoNext = currentPage < totalPages;
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const getVisiblePages = () => {
-    if (totalPages === 0) return [];
-    
-    const maxVisible = 5;
-    const halfVisible = Math.floor(maxVisible / 2);
-    
-    let start = Math.max(1, currentPage - halfVisible);
-    const end = Math.min(totalPages, start + maxVisible - 1);
-    
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-    
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
   };
 
   return (
-    <div className="container mx-auto pb-8 px-4">
-      {/* Search and filter section */}
-      <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="relative w-full md:w-96">
+    <div className="min-h-screen ">
+      {/* Header Section */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-6">
+          <div className="max-w-3xl">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              Health & Wellness Blog
+            </h1>
+            <p className="text-lg text-gray-600 leading-relaxed">
+              Expert insights, wellness tips, and the latest medical research to
+              help you live healthier
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Search and Filter Bar */}
+        <div className="flex items-center gap-4 mb-6 min-h-[40px]">
+          {/* Search Input */}
+          <div className="relative w-64 flex-shrink-0">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
             <Input
               placeholder="Search articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10 h-10 text-sm border-gray-300 focus:border-primary rounded-lg"
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="md:ml-auto"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </Button>
-        </div>
 
-        {/* Specialty Filter */}
-        {showFilters && (
-          <div className="mt-4 pt-4 border-t">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-700">
-                Filter by specialty:
-              </h3>
-              {selectedSpecialty && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedSpecialty(null)}
-                  className="text-xs h-7 px-2"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Clear filter
-                </Button>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
+          {/* Scrollable Specialty Filter */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-sm text-gray-500 flex-shrink-0">Filter:</span>
+            <div
+              className="flex gap-1.5 overflow-x-auto py-2 scroll-horizontal"
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor: "#d1d5db transparent",
+              }}
+            >
               <Badge
                 variant={selectedSpecialty === null ? "default" : "outline"}
-                className={`cursor-pointer hover:bg-primary/10 ${
+                className={`cursor-pointer text-xs px-3 py-1 transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedSpecialty === null
                     ? "bg-primary text-white"
-                    : "hover:text-primary"
+                    : "hover:bg-gray-100"
                 }`}
                 onClick={() => setSelectedSpecialty(null)}
               >
-                All Specialties
+                All
               </Badge>
               {specialties.map((specialty) => (
                 <Badge
@@ -281,10 +269,10 @@ const BlogsPage = () => {
                   variant={
                     selectedSpecialty === specialty._id ? "default" : "outline"
                   }
-                  className={`cursor-pointer hover:bg-primary/10 ${
+                  className={`cursor-pointer text-xs px-3 py-1 transition-all whitespace-nowrap flex-shrink-0 ${
                     selectedSpecialty === specialty._id
                       ? "bg-primary text-white"
-                      : "hover:text-primary"
+                      : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleSpecialtyClick(specialty._id)}
                 >
@@ -293,341 +281,347 @@ const BlogsPage = () => {
               ))}
             </div>
           </div>
-        )}
-      </div>
 
-      {loading ? (
-        <div className="space-y-8">
-          {/* Featured post skeleton */}
-          <div className="relative overflow-hidden rounded-xl h-[400px] w-full bg-gray-100 animate-pulse" />
+          {/* Clear Filter Button */}
+          {selectedSpecialty && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedSpecialty(null)}
+              className="h-10 px-3 text-sm text-gray-600 hover:text-gray-800 flex-shrink-0"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
 
-          {/* Grid skeletons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
-              <Card
-                key={index}
-                className="h-full flex flex-col animate-pulse border-none shadow"
-              >
-                <Skeleton className="h-48 w-full rounded-t-lg" />
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      ) : error ? (
-        <div className="text-center p-12 bg-red-50 rounded-lg border border-red-100">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
-            <X className="h-8 w-8 text-red-600" />
-          </div>
-          <h3 className="text-lg font-medium text-red-800 mb-2">
-            Failed to load blogs
-          </h3>
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="outline"
-            className="border-red-200 text-red-700 hover:bg-red-50"
-          >
-            Try Again
-          </Button>
-        </div>
-      ) : allBlogs.length === 0 ? (
-        <div className="text-center p-12 bg-gray-50 rounded-lg border">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
-            <BookOpen className="h-8 w-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-700 mb-2">
-            No blog posts available
-          </h3>
-          <p className="text-gray-600">
-            No blog posts available at the moment. Please check back later.
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Featured Post */}
-          {featuredBlog && (
-            <div className="mb-12">
-              <div className="relative overflow-hidden rounded-xl h-[400px] md:h-[500px] w-full group shadow-lg">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 z-10" />
-                <Image
-                  src={
-                    featuredBlog.coverImage || "/images/sample-blog-image.png"
-                  }
-                  alt={featuredBlog.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="100vw"
-                  priority
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-20 text-white">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <span className="bg-primary text-white text-xs font-medium py-1 px-3 rounded-full">
-                      Featured
-                    </span>
-                    <span className="text-white/80 text-sm flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      {formatDate(featuredBlog.createdAt)}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl md:text-4xl font-bold mb-3 text-white">
-                    {featuredBlog.title}
-                  </h2>
-                  {featuredBlog.specialtyDetails &&
-                    featuredBlog.specialtyDetails.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {featuredBlog.specialtyDetails.map((specialty) => (
-                          <span
-                            key={specialty._id}
-                            className="text-xs bg-white/20 text-white px-2 py-1 rounded-full"
-                          >
-                            {specialty.name}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  <Button
-                    asChild
-                    size="lg"
-                    className="mt-4 bg-white text-primary hover:bg-white/90"
-                  >
-                    <Link href={`/blogs/${featuredBlog._id}`}>
-                      Read Article
-                    </Link>
-                  </Button>
-                </div>
+        {loading ? (
+          <div className="space-y-8">
+            {/* Featured post skeleton */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+              <Skeleton className="h-80 w-full" />
+              <div className="p-8">
+                <Skeleton className="h-8 w-3/4 mb-4" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
               </div>
             </div>
-          )}
 
-          {/* Category Tabs and Blog Grid */}
-          <div className="mb-12">
-            <Tabs defaultValue="all" className="w-full">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold">Latest Articles</h2>
-                  {paginationInfo && (
-                    <p className="text-gray-600 text-sm mt-1">
-                      Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-{Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of {paginationInfo.total} article{paginationInfo.total !== 1 ? "s" : ""}
-                      {selectedSpecialty ? " in selected specialty" : ""}
-                    </p>
-                  )}
+            {/* Grid skeletons */}
+            <div className="space-y-6">
+              {[...Array(3)].map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl p-6 shadow-sm animate-pulse"
+                >
+                  <div className="flex gap-6">
+                    <Skeleton className="h-32 w-48 rounded-xl flex-shrink-0" />
+                    <div className="flex-1 space-y-3">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  </div>
                 </div>
-                <TabsList className="bg-background border">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="trending">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    Trending
-                  </TabsTrigger>
-                  <TabsTrigger value="featured">
-                    <Award className="h-4 w-4 mr-1" />
-                    Featured
-                  </TabsTrigger>
-                </TabsList>
+              ))}
+            </div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-6">
+              <X className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Something went wrong
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : allBlogs.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-6">
+              <BookOpen className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              No articles yet
+            </h3>
+            <p className="text-gray-600 max-w-md mx-auto">
+              We&apos;re working hard to bring you quality health content. Check
+              back soon for the latest articles and insights.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Featured Article */}
+            {featuredBlog && (
+              <div className="mb-12">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500 group">
+                  <div className="relative h-80 md:h-96 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+                    <Image
+                      src={
+                        featuredBlog.coverImage ||
+                        "/images/sample-blog-image.png"
+                      }
+                      alt={featuredBlog.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="100vw"
+                      priority
+                    />
+                    <div className="absolute top-6 left-6 z-20">
+                      <span className="bg-primary text-white text-sm font-semibold py-2 px-4 rounded-full shadow-lg">
+                        Featured Article
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-8 z-20 text-white">
+                      <div className="max-w-3xl">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <span className="text-white/80 text-sm flex items-center">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {formatDate(featuredBlog.createdAt)}
+                          </span>
+                          <span className="text-white/80 text-sm flex items-center">
+                            <Clock className="h-4 w-4 mr-2" />5 min read
+                          </span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                          {featuredBlog.title}
+                        </h2>
+                        {featuredBlog.specialtyDetails &&
+                          featuredBlog.specialtyDetails.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-6">
+                              {featuredBlog.specialtyDetails.map(
+                                (specialty) => (
+                                  <span
+                                    key={specialty._id}
+                                    className="text-sm bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full"
+                                  >
+                                    {specialty.name}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          )}
+                        <Button
+                          asChild
+                          size="lg"
+                          className="bg-white text-primary hover:bg-white/90 font-semibold"
+                        >
+                          <Link
+                            href={`/blogs/${featuredBlog._id}`}
+                            className="inline-flex items-center"
+                          >
+                            Read Full Article
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Articles Section */}
+            <div className="mb-12">
+              <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  Latest Articles
+                </h2>
+                {paginationInfo && (
+                  <p className="text-gray-600">
+                    Showing{" "}
+                    {(paginationInfo.page - 1) * paginationInfo.limit + 1}-
+                    {Math.min(
+                      paginationInfo.page * paginationInfo.limit,
+                      paginationInfo.total
+                    )}{" "}
+                    of {paginationInfo.total} article
+                    {paginationInfo.total !== 1 ? "s" : ""}
+                    {selectedSpecialty ? " in selected specialty" : ""}
+                  </p>
+                )}
               </div>
 
-              <TabsContent value="all" className="mt-0">
-                {blogs.length === 0 ? (
-                  <div className="text-center p-8 bg-gray-50 rounded-lg border">
-                    <p className="text-gray-600">
-                      {searchQuery && selectedSpecialty
-                        ? `No articles found matching "${searchQuery}" in the selected specialty.`
-                        : searchQuery
-                        ? `No articles found matching "${searchQuery}".`
-                        : selectedSpecialty
-                        ? "No articles found in the selected specialty."
-                        : "No articles available."}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setSearchQuery("");
-                        setSelectedSpecialty(null);
-                      }}
-                      className="mt-4"
-                    >
-                      Clear all filters
-                    </Button>
+              {blogs.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-6">
+                    <Search className="h-8 w-8 text-gray-400" />
                   </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {blogs.map((blog) => (
-                        <Card
-                          key={blog._id}
-                          className="h-full flex flex-col overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 group"
-                        >
-                          <div className="relative h-48 w-full overflow-hidden">
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10"></div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No articles found
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    {searchQuery && selectedSpecialty
+                      ? `No articles found matching "${searchQuery}" in the selected specialty.`
+                      : searchQuery
+                      ? `No articles found matching "${searchQuery}".`
+                      : selectedSpecialty
+                      ? "No articles found in the selected specialty."
+                      : "No articles available."}
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSelectedSpecialty(null);
+                    }}
+                  >
+                    Clear all filters
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {/* Articles List */}
+                  <div className="space-y-6">
+                    {blogs.map((blog) => (
+                      <article
+                        key={blog._id}
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group"
+                      >
+                        <div className="flex flex-col lg:flex-row">
+                          {/* Image */}
+                          <div className="relative lg:w-80 h-64 lg:h-auto overflow-hidden">
                             <Image
                               src={
-                                blog.coverImage || "/images/sample-blog-image.png"
+                                blog.coverImage ||
+                                "/images/sample-blog-image.png"
                               }
                               alt={blog.title}
                               fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-110"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              sizes="(max-width: 1024px) 100vw, 320px"
                             />
-                            <div className="absolute top-3 left-3 z-20">
-                              <span className="bg-white/80 backdrop-blur-sm text-primary text-xs font-medium py-1 px-2 rounded-md">
+                            <div className="absolute top-4 left-4">
+                              <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium py-1 px-3 rounded-full">
                                 {formatDate(blog.createdAt)}
                               </span>
                             </div>
                           </div>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">
-                              {blog.title}
-                            </CardTitle>
-                            <div className="flex items-center text-sm text-gray-500 mt-2">
-                              <Clock className="h-4 w-4 mr-1" />
-                              <span>5 min read</span>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="flex-grow">
-                            <div className="flex items-center mt-2">
-                              <div className="flex flex-wrap gap-1.5">
+
+                          {/* Content */}
+                          <div className="flex-1 p-8">
+                            <div className="h-full flex flex-col">
+                              {/* Specialties */}
+                              <div className="flex flex-wrap gap-2 mb-4">
                                 {blog.specialtyDetails &&
                                 blog.specialtyDetails.length > 0 ? (
                                   blog.specialtyDetails.map((specialty) => (
-                                    <span
+                                    <Badge
                                       key={specialty._id}
-                                      className={`text-xs px-2 py-0.5 rounded-full ${
+                                      variant="secondary"
+                                      className={`cursor-pointer text-xs font-medium rounded-full transition-all ${
                                         selectedSpecialty === specialty._id
                                           ? "bg-primary text-white"
-                                          : "bg-primary/10 text-primary"
+                                          : "bg-primary/10 text-primary hover:bg-primary/20"
                                       }`}
                                       onClick={(e) => {
                                         e.preventDefault();
                                         handleSpecialtyClick(specialty._id);
                                       }}
-                                      style={{ cursor: "pointer" }}
                                     >
                                       {specialty.name}
-                                    </span>
+                                    </Badge>
                                   ))
                                 ) : (
-                                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-primary/10 text-primary text-xs rounded-full"
+                                  >
                                     Healthcare
-                                  </span>
+                                  </Badge>
                                 )}
                               </div>
+
+                              {/* Title */}
+                              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                                {blog.title}
+                              </h3>
+
+                              {/* Meta Info */}
+                              <div className="flex items-center text-sm text-gray-500 mb-4 space-x-4">
+                                <span className="flex items-center">
+                                  <Clock className="h-4 w-4 mr-1" />5 min read
+                                </span>
+                                <span className="flex items-center">
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  1.2k views
+                                </span>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="mt-auto flex items-center justify-between">
+                                <Button
+                                  asChild
+                                  className="bg-primary hover:bg-primary/90 font-semibold"
+                                >
+                                  <Link
+                                    href={`/blogs/${blog._id}`}
+                                    className="inline-flex items-center"
+                                  >
+                                    Read Article
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                  </Link>
+                                </Button>
+
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-gray-400 hover:text-red-500"
+                                  >
+                                    <Heart className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-gray-400 hover:text-blue-500"
+                                  >
+                                    <Share2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-gray-400 hover:text-yellow-500"
+                                  >
+                                    <Bookmark className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
-                          </CardContent>
-                          <CardFooter>
-                            <Button asChild variant="default" className="w-full">
-                              <Link href={`/blogs/${blog._id}`}>Read More</Link>
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      ))}
-                    </div>
-
-                    {/* Pagination Controls */}
-                    {totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-2 mt-8 pt-6 border-t">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={!canGoPrevious}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          Previous
-                        </Button>
-
-                        <div className="flex items-center gap-1">
-                          {getVisiblePages().map((page) => (
-                            <Button
-                              key={page}
-                              variant={page === currentPage ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => handlePageChange(page)}
-                              className="w-10"
-                            >
-                              {page}
-                            </Button>
-                          ))}
+                          </div>
                         </div>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={!canGoNext}
-                        >
-                          Next
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </TabsContent>
-
-              <TabsContent value="trending" className="mt-0">
-                <div className="text-center p-12 bg-gray-50 rounded-lg border">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
-                    <TrendingUp className="h-8 w-8 text-gray-400" />
+                      </article>
+                    ))}
                   </div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">
-                    Trending Articles
-                  </h3>
-                  <p className="text-gray-600 max-w-md mx-auto">
-                    Trending articles will appear here based on reader activity
-                    and engagement.
-                  </p>
-                </div>
-              </TabsContent>
 
-              <TabsContent value="featured" className="mt-0">
-                <div className="text-center p-12 bg-gray-50 rounded-lg border">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-4">
-                    <Award className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">
-                    Featured Articles
-                  </h3>
-                  <p className="text-gray-600 max-w-md mx-auto">
-                    Editor&apos;s picks and featured articles will appear here.
-                  </p>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Newsletter Signup */}
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-8 mt-12 border border-primary/20">
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 mb-4">
-                <Mail className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Stay Updated</h3>
-              <p className="text-gray-600 mb-6 max-w-xl mx-auto">
-                Subscribe to our newsletter to receive the latest health
-                articles, wellness tips, and updates directly in your inbox.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <Input
-                  type="email"
-                  placeholder="Your email address"
-                  className="bg-white flex-grow"
-                />
-                <Button className="whitespace-nowrap">Subscribe</Button>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">
-                We respect your privacy. Unsubscribe at any time.
-              </p>
+                  {/* Pagination */}
+                  <PaginationWrapper
+                    paginationInfo={paginationInfo}
+                    currentPage={paginationInfo.page}
+                    totalPages={paginationInfo.totalPages}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                    itemName="article"
+                    showItemsPerPage={true}
+                    showJumpToPage={false}
+                    itemsPerPageOptions={[6, 9, 12, 24]}
+                  />
+                </>
+              )}
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

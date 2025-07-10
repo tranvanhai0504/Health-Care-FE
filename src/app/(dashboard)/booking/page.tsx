@@ -8,6 +8,9 @@ import {
   Package,
   Settings,
   Plus,
+  AlertTriangle,
+  Home,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { convertMarkdown } from "@/utils/markdown";
@@ -266,31 +269,6 @@ function BookingPageContent() {
     authenticateAction(processBooking);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[70vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh]">
-        <h2 className="text-2xl font-bold text-red-500 mb-4">{error}</h2>
-        <div className="flex gap-4">
-          <Button onClick={() => router.back()}>Go Back</Button>
-          <Button onClick={() => router.push("/medical-services")}>
-            Browse Services
-          </Button>
-          <Button onClick={() => router.push("/health-packages")}>
-            Browse Packages
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   // Calculate total price based on booking type
   const getTotalBookingPrice = () => {
     if (bookingType === "package" && packageData) {
@@ -314,6 +292,132 @@ function BookingPageContent() {
     if (bookingType === "service") return "Back to services";
     return "Back to services";
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[70vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+          {/* Error Icon */}
+          <div className="relative mb-6">
+            <div className="w-24 h-24 bg-red-50 dark:bg-red-950 rounded-full flex items-center justify-center">
+              <AlertTriangle className="w-12 h-12 text-red-500" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">!</span>
+            </div>
+          </div>
+
+          {/* Error Content */}
+          <div className="space-y-4 mb-8">
+            <h1 className="text-3xl font-bold text-foreground">
+              Booking Unavailable
+            </h1>
+            <div className="max-w-md mx-auto">
+                             <p className="text-lg text-muted-foreground mb-2">
+                 We couldn&apos;t load your booking details
+               </p>
+              <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 border">
+                {error}
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="default"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+            <Button 
+              onClick={() => router.push("/dashboard")} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <Button 
+              onClick={() => router.back()} 
+              variant="outline"
+            >
+              Go Back
+            </Button>
+          </div>
+
+          {/* Quick Navigation */}
+          <div className="mt-12 w-full max-w-2xl">
+            <Separator className="mb-6" />
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Or explore our services
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Browse our available medical services and health packages
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer group" 
+                    onClick={() => router.push("/medical-services")}>
+                <CardContent className="p-6 text-center">
+                  <Settings className="h-8 w-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                  <h4 className="font-semibold mb-2">Medical Services</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Book individual medical consultations and treatments
+                  </p>
+                  <div className="mt-3">
+                    <span className="text-sm text-primary font-medium group-hover:underline">
+                      Browse Services →
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow cursor-pointer group" 
+                    onClick={() => router.push("/health-packages")}>
+                <CardContent className="p-6 text-center">
+                  <Package className="h-8 w-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform" />
+                  <h4 className="font-semibold mb-2">Health Packages</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Comprehensive health packages with multiple services
+                  </p>
+                  <div className="mt-3">
+                    <span className="text-sm text-primary font-medium group-hover:underline">
+                      Browse Packages →
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Help Section */}
+          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 max-w-md">
+            <div className="text-center">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                Need Help?
+              </h4>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                If this problem persists, please contact our support team for assistance.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 max-w-6xl">

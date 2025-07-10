@@ -17,8 +17,8 @@ export class BlogService extends BaseService<Blog> {
     return this.getFullResponse<BlogGetAllResponse[]>(this.basePath);
   }
 
-  async getAllBlogsActive(): Promise<ApiResponse<BlogGetAllResponse[]>> {
-    return this.getFullResponse<BlogGetAllResponse[]>(`${this.basePath}/active`);
+  async getAllBlogsActive(): Promise<PaginatedApiResponse<BlogGetAllResponse>> {
+    return (await this.getFullResponse<PaginatedApiResponse<BlogGetAllResponse>>(`${this.basePath}/active`)).data;
   }
 
   /**
@@ -32,6 +32,7 @@ export class BlogService extends BaseService<Blog> {
     });
     return response.data.data;
   }
+
 
   async getBlogById(id: string): Promise<ApiResponse<Blog>> {
     return this.getFullResponse<Blog>(`${this.basePath}/${id}`);

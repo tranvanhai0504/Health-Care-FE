@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { BlogService } from "@/services/blogs.service";
 import { Blog, PaginationInfo } from "@/types";
@@ -40,8 +40,6 @@ import {
   FileText, 
   ListFilter,
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
   RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
@@ -63,6 +61,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
 
 // Create a single instance of the blog service outside the component
 const blogService = new BlogService();
@@ -74,82 +73,106 @@ export default function AdminBlogsPage() {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0
-  });
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const router = useRouter();
   const { toast } = useToast();
 
-  const itemsPerPage = 10;
+  // Fetch blogs with client-side pagination
+  const fetchBlogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Get all blog previews
+      const response = await blogService.getAllBlogs();
+      const blogPreviews = response.data;
 
-  // Fetch blogs with pagination
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        setLoading(true);
-        
-        // Build query parameters
-        const params: Record<string, string | number> = {
-          page: currentPage,
-          limit: itemsPerPage
-        };
-
-        if (searchQuery.trim()) {
-          params.search = searchQuery.trim();
+      // Get full blog details for each blog
+      const allBlogsPromises = blogPreviews.map(async (preview) => {
+        try {
+          const fullBlogResponse = await blogService.getBlogById(preview._id);
+          return fullBlogResponse.data;
+        } catch (err) {
+          console.error(`Error fetching details for blog ${preview._id}:`, err);
+          return null;
         }
+      });
 
-        if (statusFilter !== "all") {
-          params.status = statusFilter;
-        }
+      const allBlogsResults = await Promise.all(allBlogsPromises);
+      let allBlogs = allBlogsResults.filter((blog): blog is Blog => blog !== null);
 
-        if (sortBy !== "createdAt") {
-          params.sortBy = sortBy;
-        }
-
-        // For admin, we want to get all blogs (not just active)
-        const response = await blogService.getPaginated(params);
-        
-        // Get full blog details for each blog
-        const blogsWithDetails = await Promise.all(
-          response.data.map(async (blogPreview) => {
-            try {
-              const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
-              return fullBlogResponse.data;
-            } catch (err) {
-              console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
-              return null;
-            }
-          })
+      // Apply filters
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        allBlogs = allBlogs.filter(blog => 
+          blog.title.toLowerCase().includes(query) ||
+          blog.content.toLowerCase().includes(query) ||
+          (blog.author && blog.author.toLowerCase().includes(query))
         );
-        
-        // Filter out any null responses
-        const validBlogs = blogsWithDetails.filter((blog): blog is Blog => blog !== null);
-        setBlogs(validBlogs);
-        setPaginationInfo(response.pagination);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch blogs",
-          type: "error",
-        });
-      } finally {
-        setLoading(false);
       }
-    };
 
+      if (statusFilter !== "all") {
+        allBlogs = allBlogs.filter(blog => 
+          statusFilter === "active" ? blog.active : !blog.active
+        );
+      }
+
+      // Apply sorting
+      allBlogs.sort((a, b) => {
+        switch (sortBy) {
+          case "title":
+            return a.title.localeCompare(b.title);
+          case "author":
+            return (a.author || "").localeCompare(b.author || "");
+          case "updatedAt":
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+          case "createdAt":
+          default:
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+      });
+
+      // Apply pagination
+      const total = allBlogs.length;
+      const totalPages = Math.ceil(total / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedBlogs = allBlogs.slice(startIndex, endIndex);
+
+      setBlogs(paginatedBlogs);
+      setPaginationInfo({
+        total,
+        page: currentPage,
+        limit: itemsPerPage,
+        totalPages
+      });
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch blogs",
+        type: "error",
+      });
+      setBlogs([]);
+      setPaginationInfo(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, itemsPerPage, searchQuery, statusFilter, sortBy, toast]);
+
+  // Fetch blogs when dependencies change
+  useEffect(() => {
     fetchBlogs();
-  }, [currentPage, searchQuery, statusFilter, sortBy, toast]);
+  }, [fetchBlogs]);
 
   // Reset to first page when filters change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter, sortBy]);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [searchQuery, statusFilter, sortBy, itemsPerPage]);
 
   const handleCreateBlog = () => {
     router.push("/admin/blogs/create");
@@ -173,40 +196,7 @@ export default function AdminBlogsPage() {
 
     try {
       await blogService.delete(blogToDelete);
-      // Refresh the current page
-      const refreshParams: Record<string, string | number> = {
-        page: currentPage,
-        limit: itemsPerPage
-      };
-
-      if (searchQuery.trim()) {
-        refreshParams.search = searchQuery.trim();
-      }
-
-      if (statusFilter !== "all") {
-        refreshParams.status = statusFilter;
-      }
-
-      if (sortBy !== "createdAt") {
-        refreshParams.sortBy = sortBy;
-      }
-
-      const response = await blogService.getPaginated(refreshParams);
-      const blogsWithDetails = await Promise.all(
-        response.data.map(async (blogPreview) => {
-          try {
-            const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
-            return fullBlogResponse.data;
-          } catch (err) {
-            console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
-            return null;
-          }
-        })
-      );
-      
-      const validBlogs = blogsWithDetails.filter((blog): blog is Blog => blog !== null);
-      setBlogs(validBlogs);
-      setPaginationInfo(response.pagination);
+      await fetchBlogs(); // Refresh using the unified fetch function
 
       toast({
         title: "Success",
@@ -229,41 +219,7 @@ export default function AdminBlogsPage() {
   const handleToggleStatus = async (id: string) => {
     try {
       await blogService.toggleStatus(id);
-      
-      // Refresh the current page
-      const refreshParams: Record<string, string | number> = {
-        page: currentPage,
-        limit: itemsPerPage
-      };
-
-      if (searchQuery.trim()) {
-        refreshParams.search = searchQuery.trim();
-      }
-
-      if (statusFilter !== "all") {
-        refreshParams.status = statusFilter;
-      }
-
-      if (sortBy !== "createdAt") {
-        refreshParams.sortBy = sortBy;
-      }
-
-      const response = await blogService.getPaginated(refreshParams);
-      const blogsWithDetails = await Promise.all(
-        response.data.map(async (blogPreview) => {
-          try {
-            const fullBlogResponse = await blogService.getBlogById(blogPreview._id);
-            return fullBlogResponse.data;
-          } catch (err) {
-            console.error(`Error fetching details for blog ${blogPreview._id}:`, err);
-            return null;
-          }
-        })
-      );
-      
-      const validBlogs = blogsWithDetails.filter((blog): blog is Blog => blog !== null);
-      setBlogs(validBlogs);
-      setPaginationInfo(response.pagination);
+      await fetchBlogs(); // Refresh using the unified fetch function
 
       toast({
         title: "Success",
@@ -289,29 +245,14 @@ export default function AdminBlogsPage() {
     });
   };
 
-  // Pagination helpers
-  const totalPages = paginationInfo?.totalPages || 0;
-  const canGoPrevious = currentPage > 1;
-  const canGoNext = currentPage < totalPages;
-
+  // Pagination handlers
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const getVisiblePages = () => {
-    if (totalPages === 0) return [];
-    
-    const maxVisible = 5;
-    const halfVisible = Math.floor(maxVisible / 2);
-    
-    let start = Math.max(1, currentPage - halfVisible);
-    const end = Math.min(totalPages, start + maxVisible - 1);
-    
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-    
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when changing items per page
   };
 
   return (
@@ -384,15 +325,6 @@ export default function AdminBlogsPage() {
               </Button>
             </div>
           </div>
-
-          {/* Results Count */}
-          {paginationInfo && (
-            <div className="mb-4">
-              <Badge variant="outline" className="text-sm">
-                Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-{Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of {paginationInfo.total} blog{paginationInfo.total !== 1 ? "s" : ""}
-              </Badge>
-            </div>
-          )}
 
           {loading ? (
             <div className="space-y-3">
@@ -529,43 +461,18 @@ export default function AdminBlogsPage() {
               </div>
 
               {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-6 pt-6 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={!canGoPrevious}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-
-                  <div className="flex items-center gap-1">
-                    {getVisiblePages().map((page) => (
-                      <Button
-                        key={page}
-                        variant={page === currentPage ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className="w-10"
-                      >
-                        {page}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={!canGoNext}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+              <PaginationWrapper
+                paginationInfo={paginationInfo}
+                currentPage={currentPage}
+                totalPages={paginationInfo?.totalPages || 0}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+                itemName="blog"
+                showItemsPerPage={true}
+                showJumpToPage={false}
+                itemsPerPageOptions={[5, 10, 20, 50]}
+              />
             </>
           )}
         </CardContent>

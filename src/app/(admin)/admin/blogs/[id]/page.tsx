@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import React from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { BlogService } from "@/services/blogs.service";
-import { specialtyService } from "@/services/specialties.service";
-import { Blog, Specialty } from "@/types";
+import { Blog } from "@/types";
 import {
   Card,
   CardContent,
@@ -16,330 +14,220 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, FileText, Pencil, Calendar, User, Tag } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
-import {
-  FileText,
-  ArrowLeft,
-  Pencil,
-  Trash2,
-  User,
-  CalendarDays,
-  Tags,
-  Image as ImageIcon,
-} from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
-// Create services outside the component
 const blogService = new BlogService();
-  // Use the imported specialtyService instance
 
-export default function ViewBlogPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const resolvedParams = React.use(params);
-  const id = resolvedParams.id;
-
-  const [blogData, setBlogData] = useState<Blog | null>(null);
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+export default function ViewBlogPage() {
+  const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
 
+  const blogId = params.id as string;
+
   useEffect(() => {
-    fetchBlogData();
-  }, [id]);
+    const fetchBlog = async () => {
+      if (!blogId) return;
 
-  const fetchBlogData = async () => {
-    try {
-      setLoading(true);
-      const response = await blogService.getBlogById(id);
-      setBlogData(response.data);
+      try {
+        const response = await blogService.getBlogById(blogId);
+        setBlog(response.data);
+      } catch (error) {
+        console.error("Error fetching blog:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load blog data",
+          type: "error",
+        });
+        router.push("/admin/blogs");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Fetch specialties data
-      const specialtiesResponse = await specialtyService.getAll();
-      setSpecialties(specialtiesResponse);
-    } catch (error) {
-      console.error("Error fetching blog details:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch blog details",
-        type: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
+    fetchBlog();
+  }, [blogId, router, toast]);
+
+  const handleBack = () => {
+    router.push("/admin/blogs");
   };
 
-  const handleEditBlog = () => {
-    router.push(`/admin/blogs/edit/${id}`);
+  const handleEdit = () => {
+    router.push(`/admin/blogs/edit/${blogId}`);
   };
 
-  const handleDeleteBlog = async () => {
-    try {
-      await blogService.delete(id);
-      toast({
-        title: "Success",
-        description: "Blog deleted successfully",
-        type: "success",
-      });
-      router.push("/admin/blogs");
-    } catch (error) {
-      console.error("Error deleting blog:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete blog",
-        type: "error",
-      });
-    } finally {
-      setIsDeleteAlertOpen(false);
-    }
-  };
-
-  // Format date helper
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
-  };
-
-  // Get specialty names based on IDs
-  const getSpecialtyNames = (specialtyIds: string[]) => {
-    if (!specialtyIds || specialtyIds.length === 0) return [];
-    return specialties
-      .filter((specialty) => specialtyIds.includes(specialty._id))
-      .map((specialty) => specialty.name);
   };
 
   if (loading) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="mb-6">
-          <Skeleton className="h-8 w-32" />
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Blogs
+          </Button>
         </div>
-        <div className="space-y-6">
-          <Skeleton className="h-[200px] w-full rounded-lg" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Skeleton className="h-[300px] w-full rounded-lg" />
-            <Skeleton className="h-[300px] w-full rounded-lg" />
-          </div>
-        </div>
+
+        <Card className="border-none shadow-sm">
+          <CardHeader className="bg-muted/50 rounded-t-lg">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+            <Skeleton className="h-64 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!blogData) {
+  if (!blog) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
-        <h2 className="text-2xl font-bold mb-4">Blog Not Found</h2>
-        <p className="mb-6">
-          The blog you&apos;re looking for doesn&apos;t exist or has been
-          removed.
-        </p>
-        <Button onClick={() => router.push("/admin/blogs")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blogs
-        </Button>
+      <div className="container mx-auto py-8 px-4">
+        <div className="text-center py-16">
+          <h3 className="text-lg font-medium mb-2">Blog not found</h3>
+          <p className="text-muted-foreground mb-6">
+            The blog you're looking for doesn't exist.
+          </p>
+          <Button onClick={handleBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Blogs
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <Button variant="ghost" onClick={() => router.push("/admin/blogs")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Blogs
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={handleBack}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Blogs
         </Button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleEditBlog}>
-            <Pencil className="mr-2 h-4 w-4" /> Edit Blog
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setIsDeleteAlertOpen(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Delete Blog
-          </Button>
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          <Card className="border-none shadow-sm">
-            <CardHeader className="bg-muted/50 rounded-t-lg border-b">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl">{blogData.title}</CardTitle>
-                  <CardDescription className="mt-1">
-                    ID: {blogData._id}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                {blogData.coverImage && (
-                  <div className="mb-6">
-                    <img
-                      src={blogData.coverImage}
-                      alt={blogData.title}
-                      className="w-full h-auto rounded-lg max-h-[300px] object-cover"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                    Content
-                  </h3>
-                  <div
-                    className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: blogData.content }}
-                  />
-                </div>
-
-                <Separator />
-
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Tags className="h-4 w-4 text-primary" />
-                    <h3 className="text-lg font-medium">Specialties</h3>
-                  </div>
-                  {blogData.specialties && blogData.specialties.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {getSpecialtyNames(blogData.specialties).map(
-                        (name, i) => (
-                          <Badge key={i} variant="secondary">
-                            {name}
-                          </Badge>
-                        )
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">
-                      No specialties tagged
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm">
-            <CardHeader className="bg-muted/50 rounded-t-lg border-b">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" /> Author Information
+      <Card className="border-none shadow-sm">
+        <CardHeader className="bg-muted/50 rounded-t-lg">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <CardTitle className="text-2xl flex items-center gap-2 mb-2">
+                <FileText className="h-5 w-5" />
+                {blog.title}
               </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                    Author
-                  </h4>
-                  <p className="font-medium">{blogData.author}</p>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <User className="h-4 w-4" />
+                  {blog.author || "Unknown Author"}
                 </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  {formatDate(blog.createdAt)}
+                </div>
+                <Badge variant={blog.active ? "default" : "secondary"}>
+                  {blog.active ? "Published" : "Draft"}
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm">
-            <CardHeader className="bg-muted/50 rounded-t-lg border-b">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CalendarDays className="h-5 w-5 text-primary" /> Publication
-                Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                    Created At
-                  </h4>
-                  <p className="font-medium">
-                    {formatDate(blogData.createdAt)}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                    Updated At
-                  </h4>
-                  <p className="font-medium">
-                    {formatDate(blogData.updatedAt)}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                    Status
-                  </h4>
-                  <Badge variant={blogData.active ? "success" : "secondary"}>
-                    {blogData.active ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {blogData.coverImage && (
-            <Card className="border-none shadow-sm">
-              <CardHeader className="bg-muted/50 rounded-t-lg border-b">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5 text-primary" /> Cover Image
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                    Image URL
-                  </h4>
-                  <p className="text-xs break-all">{blogData.coverImage}</p>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
+            <Button onClick={handleEdit} className="ml-4">
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Blog
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {/* Cover Image */}
+          {blog.coverImage && (
+            <div className="mb-6">
+              <img
+                src={blog.coverImage}
+                alt={blog.title}
+                className="w-full h-64 object-cover rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
           )}
-        </div>
-      </div>
 
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              blog and all associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteBlog}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* Blog Meta Information */}
+          <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Created:</span> {formatDate(blog.createdAt)}
+              </div>
+              <div>
+                <span className="font-medium">Last Updated:</span> {formatDate(blog.updatedAt)}
+              </div>
+              <div>
+                <span className="font-medium">Author:</span> {blog.author || "Unknown"}
+              </div>
+              <div>
+                <span className="font-medium">Status:</span>{" "}
+                <Badge variant={blog.active ? "default" : "secondary"} className="ml-1">
+                  {blog.active ? "Published" : "Draft"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Specialties */}
+          {blog.specialties && blog.specialties.length > 0 && (
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Tag className="h-4 w-4" />
+                <span className="font-medium">Related Specialties:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {blog.specialties.map((specialty, index) => (
+                  <Badge key={index} variant="outline" className="text-sm">
+                    {specialty}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Blog Content */}
+          <div className="prose prose-gray max-w-none">
+            <div className="whitespace-pre-wrap text-sm leading-relaxed">
+              {blog.content}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center mt-8 pt-6 border-t">
+            <Button variant="outline" onClick={handleBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Blogs
+            </Button>
+            <Button onClick={handleEdit}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Blog
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+} 
