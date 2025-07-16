@@ -278,7 +278,7 @@ export function AutoBreadcrumb() {
     };
 
     resolveDynamicPaths();
-  }, [params, pathname]);
+  }, [params, pathname, entityResolvers]);
 
   // Render nothing while resolving dynamic paths for the first time
   if (loading && Object.keys(dynamicNames).length === 0) {

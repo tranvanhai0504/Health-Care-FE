@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Image from "next/image";
 import { BlogService } from "@/services/blogs.service";
 import { Blog } from "@/types";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -103,7 +103,7 @@ export default function ViewBlogPage() {
         <div className="text-center py-16">
           <h3 className="text-lg font-medium mb-2">Blog not found</h3>
           <p className="text-muted-foreground mb-6">
-            The blog you're looking for doesn't exist.
+            The blog you&apos;re looking for doesn&apos;t exist.
           </p>
           <Button onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -158,13 +158,15 @@ export default function ViewBlogPage() {
         <CardContent className="p-6">
           {/* Cover Image */}
           {blog.coverImage && (
-            <div className="mb-6">
-              <img
+            <div className="mb-6 relative h-64 w-full">
+              <Image
                 src={blog.coverImage}
                 alt={blog.title}
-                className="w-full h-64 object-cover rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                fill
+                className="object-cover rounded-lg"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                onError={() => {
+                  // Handle error if needed
                 }}
               />
             </div>

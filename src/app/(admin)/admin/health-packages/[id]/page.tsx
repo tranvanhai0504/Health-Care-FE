@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ConsultationPackage } from "@/types";
 import { consultationPackageService } from "@/services/consultationPackage.service";
@@ -63,13 +63,9 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchPackageData();
-    }
-  }, [id]);
-
-  const fetchPackageData = async () => {
+  const fetchPackageData = useCallback(async () => {
+    if (!id) return;
+    
     try {
       setLoading(true);
       const data = await consultationPackageService.getDetailById(id);
@@ -84,7 +80,13 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, toast]);
+
+  useEffect(() => {
+    if (id) {
+      fetchPackageData();
+    }
+  }, [id, fetchPackageData]);
 
   const handleEditPackage = () => {
     router.push(`/admin/health-packages/edit/${id}`);

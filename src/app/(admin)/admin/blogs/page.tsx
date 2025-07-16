@@ -172,7 +172,7 @@ export default function AdminBlogsPage() {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchQuery, statusFilter, sortBy, itemsPerPage]);
+  }, [searchQuery, statusFilter, sortBy, itemsPerPage, currentPage]);
 
   const handleCreateBlog = () => {
     router.push("/admin/blogs/create");

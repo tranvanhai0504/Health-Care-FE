@@ -176,7 +176,7 @@ export default function EditBlogPage() {
         <div className="text-center py-16">
           <h3 className="text-lg font-medium mb-2">Blog not found</h3>
           <p className="text-muted-foreground mb-6">
-            The blog you're looking for doesn't exist.
+            The blog you&apos;re looking for doesn&apos;t exist.
           </p>
           <Button onClick={handleCancel}>
             <ArrowLeft className="mr-2 h-4 w-4" />
