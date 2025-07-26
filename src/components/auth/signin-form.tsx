@@ -32,7 +32,7 @@ export default function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/";
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginCredentials>({
     defaultValues: {
@@ -42,10 +42,30 @@ export default function SignInForm() {
   });
 
   const onSubmit = async (data: LoginCredentials) => {
-    const success = await login(data);
+    const result = await login(data);
 
-    if (success) {
-      router.push(redirectUrl);
+    if (result.success) {
+      // If there's a specific redirect URL (not just "/"), use it
+      if (redirectUrl && redirectUrl !== "/") {
+        router.push(redirectUrl);
+      } else {
+        // Auto-redirect based on user role from login response
+        const userRole = result.user?.role;
+        
+        switch (userRole) {
+          case "doctor":
+            router.push("/doctor/dashboard");
+            break;
+          case "receptionist":
+            router.push("/receptionist/dashboard");
+            break;
+          case "admin":
+            router.push("/admin/dashboard");
+            break;
+          default:
+            router.push("/dashboard"); // Default user dashboard
+        }
+      }
     } else {
       toast.error("Sign in failed. Please check your credentials.");
     }

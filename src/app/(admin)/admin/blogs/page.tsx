@@ -30,21 +30,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Eye, 
-  MoreVertical, 
-  Pencil, 
-  Plus, 
-  Search, 
-  Trash2, 
-  FileText, 
+import {
+  Eye,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  FileText,
   ListFilter,
   CalendarDays,
   RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -80,99 +80,97 @@ export default function AdminBlogsPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Fetch blogs with client-side pagination
-  const fetchBlogs = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // Get all blog previews
-      const response = await blogService.getAllBlogs();
-      const blogPreviews = response.data;
-
-      // Get full blog details for each blog
-      const allBlogsPromises = blogPreviews.map(async (preview) => {
-        try {
-          const fullBlogResponse = await blogService.getBlogById(preview._id);
-          return fullBlogResponse.data;
-        } catch (err) {
-          console.error(`Error fetching details for blog ${preview._id}:`, err);
-          return null;
-        }
-      });
-
-      const allBlogsResults = await Promise.all(allBlogsPromises);
-      let allBlogs = allBlogsResults.filter((blog): blog is Blog => blog !== null);
-
-      // Apply filters
-      if (searchQuery.trim()) {
-        const query = searchQuery.trim().toLowerCase();
-        allBlogs = allBlogs.filter(blog => 
-          blog.title.toLowerCase().includes(query) ||
-          blog.content.toLowerCase().includes(query) ||
-          (blog.author && blog.author.toLowerCase().includes(query))
-        );
-      }
-
-      if (statusFilter !== "all") {
-        allBlogs = allBlogs.filter(blog => 
-          statusFilter === "active" ? blog.active : !blog.active
-        );
-      }
-
-      // Apply sorting
-      allBlogs.sort((a, b) => {
-        switch (sortBy) {
-          case "title":
-            return a.title.localeCompare(b.title);
-          case "author":
-            return (a.author || "").localeCompare(b.author || "");
-          case "updatedAt":
-            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-          case "createdAt":
-          default:
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-      });
-
-      // Apply pagination
-      const total = allBlogs.length;
-      const totalPages = Math.ceil(total / itemsPerPage);
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedBlogs = allBlogs.slice(startIndex, endIndex);
-
-      setBlogs(paginatedBlogs);
-      setPaginationInfo({
-        total,
-        page: currentPage,
-        limit: itemsPerPage,
-        totalPages
-      });
-    } catch (error) {
-      console.error("Error fetching blogs:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch blogs",
-        type: "error",
-      });
-      setBlogs([]);
-      setPaginationInfo(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, itemsPerPage, searchQuery, statusFilter, sortBy, toast]);
-
-  // Fetch blogs when dependencies change
   useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+
+        // Get all blog previews
+        const response = await blogService.getAllBlogs();
+        const blogPreviews = response.data;
+
+        // Get full blog details for each blog
+        const allBlogsPromises = blogPreviews.map(async (preview) => {
+          try {
+            const fullBlogResponse = await blogService.getBlogById(preview._id);
+            return fullBlogResponse.data;
+          } catch (err) {
+            console.error(`Error fetching details for blog ${preview._id}:`, err);
+            return null;
+          }
+        });
+
+        const allBlogsResults = await Promise.all(allBlogsPromises);
+        let allBlogs = allBlogsResults.filter((blog): blog is Blog => blog !== null);
+
+        // Apply filters
+        if (searchQuery.trim()) {
+          const query = searchQuery.trim().toLowerCase();
+          allBlogs = allBlogs.filter(blog =>
+            blog.title.toLowerCase().includes(query) ||
+            blog.content.toLowerCase().includes(query) ||
+            (blog.author && blog.author.toLowerCase().includes(query))
+          );
+        }
+
+        if (statusFilter !== "all") {
+          allBlogs = allBlogs.filter(blog =>
+            statusFilter === "active" ? blog.active : !blog.active
+          );
+        }
+
+        // Apply sorting
+        allBlogs.sort((a, b) => {
+          switch (sortBy) {
+            case "title":
+              return a.title.localeCompare(b.title);
+            case "author":
+              return (a.author || "").localeCompare(b.author || "");
+            case "updatedAt":
+              return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+            case "createdAt":
+            default:
+              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          }
+        });
+
+        // Apply pagination
+        const total = allBlogs.length;
+        const totalPages = Math.ceil(total / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedBlogs = allBlogs.slice(startIndex, endIndex);
+
+        setBlogs(paginatedBlogs);
+        setPaginationInfo({
+          total,
+          page: currentPage,
+          limit: itemsPerPage,
+          totalPages
+        });
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch blogs",
+          type: "error",
+        });
+        setBlogs([]);
+        setPaginationInfo(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchBlogs();
-  }, [fetchBlogs]);
+  }, [currentPage, itemsPerPage, searchQuery, statusFilter, sortBy]);
 
   // Reset to first page when filters change
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchQuery, statusFilter, sortBy, itemsPerPage, currentPage]);
+  }, [searchQuery, statusFilter, sortBy, itemsPerPage]);
 
   const handleCreateBlog = () => {
     router.push("/admin/blogs/create");
@@ -191,50 +189,50 @@ export default function AdminBlogsPage() {
     setIsDeleteAlertOpen(true);
   };
 
-  const handleDeleteBlog = async () => {
-    if (!blogToDelete) return;
+  // const handleDeleteBlog = async () => {
+  //   if (!blogToDelete) return;
 
-    try {
-      await blogService.delete(blogToDelete);
-      await fetchBlogs(); // Refresh using the unified fetch function
+  //   try {
+  //     await blogService.delete(blogToDelete);
+  //     await fetchBlogs(); // Refresh using the unified fetch function
 
-      toast({
-        title: "Success",
-        description: "Blog deleted successfully",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error deleting blog:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete blog",
-        type: "error",
-      });
-    } finally {
-      setBlogToDelete(null);
-      setIsDeleteAlertOpen(false);
-    }
-  };
+  //     toast({
+  //       title: "Success",
+  //       description: "Blog deleted successfully",
+  //       type: "success",
+  //     });
+  //   } catch (error) {
+  //     console.error("Error deleting blog:", error);
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to delete blog",
+  //       type: "error",
+  //     });
+  //   } finally {
+  //     setBlogToDelete(null);
+  //     setIsDeleteAlertOpen(false);
+  //   }
+  // };
 
-  const handleToggleStatus = async (id: string) => {
-    try {
-      await blogService.toggleStatus(id);
-      await fetchBlogs(); // Refresh using the unified fetch function
+  // const handleToggleStatus = async (id: string) => {
+  //   try {
+  //     await blogService.toggleStatus(id);
+  //     await fetchBlogs(); // Refresh using the unified fetch function
 
-      toast({
-        title: "Success",
-        description: "Blog status updated successfully",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error toggling blog status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update blog status",
-        type: "error",
-      });
-    }
-  };
+  //     toast({
+  //       title: "Success",
+  //       description: "Blog status updated successfully",
+  //       type: "success",
+  //     });
+  //   } catch (error) {
+  //     console.error("Error toggling blog status:", error);
+  //     toast({
+  //       title: "Error",
+  //       description: "Failed to update blog status",
+  //       type: "error",
+  //     });
+  //   }
+  // };
 
   // Format date helper
   const formatDate = (dateString: string) => {
@@ -285,7 +283,7 @@ export default function AdminBlogsPage() {
                 className="pl-10 w-full"
               />
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-40">
@@ -345,7 +343,7 @@ export default function AdminBlogsPage() {
               </div>
               <h3 className="text-lg font-medium mb-2">No blogs found</h3>
               <p className="text-muted-foreground mb-6">
-                {searchQuery || statusFilter !== "all" 
+                {searchQuery || statusFilter !== "all"
                   ? "No blogs match your current filters."
                   : "No blogs have been created yet."
                 }
@@ -403,10 +401,10 @@ export default function AdminBlogsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge 
+                          <Badge
                             variant={blog.active ? "default" : "secondary"}
                             className="cursor-pointer"
-                            onClick={() => handleToggleStatus(blog._id)}
+                          // onClick={() => handleToggleStatus(blog._id)}
                           >
                             {blog.active ? "Active" : "Inactive"}
                           </Badge>
@@ -436,15 +434,15 @@ export default function AdminBlogsPage() {
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => handleToggleStatus(blog._id)}
+                              <DropdownMenuItem
+                                // onClick={() => handleToggleStatus(blog._id)}
                                 className="text-blue-600"
                               >
                                 <ListFilter className="mr-2 h-4 w-4" />
                                 Toggle Status
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => confirmDelete(blog._id)}
                                 className="text-red-600"
                               >
@@ -491,7 +489,7 @@ export default function AdminBlogsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteBlog}
+              // onClick={handleDeleteBlog}
               className="bg-red-600 text-white hover:bg-red-700"
             >
               Delete

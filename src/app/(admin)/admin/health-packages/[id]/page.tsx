@@ -55,6 +55,28 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
   const router = useRouter();
   const { toast } = useToast();
 
+  // Helper function to safely render feature text
+  const renderFeatureText = (feature: any): string => {
+    if (typeof feature === 'string') {
+      return feature;
+    }
+    if (typeof feature === 'object' && feature !== null) {
+      return feature.name || feature.description || feature.title || JSON.stringify(feature);
+    }
+    return String(feature);
+  };
+
+  // Helper function to safely render test text
+  const renderTestText = (test: any): string => {
+    if (typeof test === 'string') {
+      return test;
+    }
+    if (typeof test === 'object' && test !== null) {
+      return test.name || test.description || test.title || JSON.stringify(test);
+    }
+    return String(test);
+  };
+
   useEffect(() => {
     const getParams = async () => {
       const resolvedParams = await params;
@@ -80,7 +102,7 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  }, [id, toast]);
+  }, [id]);
 
   useEffect(() => {
     if (id) {
@@ -192,22 +214,61 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                   <p className="text-base">{packageData.description}</p>
                 </div>
 
-                <Separator />
+                {packageData.titleImage && (
+                  <>
+                    <Separator />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Title Image</h3>
+                        <div className="relative w-full">
+                          <img
+                            src={packageData.titleImage}
+                            alt={packageData.title}
+                            className="w-full h-70 aspect-video object-cover rounded-lg border shadow-sm"
+                            onError={(e) => {
+                              e.currentTarget.src = '/images/package-placeholder.jpg';
+                              e.currentTarget.alt = 'Image not available';
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <DollarSign className="h-4 w-4 text-primary" />
+                          <h3 className="text-lg font-medium">Price</h3>
+                        </div>
+                        <div className="bg-primary/5 rounded-lg p-6 border border-primary/20 h-fit">
+                          <p className="text-2xl font-bold text-primary mb-2">
+                            {formatCurrency(packageData.price || 0)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Package price includes all listed tests
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
 
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Tag className="h-4 w-4 text-primary" />
-                    <h3 className="text-lg font-medium">Features</h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {packageData.features?.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {!packageData.titleImage && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                        <h3 className="text-lg font-medium">Price</h3>
+                      </div>
+                      <div className="bg-primary/5 rounded-lg p-6 border border-primary/20">
+                        <p className="text-2xl font-bold text-primary mb-2">
+                          {formatCurrency(packageData.price || 0)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Package price includes all listed tests
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <Separator />
 
@@ -242,44 +303,62 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                     <h3 className="text-lg font-medium">Tests Included</h3>
                   </div>
                   {packageData.tests && packageData.tests.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {packageData.tests.map((test, i) => (
-                        <Badge key={i} variant="secondary">
-                          {test}
-                        </Badge>
-                      ))}
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {packageData.tests.map((test, i) => (
+                          <Card key={i} className="bg-muted/30 border-border">
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-medium text-primary">{i + 1}</span>
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-sm mb-1">
+                                    {renderTestText(test)}
+                                  </h4>
+                                  {typeof test === 'object' && test !== null && (
+                                    <div className="text-xs text-muted-foreground space-y-1">
+                                      {(test as any).description && (
+                                        <p><span className="font-medium">Description:</span> {(test as any).description}</p>
+                                      )}
+                                      {(test as any).duration && (
+                                        <p><span className="font-medium">Duration:</span> {(test as any).duration}</p>
+                                      )}
+                                      {(test as any).price && (
+                                        <p><span className="font-medium">Price:</span> {formatCurrency((test as any).price)}</p>
+                                      )}
+                                      {(test as any).specialization && (
+                                        <p><span className="font-medium">Specialization:</span> {(test as any).specialization}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Tag className="h-4 w-4 text-blue-600" />
+                          <h4 className="font-medium text-blue-900">Package Summary</h4>
+                        </div>
+                        <div className="text-sm text-blue-800 space-y-1">
+                          <p><span className="font-medium">Total Tests:</span> {packageData.tests.length}</p>
+                          <p><span className="font-medium">Package Price:</span> {formatCurrency(packageData.price || 0)}</p>
+                          <p className="text-xs text-blue-600 mt-2">
+                            All tests listed above are included in this health package at the package price.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">No tests specified for this package</p>
+                    <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                      <Tag className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">No tests specified for this package</p>
+                    </div>
                   )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm">
-            <CardHeader className="bg-muted/50 rounded-t-lg border-b">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-primary" /> Pricing Options
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {packageData.priceOptions?.map((option, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <CardHeader className="bg-primary/5 py-3">
-                      <CardTitle className="text-lg">{option.tier}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <p className="text-2xl font-bold text-primary mb-2">
-                        {formatCurrency(option.price)}
-                      </p>
-                      <div className="text-sm text-muted-foreground">
-                        <p>Tests included: {option.testsIncluded}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
               </div>
             </CardContent>
           </Card>
@@ -295,20 +374,16 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Package Category</h4>
+                  <p className="font-medium">{packageData.category || 'Not specified'}</p>
+                </div>
+                <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Created At</h4>
                   <p className="font-medium">{packageData.createdAt ? new Date(packageData.createdAt).toLocaleString() : 'N/A'}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Updated At</h4>
                   <p className="font-medium">{packageData.updatedAt ? new Date(packageData.updatedAt).toLocaleString() : 'N/A'}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Icon</h4>
-                  <p className="font-medium">{packageData.icon || 'None'}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Max Slots Per Period</h4>
-                  <p className="font-medium">{packageData.maxSlotPerPeriod || 'Unlimited'}</p>
                 </div>
               </div>
             </CardContent>

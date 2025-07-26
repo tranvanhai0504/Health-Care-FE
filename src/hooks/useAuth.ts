@@ -39,14 +39,16 @@ export function useAuth() {
           description: "Welcome back!",
           type: "success",
         });
-        return true;
+        
+        // Return success and user data for immediate use
+        return { success: true, user: useAuthStore.getState().user };
       } catch (error) {
         toast({
           title: "Login failed",
           description: error instanceof Error ? error.message : "Please check your credentials",
           type: "error",
         });
-        return false;
+        return { success: false, user: null };
       }
     },
     [signin, toast]
