@@ -13,8 +13,8 @@ export class BlogService extends BaseService<Blog> {
     super("/api/v1/blog");
   }
 
-  async getAllBlogs(): Promise<ApiResponse<BlogGetAllResponse[]>> {
-    return this.getFullResponse<BlogGetAllResponse[]>(this.basePath);
+  async getAllBlogs(): Promise<PaginatedApiResponse<BlogGetAllResponse>> {
+    return (await this.getFullResponse<PaginatedApiResponse<BlogGetAllResponse>>(this.basePath)).data;
   }
 
   async getAllBlogsActive(): Promise<PaginatedApiResponse<BlogGetAllResponse>> {

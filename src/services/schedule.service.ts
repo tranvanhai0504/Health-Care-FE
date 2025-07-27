@@ -26,10 +26,10 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns Promise with paginated response containing schedules and pagination info
    */
   async getManyWithPagination(params?: PaginationParams): Promise<PaginatedApiResponse<ScheduleResponse>> {
-    const response = await api.get<PaginatedApiResponse<ScheduleResponse>>(`${this.basePath}/many`, {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<ScheduleResponse>>>(`${this.basePath}/many`, {
       params
     });
-    return response.data;
+    return response.data.data;
   }
 
   /**

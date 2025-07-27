@@ -49,7 +49,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function LoginModal() {
   const { isOpen, closeModal, executeAfterLogin } = useLoginModal();
-  const { login, signup } = useAuth();
+  const { login, signup, user } = useAuth();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,10 +75,31 @@ export function LoginModal() {
   const onSubmitLogin = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      const success = await login(values);
-      if (success) {
+      const result = await login(values);
+      if (result.success) {
         closeModal();
-        executeAfterLogin();
+        
+        // Check if there's a specific after-login callback
+        if (executeAfterLogin) {
+          executeAfterLogin();
+        } else {
+          // Auto-redirect based on user role from login response
+          const userRole = result.user?.role;
+          
+          switch (userRole) {
+            case "doctor":
+              window.location.href = "/doctor/dashboard";
+              break;
+            case "receptionist":
+              window.location.href = "/receptionist/dashboard";
+              break;
+            case "admin":
+              window.location.href = "/admin/dashboard";
+              break;
+            default:
+              window.location.href = "/dashboard"; // Default user dashboard
+          }
+        }
       }
     } finally {
       setIsSubmitting(false);
