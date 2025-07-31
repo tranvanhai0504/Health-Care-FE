@@ -125,6 +125,13 @@ function NavigationMenuLink({
   className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Link>) {
+  // Scroll to top on click
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    if (props.onClick) props.onClick(e);
+  };
   return (
     <NavigationMenuPrimitive.Link
       data-slot="navigation-menu-link"
@@ -133,8 +140,9 @@ function NavigationMenuLink({
         className
       )}
       {...props}
+      onClick={handleClick}
     />
-  )
+  );
 }
 
 function NavigationMenuIndicator({

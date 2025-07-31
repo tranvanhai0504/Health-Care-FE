@@ -35,7 +35,6 @@ export interface ConsultationPackage {
   title: string;
   icon?: string;
   description: string;
-  features?: string[];
   priceOptions?: PriceOption[];
   tests?: string[];
   faq?: FAQ[];
@@ -61,7 +60,6 @@ export interface CreateConsultationPackageData {
   title: string;
   icon?: string;
   description: string;
-  features?: string[];
   priceOptions?: Omit<PriceOption, '_id'>[];
   tests?: string[];
   faq?: Omit<FAQ, '_id'>[];

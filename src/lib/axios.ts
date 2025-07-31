@@ -41,12 +41,120 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling common errors
+// Helper to get refresh token from storage
+function getRefreshToken() {
+  const authStorage = localStorage.getItem('auth-storage');
+  if (authStorage) {
+    try {
+      const { state } = JSON.parse(authStorage);
+      return state?.refreshToken;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Helper to set new access and refresh tokens in storage
+function setTokens(authenToken: string, refreshToken: string) {
+  const authStorage = localStorage.getItem('auth-storage');
+  if (authStorage) {
+    try {
+      const parsed = JSON.parse(authStorage);
+      parsed.state = parsed.state || {};
+      parsed.state.token = authenToken;
+      parsed.state.refreshToken = refreshToken;
+      localStorage.setItem('auth-storage', JSON.stringify(parsed));
+      localStorage.setItem('jwt_token', authenToken);
+    } catch {}
+  } else {
+    localStorage.setItem('jwt_token', authenToken);
+  }
+}
+
+// Prevent multiple refreshes
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes('/auth/refresh-token')
+    ) {
+      // Try to refresh token
+      if (isRefreshing) {
+        // Wait for the refresh to finish
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token) => {
+            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+      originalRequest._retry = true;
+      isRefreshing = true;
+      try {
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) throw new Error('No refresh token');
+        const res = await axios.post(
+          `${host}/auth/refresh-token`,
+          { refreshToken },
+          { withCredentials: true }
+        );
+        // Expect { status: 'success', data: { authenToken, refreshToken } }
+        if (res.data?.status === 'success' && res.data.data?.authenToken) {
+          const newToken = res.data.data.authenToken;
+          const newRefreshToken = res.data.data.refreshToken;
+          setTokens(newToken, newRefreshToken);
+          api.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+          onRefreshed(newToken);
+          isRefreshing = false;
+          originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
+          return api(originalRequest);
+        } else {
+          throw new Error(res.data?.error?.message || 'Failed to refresh token');
+        }
+      } catch (refreshError) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+        // Clear auth data from localStorage
+        localStorage.removeItem('auth-storage');
+        localStorage.removeItem('jwt_token');
+        let errorMsg = 'Session expired. Please sign in again.';
+        if (
+          refreshError &&
+          typeof refreshError === 'object' &&
+          'response' in refreshError &&
+          refreshError.response &&
+          typeof refreshError.response === 'object' &&
+          'data' in refreshError.response &&
+          refreshError.response.data &&
+          typeof refreshError.response.data === 'object' &&
+          'error' in refreshError.response.data &&
+          refreshError.response.data.error &&
+          typeof refreshError.response.data.error === 'object' &&
+          'message' in refreshError.response.data.error
+        ) {
+          errorMsg = String(refreshError.response.data.error.message);
+        }
+        toast.error(errorMsg);
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
     // Handle common errors (401, 403, 500, etc.)
     if (error.response) {
       const { status, data } = error.response;

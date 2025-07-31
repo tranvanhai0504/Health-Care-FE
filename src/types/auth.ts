@@ -1,4 +1,3 @@
-import { SignUpFormType } from "@/schemas/sign-up";
 import { ApiResponse } from "./api";
 
 /**
@@ -55,7 +54,6 @@ export type OTPVerificationResponse = ApiResponse<{
 export interface CreateUserData {
   phoneNumber: string;
   password: string;
-  // Add other required fields based on your API
 }
 
 /**
@@ -90,11 +88,11 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   token: string | null;
-  
+
   // Actions
   initializeFromStorage: () => void;
   fetchProfile: () => Promise<void>;
-  signup: (data: SignUpFormType) => Promise<void>;
+  createUser: (data: CreateUserData) => Promise<void>;
   signin: (credentials: LoginCredentials) => Promise<void>;
   signout: () => Promise<void>;
-} 
+}

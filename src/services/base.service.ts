@@ -1,5 +1,10 @@
-import api from '@/lib/axios';
-import { ApiResponse, GetManyParams, PaginatedApiResponse, PaginationParams } from '@/types/api';
+import api from "@/lib/axios";
+import {
+  ApiResponse,
+  GetManyParams,
+  PaginatedApiResponse,
+  PaginationParams,
+} from "@/types/api";
 
 // Re-export for compatibility
 export type { ApiResponse };
@@ -26,8 +31,13 @@ export default class BaseService<T> {
    * @param params - Optional query parameters
    * @returns Promise with array of items
    */
-  async getAll(params?: Record<string, unknown>): Promise<T[]> {
-    const response = await api.get<ApiResponse<T[]>>(this.basePath, { params });
+  async getAll(
+    params?: Record<string, unknown>
+  ): Promise<PaginatedApiResponse<T>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<T>>>(
+      this.basePath,
+      { params }
+    );
     return response.data.data;
   }
 
@@ -36,10 +46,15 @@ export default class BaseService<T> {
    * @param params - Pagination parameters and optional query parameters
    * @returns Promise with paginated response containing items and pagination info
    */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<T>> {
-    const response = await api.get<PaginatedApiResponse<T>>(`${this.basePath}/many`, {
-      params
-    });
+  async getPaginated(
+    params?: PaginationParams & Record<string, unknown>
+  ): Promise<PaginatedApiResponse<T>> {
+    const response = await api.get<PaginatedApiResponse<T>>(
+      `${this.basePath}/many`,
+      {
+        params,
+      }
+    );
     return response.data;
   }
 
@@ -48,13 +63,19 @@ export default class BaseService<T> {
    * @param params - Pagination parameters and optional query parameters
    * @returns Promise with array of items
    */
-  async getMany(params?: GetManyParams): Promise<T[]> {
-    const response = await api.get<ApiResponse<T[]> | PaginatedApiResponse<T>>(`${this.basePath}/many`, {
-      params
-    });
-    
+  async getMany(params?: GetManyParams): Promise<PaginatedApiResponse<T>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<T>>>(
+      `${this.basePath}/many`,
+      {
+        params: {
+          ...params,
+          options: JSON.stringify(params?.options),
+        },
+      }
+    );
+
     // Handle both response formats
-    if ('pagination' in response.data) {
+    if ("pagination" in response.data) {
       return response.data.data;
     } else {
       return response.data.data || response.data;
@@ -87,7 +108,10 @@ export default class BaseService<T> {
    * @returns Promise with the created items
    */
   async createMany(data: Partial<T>[]): Promise<T[]> {
-    const response = await api.post<ApiResponse<T[]>>(`${this.basePath}/createMany`, data);
+    const response = await api.post<ApiResponse<T[]>>(
+      `${this.basePath}/createMany`,
+      data
+    );
     return response.data.data || response.data;
   }
 
@@ -98,7 +122,10 @@ export default class BaseService<T> {
    * @returns Promise with the updated item
    */
   async update(id: string, data: Partial<T>): Promise<T> {
-    const response = await api.put<ApiResponse<T>>(`${this.basePath}/${id}`, data);
+    const response = await api.put<ApiResponse<T>>(
+      `${this.basePath}/${id}`,
+      data
+    );
     return response.data.data;
   }
 
@@ -108,7 +135,10 @@ export default class BaseService<T> {
    * @returns Promise with the updated items
    */
   async updateMany(data: { ids: string[]; data: Partial<T> }): Promise<T[]> {
-    const response = await api.patch<ApiResponse<T[]>>(`${this.basePath}/many`, data);
+    const response = await api.patch<ApiResponse<T[]>>(
+      `${this.basePath}/many`,
+      data
+    );
     return response.data.data || response.data;
   }
 
@@ -118,7 +148,9 @@ export default class BaseService<T> {
    * @returns Promise with the deleted item or success response
    */
   async delete(id: string): Promise<unknown> {
-    const response = await api.delete<ApiResponse<unknown>>(`${this.basePath}/${id}`);
+    const response = await api.delete<ApiResponse<unknown>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
   }
 
@@ -130,30 +162,30 @@ export default class BaseService<T> {
    * @returns Promise with the full API response
    */
   protected async getFullResponse<R>(
-    endpoint: string, 
-    method: 'get' | 'post' | 'put' | 'delete' | 'patch' = 'get', 
+    endpoint: string,
+    method: "get" | "post" | "put" | "delete" | "patch" = "get",
     params?: Record<string, unknown>
   ): Promise<ApiResponse<R>> {
     let response;
-    
+
     switch (method) {
-      case 'get':
+      case "get":
         response = await api.get<ApiResponse<R>>(endpoint, { params });
         break;
-      case 'post':
+      case "post":
         response = await api.post<ApiResponse<R>>(endpoint, params);
         break;
-      case 'put':
+      case "put":
         response = await api.put<ApiResponse<R>>(endpoint, params);
         break;
-      case 'patch':
+      case "patch":
         response = await api.patch<ApiResponse<R>>(endpoint, params);
         break;
-      case 'delete':
+      case "delete":
         response = await api.delete<ApiResponse<R>>(endpoint, { data: params });
         break;
     }
-    
+
     return response.data;
   }
-} 
+}

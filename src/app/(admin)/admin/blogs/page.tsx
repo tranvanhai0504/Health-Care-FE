@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BlogService } from "@/services/blogs.service";
-import { Blog, PaginationInfo } from "@/types";
+import { Blog, PaginationInfo, User } from "@/types";
 import {
   Table,
   TableBody,
@@ -40,7 +40,7 @@ import {
   FileText,
   ListFilter,
   CalendarDays,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,7 +74,9 @@ export default function AdminBlogsPage() {
   const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(
+    null
+  );
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const router = useRouter();
@@ -86,35 +88,38 @@ export default function AdminBlogsPage() {
         setLoading(true);
 
         // Get all blog previews
-        const response = await blogService.getAllBlogs();
-        const blogPreviews = response.data;
-
-        // Get full blog details for each blog
-        const allBlogsPromises = blogPreviews.map(async (preview) => {
-          try {
-            const fullBlogResponse = await blogService.getBlogById(preview._id);
-            return fullBlogResponse.data;
-          } catch (err) {
-            console.error(`Error fetching details for blog ${preview._id}:`, err);
-            return null;
-          }
+        const response = await blogService.getMany({
+          options: {
+            pagination: {
+              page: currentPage,
+              limit: itemsPerPage,
+            },
+            populateOptions: {
+              path: "author",
+              select: ["name", "email"],
+            },
+          },
         });
+        const blogPreviews = response.data;
+        console.log(blogPreviews);
 
-        const allBlogsResults = await Promise.all(allBlogsPromises);
-        let allBlogs = allBlogsResults.filter((blog): blog is Blog => blog !== null);
+        // Use blogPreviews directly
+        let allBlogs = blogPreviews;
 
         // Apply filters
         if (searchQuery.trim()) {
           const query = searchQuery.trim().toLowerCase();
-          allBlogs = allBlogs.filter(blog =>
-            blog.title.toLowerCase().includes(query) ||
-            blog.content.toLowerCase().includes(query) ||
-            (blog.author && blog.author.toLowerCase().includes(query))
+          allBlogs = allBlogs.filter(
+            (blog) =>
+              blog.title.toLowerCase().includes(query) ||
+              blog.content.toLowerCase().includes(query) ||
+              (blog.author &&
+                (blog.author as User).name.toLowerCase().includes(query))
           );
         }
 
         if (statusFilter !== "all") {
-          allBlogs = allBlogs.filter(blog =>
+          allBlogs = allBlogs.filter((blog) =>
             statusFilter === "active" ? blog.active : !blog.active
           );
         }
@@ -125,29 +130,25 @@ export default function AdminBlogsPage() {
             case "title":
               return a.title.localeCompare(b.title);
             case "author":
-              return (a.author || "").localeCompare(b.author || "");
+              return (a.author as User).name.localeCompare(
+                (b.author as User).name
+              );
             case "updatedAt":
-              return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+              return (
+                new Date(b.updatedAt).getTime() -
+                new Date(a.updatedAt).getTime()
+              );
             case "createdAt":
             default:
-              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+              return (
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+              );
           }
         });
 
-        // Apply pagination
-        const total = allBlogs.length;
-        const totalPages = Math.ceil(total / itemsPerPage);
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const paginatedBlogs = allBlogs.slice(startIndex, endIndex);
-
-        setBlogs(paginatedBlogs);
-        setPaginationInfo({
-          total,
-          page: currentPage,
-          limit: itemsPerPage,
-          totalPages
-        });
+        setBlogs(allBlogs);
+        setPaginationInfo(response.pagination);
       } catch (error) {
         console.error("Error fetching blogs:", error);
         toast({
@@ -189,57 +190,39 @@ export default function AdminBlogsPage() {
     setIsDeleteAlertOpen(true);
   };
 
-  // const handleDeleteBlog = async () => {
-  //   if (!blogToDelete) return;
+  const handleDeleteBlog = async () => {
+    if (!blogToDelete) return;
+    try {
+      await blogService.delete(blogToDelete);
+      // Refresh blogs after deletion
+      setBlogToDelete(null);
+      setIsDeleteAlertOpen(false);
+      // Optionally, you can refetch blogs here or trigger a reload
+      // For now, just reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting blog:", error);
+      setBlogToDelete(null);
+      setIsDeleteAlertOpen(false);
+    }
+  };
 
-  //   try {
-  //     await blogService.delete(blogToDelete);
-  //     await fetchBlogs(); // Refresh using the unified fetch function
-
-  //     toast({
-  //       title: "Success",
-  //       description: "Blog deleted successfully",
-  //       type: "success",
-  //     });
-  //   } catch (error) {
-  //     console.error("Error deleting blog:", error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to delete blog",
-  //       type: "error",
-  //     });
-  //   } finally {
-  //     setBlogToDelete(null);
-  //     setIsDeleteAlertOpen(false);
-  //   }
-  // };
-
-  // const handleToggleStatus = async (id: string) => {
-  //   try {
-  //     await blogService.toggleStatus(id);
-  //     await fetchBlogs(); // Refresh using the unified fetch function
-
-  //     toast({
-  //       title: "Success",
-  //       description: "Blog status updated successfully",
-  //       type: "success",
-  //     });
-  //   } catch (error) {
-  //     console.error("Error toggling blog status:", error);
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to update blog status",
-  //       type: "error",
-  //     });
-  //   }
-  // };
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await blogService.toggleStatus(id);
+      // Optionally, you can refetch blogs here or trigger a reload
+      window.location.reload();
+    } catch (error) {
+      console.error("Error toggling blog status:", error);
+    }
+  };
 
   // Format date helper
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -327,7 +310,10 @@ export default function AdminBlogsPage() {
           {loading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, index) => (
-                <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center space-x-4 p-4 border rounded-lg"
+                >
                   <Skeleton className="h-4 w-1/4" />
                   <Skeleton className="h-4 w-1/3" />
                   <Skeleton className="h-4 w-1/4" />
@@ -345,8 +331,7 @@ export default function AdminBlogsPage() {
               <p className="text-muted-foreground mb-6">
                 {searchQuery || statusFilter !== "all"
                   ? "No blogs match your current filters."
-                  : "No blogs have been created yet."
-                }
+                  : "No blogs have been created yet."}
               </p>
               {searchQuery || statusFilter !== "all" ? (
                 <Button
@@ -384,9 +369,13 @@ export default function AdminBlogsPage() {
                       <TableRow key={blog._id}>
                         <TableCell className="font-medium">
                           <div className="max-w-[350px]">
-                            <p className="truncate text-sm font-medium">{blog.title}</p>
+                            <p className="truncate text-sm font-medium">
+                              {blog.title}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                              {blog.content ? blog.content.substring(0, 100) + "..." : "No content"}
+                              {blog.content
+                                ? blog.content.substring(0, 100) + "..."
+                                : "No content"}
                             </p>
                           </div>
                         </TableCell>
@@ -394,17 +383,21 @@ export default function AdminBlogsPage() {
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                               <span className="text-xs font-medium text-primary">
-                                {blog.author?.charAt(0)?.toUpperCase() || "U"}
+                                {(blog.author as User).name
+                                  ?.charAt(0)
+                                  ?.toUpperCase() || "U"}
                               </span>
                             </div>
-                            <span className="text-sm">{blog.author || "Unknown"}</span>
+                            <span className="text-sm">
+                              {(blog.author as User).name || "Unknown"}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge
                             variant={blog.active ? "default" : "secondary"}
                             className="cursor-pointer"
-                          // onClick={() => handleToggleStatus(blog._id)}
+                            onClick={() => handleToggleStatus(blog._id)}
                           >
                             {blog.active ? "Active" : "Inactive"}
                           </Badge>
@@ -425,17 +418,21 @@ export default function AdminBlogsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleViewBlog(blog._id)}>
+                              <DropdownMenuItem
+                                onClick={() => handleViewBlog(blog._id)}
+                              >
                                 <Eye className="mr-2 h-4 w-4" />
                                 View
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditBlog(blog._id)}>
+                              <DropdownMenuItem
+                                onClick={() => handleEditBlog(blog._id)}
+                              >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                // onClick={() => handleToggleStatus(blog._id)}
+                                onClick={() => handleToggleStatus(blog._id)}
                                 className="text-blue-600"
                               >
                                 <ListFilter className="mr-2 h-4 w-4" />
@@ -482,14 +479,14 @@ export default function AdminBlogsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the blog post
-              and remove all associated data.
+              This action cannot be undone. This will permanently delete the
+              blog post and remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              // onClick={handleDeleteBlog}
+              onClick={handleDeleteBlog}
               className="bg-red-600 text-white hover:bg-red-700"
             >
               Delete
@@ -499,4 +496,4 @@ export default function AdminBlogsPage() {
       </AlertDialog>
     </div>
   );
-} 
+}

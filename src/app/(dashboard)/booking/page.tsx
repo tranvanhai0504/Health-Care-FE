@@ -222,7 +222,7 @@ function BookingPageContent() {
           timeOffset: timeOffset as 0 | 1,
           status: ScheduleStatus.CONFIRMED,
           type: "package",
-          packageInfo: packageId!,
+          packageId: packageId!,
           services: [],
         };
       } else {
@@ -341,12 +341,12 @@ function BookingPageContent() {
               Try Again
             </Button>
             <Button 
-              onClick={() => router.push("/dashboard")} 
+              onClick={() => router.push("/")} 
               variant="outline"
               className="flex items-center gap-2"
             >
               <Home className="h-4 w-4" />
-              Go to Dashboard
+              Go to Home
             </Button>
             <Button 
               onClick={() => router.back()} 

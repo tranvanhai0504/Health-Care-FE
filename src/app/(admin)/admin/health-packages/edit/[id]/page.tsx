@@ -166,7 +166,6 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
         priceOptions: originalPackage.priceOptions,
         faq: originalPackage.faq,
         bookingOptions: originalPackage.bookingOptions,
-        features: originalPackage.features,
       });
       
       toast.success("Health package updated successfully");
@@ -389,7 +388,7 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
                       <div className="text-muted-foreground">
                         <Package className="h-8 w-8 mx-auto mb-2" />
                         <p>No tests added yet</p>
-                        <p className="text-sm mt-1">Click "Add Test" to include tests in this package</p>
+                        <p className="text-sm mt-1">Click &quot;Add Test&quot; to include tests in this package</p>
                       </div>
                     </div>
                   ) : (

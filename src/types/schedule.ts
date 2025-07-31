@@ -1,4 +1,5 @@
 import { ConsultationPackage } from './package';
+import { User } from './user';
 /**
  * Date range interface
  */
@@ -31,13 +32,13 @@ export enum ScheduleStatus {
  */
 export interface Schedule {
   _id?: string;
-  userId: string;
+  userId: string | User;
   weekPeriod: CDateRange;
   dayOffset: number;
   timeOffset: 0 | 1; // 0 for morning, 1 for afternoon
   status: ScheduleStatus;
   type: 'package' | 'services';
-  packageInfo?: string | ConsultationPackage;
+  packageId?: string | ConsultationPackage;
   services?: ScheduleService[] | string[];
   createdAt?: string;
   updatedAt?: string;
@@ -45,6 +46,7 @@ export interface Schedule {
 }
 
 export interface ScheduleResponse extends Schedule {
+  userId: User;
   payment: {
     totalPrice: number;
     totalPaid: number;

@@ -73,6 +73,14 @@ const UserProfile = ({ user }: UserProfileProps) => {
             </Link>
           </DropdownMenuItem>
         )}
+        {user.role === "doctor" && (
+          <DropdownMenuItem asChild>
+            <Link href="/doctor/dashboard" className="flex w-full items-center">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Doctor Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/profile" className="flex w-full items-center">
             <User className="mr-2 h-4 w-4" />

@@ -1,3 +1,5 @@
+import { PaginationParams } from "./api";
+
 /**
  * User interface
  */
@@ -28,3 +30,14 @@ export interface UpdateUserData {
   gender?: string;
   occupation?: string;
 } 
+
+export interface UserGetAllParams {
+  options?: {
+    pagination?: PaginationParams;
+    filter?: Record<string, unknown>;
+    sort?: Record<string, unknown>;
+  };
+  role?: string;
+  name?: string;
+  phoneNumber?: string;
+}

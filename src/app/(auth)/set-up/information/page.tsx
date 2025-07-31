@@ -15,33 +15,61 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { CalendarIcon, UserIcon, MapPinIcon } from "lucide-react";
 import {
-  CalendarIcon,
-  UserIcon,
-  MapPinIcon,
-} from "lucide-react";
-import { informationFormSchema, type InformationFormValues } from "@/schemas/information";
+  informationFormSchema,
+  type InformationFormValues,
+} from "@/schemas/information";
+import { useSetupStore } from "@/stores/setup";
+import { userService } from "@/services/user.service";
+import { useAuthStore } from "@/stores/auth";
 
 const InformationPage = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
+  const setUserInfo = useSetupStore((state) => state.setUserInfo);
+  const userInfo = useSetupStore((state) => state.userInfo);
+  const resetSetup = useSetupStore((state) => state.reset);
+  const { fetchProfile } = useAuthStore();
+  
   const form = useForm<InformationFormValues>({
     resolver: zodResolver(informationFormSchema),
     defaultValues: {
-      name: "",
-      address: "",
+      name: userInfo.name || "",
+      address: userInfo.address || "",
+      dateOfBirth: userInfo.dateOfBirth
+        ? typeof userInfo.dateOfBirth === "string"
+          ? new Date(userInfo.dateOfBirth)
+          : userInfo.dateOfBirth
+        : new Date(),
+      gender: userInfo.gender || "",
     },
   });
 
   function onSubmit(data: InformationFormValues) {
     startTransition(async () => {
       try {
-        // Here you would normally call your API service to save the data
-        console.log(data);
+        // Save info to Zustand store
+        setUserInfo({
+          ...data,
+          dateOfBirth: data.dateOfBirth.toISOString(),
+        });
+
+        // Update user profile (except password)
+        await userService.updateProfile({
+          name: data.name,
+          address: data.address,
+          dateOfBirth: data.dateOfBirth.toISOString(),
+          gender: data.gender,
+        });
+
+        await fetchProfile();
+
         toast.success("Information saved successfully!");
-        // Redirect to dashboard or next step
-        router.push("/dashboard");
+        // Clear the setup store
+        resetSetup();
+        // Redirect to login or dashboard
+        router.push("/");
       } catch (error) {
         console.error(error);
         toast.error("Failed to save information. Please try again.");

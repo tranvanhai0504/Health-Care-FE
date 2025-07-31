@@ -26,13 +26,16 @@ import {
   passwordFormSchema,
   type PasswordFormValues,
 } from "@/schemas/password";
-import authService from "@/services/auth.service";
+import { useSetupStore } from "@/stores/setup";
+import { useAuthStore } from "@/stores/auth";
 
 const PasswordPage = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const userInfo = useSetupStore((state) => state.userInfo);
+  const createUser = useAuthStore((state) => state.createUser);
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordFormSchema),
@@ -55,18 +58,18 @@ const PasswordPage = () => {
   function onSubmit(data: PasswordFormValues) {
     startTransition(async () => {
       try {
-        // Here you would normally call your API service to save the password
-        const phoneNumber = localStorage.getItem("phoneNumber");
+        // Use Zustand store for phoneNumber
+        const phoneNumber = userInfo.phoneNumber;
         if (!phoneNumber) {
           toast.error("Phone number not found");
           return;
         }
-
-        await authService.createUser({
-          ...data,
+        // Only save password to setup store
+        await createUser({
           phoneNumber,
+          password: data.password,
         });
-        toast.success("Password set successfully!");
+
         // Redirect to the next step
         router.push("/set-up/information");
       } catch (error) {

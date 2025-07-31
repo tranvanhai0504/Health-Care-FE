@@ -39,6 +39,13 @@ export function PaginationWrapper({
   itemsPerPageOptions = [6, 9, 12, 24, 48],
   className,
 }: PaginationWrapperProps) {
+  // Scroll to top utility
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   // Calculate visible pages (max 5 pages shown at once)
   const getVisiblePages = () => {
     const maxVisible = 5;
@@ -71,6 +78,16 @@ export function PaginationWrapper({
   const canGoPrevious = currentPage > 1;
   const canGoNext = currentPage < totalPages;
 
+  // Wrapped handlers
+  const handlePageChange = (page: number) => {
+    onPageChange(page);
+    scrollToTop();
+  };
+  const handleItemsPerPageChange = (itemsPerPage: number) => {
+    onItemsPerPageChange(itemsPerPage);
+    scrollToTop();
+  };
+
   // Temporarily show even for single pages to debug
   // if (totalPages <= 1) return null;
 
@@ -84,7 +101,7 @@ export function PaginationWrapper({
             <Select 
               value={itemsPerPage.toString()} 
               onValueChange={(value) => {
-                onItemsPerPageChange(parseInt(value));
+                handleItemsPerPageChange(parseInt(value));
               }}
             >
               <SelectTrigger className="w-20 h-8">
@@ -125,7 +142,7 @@ export function PaginationWrapper({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                if (canGoPrevious) onPageChange(currentPage - 1);
+                if (canGoPrevious) handlePageChange(currentPage - 1);
               }}
               className={!canGoPrevious ? "opacity-50 cursor-not-allowed" : ""}
             />
@@ -148,7 +165,7 @@ export function PaginationWrapper({
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          onPageChange(1);
+                          handlePageChange(1);
                         }}
                         isActive={currentPage === 1}
                       >
@@ -167,7 +184,7 @@ export function PaginationWrapper({
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      onPageChange(page);
+                      handlePageChange(page);
                     }}
                     isActive={currentPage === page}
                   >
@@ -186,7 +203,7 @@ export function PaginationWrapper({
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          onPageChange(totalPages);
+                          handlePageChange(totalPages);
                         }}
                         isActive={currentPage === totalPages}
                       >
@@ -205,7 +222,7 @@ export function PaginationWrapper({
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                if (canGoNext) onPageChange(currentPage + 1);
+                if (canGoNext) handlePageChange(currentPage + 1);
               }}
               className={!canGoNext ? "opacity-50 cursor-not-allowed" : ""}
             />
@@ -225,7 +242,7 @@ export function PaginationWrapper({
             onChange={(e) => {
               const page = parseInt(e.target.value);
               if (page >= 1 && page <= totalPages) {
-                onPageChange(page);
+                handlePageChange(page);
               }
             }}
             className="w-16 h-8 text-center"

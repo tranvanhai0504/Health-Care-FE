@@ -3,15 +3,14 @@
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { 
-  BarChart3, 
-  Users, 
-  FileText, 
-  Calendar, 
-  Package, 
-  Settings, 
+import {
+  BarChart3,
+  Users,
+  FileText,
+  Calendar,
+  Package,
+  Settings,
   LogOut,
-  User
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -29,38 +28,33 @@ const AdminSidebar = () => {
     {
       title: "Dashboard",
       href: "/admin/dashboard",
-      icon: <BarChart3 className="w-5 h-5" />
+      icon: <BarChart3 className="w-5 h-5" />,
     },
     {
       title: "Users",
       href: "/admin/users",
-      icon: <Users className="w-5 h-5" />
-    },
-    {
-      title: "Doctors",
-      href: "/admin/doctors",
-      icon: <User className="w-5 h-5" />
+      icon: <Users className="w-5 h-5" />,
     },
     {
       title: "Blogs",
       href: "/admin/blogs",
-      icon: <FileText className="w-5 h-5" />
+      icon: <FileText className="w-5 h-5" />,
     },
     {
       title: "Schedules",
       href: "/admin/schedules",
-      icon: <Calendar className="w-5 h-5" />
+      icon: <Calendar className="w-5 h-5" />,
     },
     {
       title: "Health Packages",
       href: "/admin/health-packages",
-      icon: <Package className="w-5 h-5" />
+      icon: <Package className="w-5 h-5" />,
     },
     {
       title: "Settings",
       href: "/admin/settings",
-      icon: <Settings className="w-5 h-5" />
-    }
+      icon: <Settings className="w-5 h-5" />,
+    },
   ];
 
   const handleLogout = async () => {
@@ -72,23 +66,23 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col pt-16">
       <div className="px-6 py-5 border-b">
         <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
       </div>
-      
+
       <div className="px-6 py-5 border-b">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white">
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+            {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
           </div>
           <div>
-            <p className="font-medium">{user?.name || 'Admin'}</p>
+            <p className="font-medium">{user?.name || "Admin"}</p>
             <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
         </div>
       </div>
-      
+
       <nav className="flex-1 px-6 py-4">
         <ul className="space-y-1">
           {sidebarItems.map((item) => (
@@ -97,7 +91,8 @@ const AdminSidebar = () => {
                 href={item.href}
                 className={cn(
                   "flex items-center space-x-3 px-4 py-3 rounded-md hover:bg-gray-100 transition-colors",
-                  pathname === item.href && "bg-primary/10 text-primary font-medium"
+                  pathname === item.href &&
+                    "bg-primary/10 text-primary font-medium"
                 )}
               >
                 {item.icon}
@@ -107,7 +102,7 @@ const AdminSidebar = () => {
           ))}
         </ul>
       </nav>
-      
+
       <div className="px-6 py-5 border-t mt-auto">
         <button
           onClick={handleLogout}
@@ -121,4 +116,4 @@ const AdminSidebar = () => {
   );
 };
 
-export default AdminSidebar; 
+export default AdminSidebar;

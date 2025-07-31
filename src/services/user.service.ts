@@ -1,24 +1,33 @@
-import BaseService from './base.service';
-import api from '@/lib/axios';
-import { 
+import BaseService from "./base.service";
+import api from "@/lib/axios";
+import {
   User,
   UpdateUserData,
   ApiResponse,
   PaginatedApiResponse,
-  PaginationParams
-} from '@/types';
+  PaginationParams,
+  UserGetAllParams,
+} from "@/types";
 
 class UserService extends BaseService<User> {
   constructor() {
-    super('/api/v1/user');
+    super("/api/v1/user");
   }
 
   /**
    * Get all users (Admin functionality)
    * @returns Promise with array of users
    */
-  async getAll(): Promise<User[]> {
-    const response = await api.get<ApiResponse<User[]>>(this.basePath);
+  async getAll(params?: UserGetAllParams): Promise<PaginatedApiResponse<User>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<User>>>(
+      this.basePath,
+      {
+        params: {
+          ...params,
+          options: JSON.stringify(params?.options),
+        },
+      }
+    );
     return response.data.data;
   }
 
@@ -27,10 +36,15 @@ class UserService extends BaseService<User> {
    * @param params - Pagination parameters
    * @returns Promise with paginated response containing users and pagination info
    */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<User>> {
-    const response = await api.get<PaginatedApiResponse<User>>(`${this.basePath}/many`, {
-      params
-    });
+  async getPaginated(
+    params?: PaginationParams & Record<string, unknown>
+  ): Promise<PaginatedApiResponse<User>> {
+    const response = await api.get<PaginatedApiResponse<User>>(
+      `${this.basePath}/many`,
+      {
+        params,
+      }
+    );
     return response.data;
   }
 
@@ -38,7 +52,9 @@ class UserService extends BaseService<User> {
    * Get the current user's profile
    */
   async getProfile(): Promise<User> {
-    const response = await api.get<ApiResponse<User>>(`${this.basePath}/profile`);
+    const response = await api.get<ApiResponse<User>>(
+      `${this.basePath}/profile`
+    );
     return response.data.data;
   }
 
@@ -53,7 +69,10 @@ class UserService extends BaseService<User> {
   /**
    * Create a new user (admin functionality)
    */
-  async createUser(data: { phoneNumber: string; password: string }): Promise<User> {
+  async createUser(data: {
+    phoneNumber: string;
+    password: string;
+  }): Promise<User> {
     const response = await api.post<ApiResponse<User>>(this.basePath, data);
     return response.data.data;
   }
@@ -62,7 +81,10 @@ class UserService extends BaseService<User> {
    * Update a user by ID (admin functionality)
    */
   async updateUser(id: string, data: UpdateUserData): Promise<User> {
-    const response = await api.put<ApiResponse<User>>(`${this.basePath}/${id}`, data);
+    const response = await api.put<ApiResponse<User>>(
+      `${this.basePath}/${id}`,
+      data
+    );
     return response.data.data;
   }
 
@@ -70,7 +92,9 @@ class UserService extends BaseService<User> {
    * Delete a user by ID (admin functionality)
    */
   async deleteUser(id: string): Promise<User> {
-    const response = await api.delete<ApiResponse<User>>(`${this.basePath}/${id}`);
+    const response = await api.delete<ApiResponse<User>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
   }
 
@@ -84,9 +108,15 @@ class UserService extends BaseService<User> {
   /**
    * Update the profile with full response (includes code and message)
    */
-  async updateProfileWithResponse(data: UpdateUserData): Promise<ApiResponse<User>> {
-    return this.getFullResponse<User>(this.basePath, 'patch', data as Record<string, unknown>);
+  async updateProfileWithResponse(
+    data: UpdateUserData
+  ): Promise<ApiResponse<User>> {
+    return this.getFullResponse<User>(
+      this.basePath,
+      "patch",
+      data as Record<string, unknown>
+    );
   }
 }
 
-export const userService = new UserService(); 
+export const userService = new UserService();

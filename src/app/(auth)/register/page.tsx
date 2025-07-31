@@ -48,7 +48,7 @@ const SignUpPage = () => {
   }
 
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-5 h-full">
+    <div className="w-full grid grid-cols-1 lg:grid-cols-5 h-full px-2 md:px-10 py-6">
       <div className="flex flex-col justify-center col-span-3 items-center p-6 lg:p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="flex items-center justify-center lg:justify-start space-x-3">
@@ -123,28 +123,16 @@ const SignUpPage = () => {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="py-5">
-                  <Image
-                    src="/logos/google.svg"
-                    alt="Google"
-                    width={20}
-                    height={20}
-                    className="mr-2"
-                  />
-                  Google
-                </Button>
-                <Button variant="outline" className="py-5">
-                  <Image
-                    src="/logos/facebook.svg"
-                    alt="Facebook"
-                    width={20}
-                    height={20}
-                    className="mr-2"
-                  />
-                  Facebook
-                </Button>
-              </div>
+              <Button variant="outline" className="py-5 mt-4 w-full">
+                <Image
+                  src="/logos/google.svg"
+                  alt="Google"
+                  width={20}
+                  height={20}
+                  className="mr-2"
+                />
+                Google
+              </Button>
             </div>
           </div>
 
@@ -172,7 +160,7 @@ const SignUpPage = () => {
           <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
             <blockquote className="text-white font-medium text-lg mb-4">
               &ldquo;The HealthCare app has transformed how I manage my medical
-                                needs. Booking schedules is now effortless.&rdquo;
+              needs. Booking schedules is now effortless.&rdquo;
             </blockquote>
             <footer className="flex items-center space-x-4">
               <div className="rounded-full bg-primary/20 p-1">

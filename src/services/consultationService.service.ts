@@ -14,17 +14,6 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
   }
 
   /**
-   * Get all consultation services
-   * @returns Promise with array of consultation services
-   */
-  async getAll(): Promise<ConsultationService[]> {
-    const response = await api.get<ApiResponse<ConsultationService[]>>(
-      this.basePath
-    );
-    return response.data.data || response.data;
-  }
-
-  /**
    * Get consultation services with pagination info
    * @param params - Pagination parameters
    * @returns Promise with paginated response containing services and pagination info
