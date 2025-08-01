@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ConsultationPackage } from "@/types";
+import { ConsultationPackage, ConsultationService } from "@/types";
 import { consultationPackageService } from "@/services/consultationPackage.service";
+import { consultationServiceApi } from "@/services/consultationService.service";
+import SearchService from "@/components/dialogs/search-service";
 import {
   Form,
   FormControl,
@@ -33,10 +35,11 @@ import {
   Loader2,
   Save,
   Plus,
-  Trash2,
-  Edit,
+  Stethoscope,
+  X,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/utils/formatters";
 
 // Schema for form validation - updated to match ConsultationPackage interface
 const formSchema = z.object({
@@ -46,7 +49,6 @@ const formSchema = z.object({
   titleImage: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   price: z.number().min(0, "Price must be a positive number"),
   maxSlotPerPeriod: z.number().min(1, "Must be at least 1").optional(),
-  tests: z.array(z.string().min(1, "Test name cannot be empty")),
 });
 
 export default function EditHealthPackagePage({ params }: { params: Promise<{ id: string }> }) {
@@ -55,8 +57,10 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalPackage, setOriginalPackage] = useState<ConsultationPackage | null>(null);
   const [id, setId] = useState<string>("");
-  const [editingTestIndex, setEditingTestIndex] = useState<number | null>(null);
-  const [editingTestValue, setEditingTestValue] = useState("");
+  
+  // Service selection state
+  const [selectedServices, setSelectedServices] = useState<ConsultationService[]>([]);
+  const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,45 +71,19 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
       titleImage: "",
       price: 0,
       maxSlotPerPeriod: 10,
-      tests: [],
     },
   });
 
-  // Watch form values to enable dynamic updates
-  const tests = form.watch("tests");
 
-  // Add a new empty test field
-  const addTest = () => {
-    form.setValue("tests", [...tests, ""]);
+
+  // Handle service selection from dialog
+  const handleServiceSelection = (services: ConsultationService[]) => {
+    setSelectedServices(services);
   };
 
-  // Remove a test at specified index
-  const removeTest = (index: number) => {
-    const updatedTests = tests.filter((_, i) => i !== index);
-    form.setValue("tests", updatedTests);
-  };
-
-  // Start editing a test
-  const startEditingTest = (index: number) => {
-    setEditingTestIndex(index);
-    setEditingTestValue(tests[index]);
-  };
-
-  // Save edited test
-  const saveEditingTest = () => {
-    if (editingTestIndex !== null && editingTestValue.trim() !== "") {
-      const updatedTests = [...tests];
-      updatedTests[editingTestIndex] = editingTestValue.trim();
-      form.setValue("tests", updatedTests);
-      setEditingTestIndex(null);
-      setEditingTestValue("");
-    }
-  };
-
-  // Cancel editing test
-  const cancelEditingTest = () => {
-    setEditingTestIndex(null);
-    setEditingTestValue("");
+  // Remove a selected service
+  const removeSelectedService = (serviceId: string) => {
+    setSelectedServices(prev => prev.filter(service => service._id !== serviceId));
   };
 
   useEffect(() => {
@@ -133,8 +111,18 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
           titleImage: data.titleImage || "",
           price: data.price || 0,
           maxSlotPerPeriod: data.maxSlotPerPeriod || 10,
-          tests: data.tests || [],
         });
+
+        // Fetch service details if tests (service IDs) exist
+        if (data.tests && data.tests.length > 0) {
+          try {
+            const services = await consultationServiceApi.getByIds(data.tests);
+            setSelectedServices(services);
+          } catch (serviceError) {
+            console.error("Error fetching service details:", serviceError);
+            toast.error("Some services could not be loaded");
+          }
+        }
       } catch (error) {
         console.error("Error fetching package details:", error);
         toast.error("Failed to fetch package details");
@@ -153,14 +141,12 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
     try {
       setIsSubmitting(true);
       
-      // Filter out any empty tests
-      const sanitizedData = {
-        ...data,
-        tests: data.tests.filter(test => test.trim() !== ""),
-      };
+      // Convert selected services to service IDs for the tests field
+      const serviceIds = selectedServices.map(service => service._id);
       
       await consultationPackageService.update(id, {
-        ...sanitizedData,
+        ...data,
+        tests: serviceIds, // Store service IDs in the tests field
         // Preserve other fields from the original package that aren't in the form
         icon: originalPackage.icon,
         priceOptions: originalPackage.priceOptions,
@@ -369,105 +355,73 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
                   )}
                 />
                 
-                {/* Tests Management Section */}
+                {/* Services/Tests Selection Section */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Tests Included</h3>
+                    <h3 className="text-lg font-medium">Services & Tests Included</h3>
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="sm" 
-                      onClick={addTest}
+                      onClick={() => setIsServiceDialogOpen(true)}
                     >
-                      <Plus className="h-4 w-4 mr-1" /> Add Test
+                      <Plus className="h-4 w-4 mr-1" /> Select Services
                     </Button>
                   </div>
                   
-                  {tests.length === 0 ? (
+                  {selectedServices.length === 0 ? (
                     <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
                       <div className="text-muted-foreground">
-                        <Package className="h-8 w-8 mx-auto mb-2" />
-                        <p>No tests added yet</p>
-                        <p className="text-sm mt-1">Click &quot;Add Test&quot; to include tests in this package</p>
+                        <Stethoscope className="h-8 w-8 mx-auto mb-2" />
+                        <p>No services selected yet</p>
+                        <p className="text-sm mt-1">Click &quot;Select Services&quot; to include consultation services and tests in this package</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      {tests.map((test, index) => (
-                        <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
-                          <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-medium text-primary">{index + 1}</span>
+                    <div className="space-y-3">
+                      {selectedServices.map((service) => (
+                        <div key={service._id} className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
+                          <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Stethoscope className="w-5 h-5 text-blue-600" />
                           </div>
                           
-                          {editingTestIndex === index ? (
-                            <>
-                              <Input
-                                value={editingTestValue}
-                                onChange={(e) => setEditingTestValue(e.target.value)}
-                                placeholder="Enter test name"
-                                className="flex-1"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    saveEditingTest();
-                                  } else if (e.key === 'Escape') {
-                                    cancelEditingTest();
-                                  }
-                                }}
-                                autoFocus
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={saveEditingTest}
-                                disabled={editingTestValue.trim() === ""}
-                              >
-                                Save
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={cancelEditingTest}
-                              >
-                                Cancel
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <div className="flex-1">
-                                <p className="font-medium text-sm">{test || "Unnamed test"}</p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => startEditingTest(index)}
-                              >
-                                <Edit className="h-4 w-4 text-blue-600" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeTest(index)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </>
-                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm">{service.name}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">{service.description}</p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                              <span>Duration: {service.duration} min</span>
+                              <span className="font-medium text-green-600">
+                                {formatCurrency(service.price)}
+                              </span>
+                              {service.specialization && typeof service.specialization === "string" && (
+                                <span className="px-2 py-1 bg-gray-100 rounded text-xs">
+                                  {service.specialization}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeSelectedService(service._id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
                       ))}
                     </div>
                   )}
                   
-                  {tests.length > 0 && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-sm text-blue-800">
-                        <p><span className="font-medium">Total Tests:</span> {tests.length}</p>
-                        <p className="text-xs text-blue-600 mt-1">
-                          All tests listed above will be included in this health package.
+                  {selectedServices.length > 0 && (
+                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="text-sm text-green-800">
+                        <p><span className="font-medium">Total Services & Tests:</span> {selectedServices.length}</p>
+                        <p><span className="font-medium">Total Service Value:</span> {formatCurrency(selectedServices.reduce((total, service) => total + service.price, 0))}</p>
+                        <p className="text-xs text-green-600 mt-1">
+                          All services and tests listed above will be included in this health package.
                         </p>
                       </div>
                     </div>
@@ -496,6 +450,15 @@ export default function EditHealthPackagePage({ params }: { params: Promise<{ id
               </div>
             </form>
           </Form>
+          
+          {/* Search Service Dialog */}
+          <SearchService
+            isOpen={isServiceDialogOpen}
+            onOpenChange={setIsServiceDialogOpen}
+            onApply={handleServiceSelection}
+            multiple={true}
+            initialSelectedIds={selectedServices.map(service => service._id)}
+          />
         </CardContent>
       </Card>
     </div>

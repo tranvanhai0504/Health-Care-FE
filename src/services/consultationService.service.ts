@@ -21,13 +21,13 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
   async getPaginated(
     params?: PaginationParams
   ): Promise<PaginatedApiResponse<ConsultationService>> {
-    const response = await api.get<PaginatedApiResponse<ConsultationService>>(
+    const response = await api.get<ApiResponse<PaginatedApiResponse<ConsultationService>>>(
       `${this.basePath}/many`,
       {
         params,
       }
     );
-    return response.data;
+    return response.data.data;
   }
 
   /**
