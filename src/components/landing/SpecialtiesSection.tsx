@@ -7,7 +7,6 @@ import { specialtyService } from "@/services/specialties.service";
 import { Specialty } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
 // Define specialty icons mapping (mapping first letter to an icon)
@@ -76,19 +75,16 @@ export function SpecialtiesSection() {
   const displaySpecialties = Array.isArray(specialties) ? specialties.slice(0, 8) : [];
 
   return (
-    <section className="py-10 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="text-center mb-12">
-          <Badge
-            variant="outline"
-            className="mb-4 px-4 py-1 border-primary/20 bg-primary/5 text-primary"
-          >
-            Expert Care
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6">
+            <Activity className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Our Medical Specialties
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Explore our wide range of medical specialties with expert doctors
             and comprehensive care options for your needs.
           </p>
@@ -179,12 +175,12 @@ export function SpecialtiesSection() {
 
 function SpecialtiesSkeleton() {
   return (
-    <section className="py-10 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="text-center mb-12">
-          <div className="h-8 w-32 bg-gray-200 rounded-full animate-pulse mb-4 mx-auto"></div>
+          <div className="h-16 w-16 bg-gray-200 rounded-2xl animate-pulse mb-6 mx-auto"></div>
           <div className="h-10 w-64 bg-gray-200 rounded-md animate-pulse mb-4 mx-auto"></div>
-          <div className="h-6 w-full max-w-2xl bg-gray-200 rounded-md animate-pulse mx-auto"></div>
+          <div className="h-6 w-full max-w-3xl bg-gray-200 rounded-md animate-pulse mx-auto"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
@@ -209,16 +205,13 @@ function SpecialtiesSkeleton() {
 
 function SpecialtiesError({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <section className="py-10 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="text-center mb-12">
-          <Badge
-            variant="outline"
-            className="mb-4 px-4 py-1 border-primary/20 bg-primary/5 text-primary"
-          >
-            Expert Care
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6">
+            <Activity className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Our Medical Specialties
           </h2>
         </div>

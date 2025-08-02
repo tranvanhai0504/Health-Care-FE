@@ -33,14 +33,15 @@ export interface PaginatedApiResponse<T> {
 export interface PaginationParams {
   page?: number;
   limit?: number;
-} 
+}
 
 export interface GetManyParams {
   options?: {
     filter?: Record<string, unknown>;
     sort?: Record<string, unknown>;
     populateOptions?: Record<string, unknown>;
-    selectFields?: Record<string, unknown>;
     pagination?: PaginationParams;
-  }
+  };
+  limit?: number;
+  page?: number;
 }

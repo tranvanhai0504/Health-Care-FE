@@ -2,7 +2,7 @@ import { create } from "zustand";
 import authService from "@/services/auth.service";
 import { UserProfile } from "@/types";
 import api from "@/lib/axios";
-import { AuthState } from "@/types/auth";
+import { AuthState, CreateUserData } from "@/types/auth";
 import { AxiosError } from "axios";
 
 export const useAuthStore = create<AuthState>((set, get) => {
@@ -40,10 +40,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
       }
     },
 
-    signup: async (data) => {
+    createUser: async (data: CreateUserData) => {
       set({ loading: true });
       try {
-        const response = await authService.register(data);
+        const response = await authService.createUser(data);
         if (response.data.authenToken) {
           const token = response.data.authenToken;
 

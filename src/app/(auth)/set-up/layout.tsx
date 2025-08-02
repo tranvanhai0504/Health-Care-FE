@@ -10,7 +10,7 @@ interface SetupLayoutProps {
 
 const SetupLayout = ({ children }: SetupLayoutProps) => {
   return (
-    <div className="h-screen bg-gradient-to-b from-primary/5 to-background relative overflow-hidden flex items-center justify-center">
+    <div className="h-screen bg-gradient-to-b from-primary/5 to-background relative overflow-hidden flex items-center justify-center w-full">
       {/* Decorative elements */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-70" />
       <div className="absolute top-1/2 -right-48 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl opacity-70" />

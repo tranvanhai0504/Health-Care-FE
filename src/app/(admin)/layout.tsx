@@ -12,9 +12,11 @@ export default function AdminLayout({
   return (
     <ProtectedRoute allowedRoles={["admin"]}>
       <div className="flex min-h-screen pt-10">
-        <AdminSidebar />
-        <main className="flex-1 px-8 py-6">{children}</main>
+        <div className="fixed top-0 left-0 h-full w-64">
+          <AdminSidebar />
+        </div>
+        <main className="flex-1 px-8 py-6 ml-64">{children}</main>
       </div>
     </ProtectedRoute>
   );
-} 
+}

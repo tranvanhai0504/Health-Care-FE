@@ -1,11 +1,21 @@
-import BaseService from './base.service';
-import api from '@/lib/axios';
-import { ApiResponse, GetManyParams, PaginatedApiResponse, PaginationParams } from '@/types/api';
-import { CDateRange, Schedule, ScheduleResponse, ScheduleStatus } from '@/types/schedule';
+import BaseService from "./base.service";
+import api from "@/lib/axios";
+import {
+  ApiResponse,
+  GetManyParams,
+  PaginatedApiResponse,
+  PaginationParams,
+} from "@/types/api";
+import {
+  CDateRange,
+  Schedule,
+  ScheduleResponse,
+  ScheduleStatus,
+} from "@/types/schedule";
 
 export class ScheduleService extends BaseService<Schedule> {
   constructor() {
-    super('/api/v1/schedule');
+    super("/api/v1/schedule");
   }
 
   /**
@@ -13,10 +23,18 @@ export class ScheduleService extends BaseService<Schedule> {
    * @param params - Pagination parameters
    * @returns Promise with paginated response containing schedules and pagination info
    */
-  async getMany(params?: GetManyParams): Promise<ScheduleResponse[]> {
-    const response = await api.get<PaginatedApiResponse<ScheduleResponse>>(`${this.basePath}/many`, {
-      params
+  async getMany(
+    params?: GetManyParams
+  ): Promise<PaginatedApiResponse<ScheduleResponse>> {
+    const response = await api.get<
+      ApiResponse<PaginatedApiResponse<ScheduleResponse>>
+    >(`${this.basePath}/many`, {
+      params: {
+        ...params,
+        options: JSON.stringify(params?.options),
+      },
     });
+
     return response.data.data;
   }
 
@@ -25,9 +43,13 @@ export class ScheduleService extends BaseService<Schedule> {
    * @param params - Pagination parameters
    * @returns Promise with paginated response containing schedules and pagination info
    */
-  async getManyWithPagination(params?: PaginationParams): Promise<PaginatedApiResponse<ScheduleResponse>> {
-    const response = await api.get<ApiResponse<PaginatedApiResponse<ScheduleResponse>>>(`${this.basePath}/many`, {
-      params
+  async getManyWithPagination(
+    params?: PaginationParams
+  ): Promise<PaginatedApiResponse<ScheduleResponse>> {
+    const response = await api.get<
+      ApiResponse<PaginatedApiResponse<ScheduleResponse>>
+    >(`${this.basePath}/many`, {
+      params,
     });
     return response.data.data;
   }
@@ -37,9 +59,13 @@ export class ScheduleService extends BaseService<Schedule> {
    * @param params - Pagination and filtering parameters
    * @returns Promise with paginated response containing user schedules and pagination info
    */
-  async getUserSchedules(params?: Record<string, string | number>): Promise<PaginatedApiResponse<ScheduleResponse>> {
-    const response = await api.get<ApiResponse<PaginatedApiResponse<ScheduleResponse>>>(`${this.basePath}/user`, {
-      params
+  async getUserSchedules(
+    params?: Record<string, string | number>
+  ): Promise<PaginatedApiResponse<ScheduleResponse>> {
+    const response = await api.get<
+      ApiResponse<PaginatedApiResponse<ScheduleResponse>>
+    >(`${this.basePath}/user`, {
+      params,
     });
     return response.data.data;
   }
@@ -49,7 +75,9 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns Promise with array of current week schedules
    */
   async getCurrentWeekSchedules(): Promise<ScheduleResponse[]> {
-    const response = await api.get<ApiResponse<ScheduleResponse[]>>(`${this.basePath}/current-week`);
+    const response = await api.get<ApiResponse<ScheduleResponse[]>>(
+      `${this.basePath}/current-week`
+    );
     return response.data.data;
   }
 
@@ -58,11 +86,16 @@ export class ScheduleService extends BaseService<Schedule> {
    * @param specialization - The specialization to filter by
    * @returns Promise with array of schedules
    */
-  async getBySpecialization(specialization?: string): Promise<ScheduleResponse[]> {
+  async getBySpecialization(
+    specialization?: string
+  ): Promise<ScheduleResponse[]> {
     const params = specialization ? { specialization } : undefined;
-    const response = await api.get<ApiResponse<ScheduleResponse[]>>(`${this.basePath}/by-specialization`, {
-      params
-    });
+    const response = await api.get<ApiResponse<ScheduleResponse[]>>(
+      `${this.basePath}/by-specialization`,
+      {
+        params,
+      }
+    );
     return response.data.data;
   }
 
@@ -70,8 +103,10 @@ export class ScheduleService extends BaseService<Schedule> {
    * Get all schedules
    * @returns Promise with array of schedules
    */
-    async getAll(): Promise<ScheduleResponse[]> {
-    const response = await api.get<ApiResponse<ScheduleResponse[]>>(this.basePath);
+  async getAll(): Promise<ScheduleResponse[]> {
+    const response = await api.get<ApiResponse<ScheduleResponse[]>>(
+      this.basePath
+    );
     return response.data.data;
   }
 
@@ -81,7 +116,9 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns Promise with the schedule
    */
   async getById(id: string): Promise<ScheduleResponse> {
-    const response = await api.get<ApiResponse<ScheduleResponse>>(`${this.basePath}/${id}`);
+    const response = await api.get<ApiResponse<ScheduleResponse>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
   }
 
@@ -102,7 +139,10 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns Promise with the updated schedule
    */
   async update(id: string, data: Partial<Schedule>): Promise<Schedule> {
-    const response = await api.patch<ApiResponse<Schedule>>(`${this.basePath}/${id}`, data);
+    const response = await api.patch<ApiResponse<Schedule>>(
+      `${this.basePath}/${id}`,
+      data
+    );
     return response.data.data;
   }
 
@@ -112,7 +152,9 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns Promise with the deleted schedule
    */
   async delete(id: string): Promise<Schedule> {
-    const response = await api.delete<ApiResponse<Schedule>>(`${this.basePath}/${id}`);
+    const response = await api.delete<ApiResponse<Schedule>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
   }
 
@@ -134,14 +176,14 @@ export class ScheduleService extends BaseService<Schedule> {
     const startOfWeek = new Date(selectedDate);
     startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay()); // Start from Sunday
     startOfWeek.setHours(0, 0, 0, 0);
-    
+
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Saturday
     endOfWeek.setHours(23, 59, 59, 999);
-    
+
     return {
       from: startOfWeek,
-      to: endOfWeek
+      to: endOfWeek,
     };
   }
 
@@ -155,4 +197,4 @@ export class ScheduleService extends BaseService<Schedule> {
   }
 }
 
-export const scheduleService = new ScheduleService(); 
+export const scheduleService = new ScheduleService();

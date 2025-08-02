@@ -28,6 +28,14 @@ const ServicesSection = dynamic(
   { loading: () => <SectionLoader /> }
 );
 
+const HealthPackagesSection = dynamic(
+  () =>
+    import("@/components/landing/HealthPackagesSection").then((mod) => ({
+      default: mod.HealthPackagesSection,
+    })),
+  { loading: () => <SectionLoader /> }
+);
+
 const FeaturesSection = dynamic(
   () =>
     import("@/components/landing/FeaturesSection").then((mod) => ({
@@ -55,13 +63,14 @@ const CTASection = dynamic(
 export const metadata: Metadata = {
   title: "Health Care Solutions | Modern Healthcare Services",
   description:
-              "Providing quality healthcare services to improve your wellbeing and quality of life. Book schedules, consult with specialists, and access personalized care.",
+    "Providing quality healthcare services to improve your wellbeing and quality of life. Book schedules, consult with specialists, and access personalized care.",
   keywords: [
     "healthcare",
     "medical care",
-              "doctor schedules",
+    "doctor schedules",
     "healthcare solutions",
     "wellness",
+    "health packages",
   ],
   openGraph: {
     title: "Health Care Solutions | Modern Healthcare Services",
@@ -80,6 +89,10 @@ export default function Home() {
       <div className="min-h-screen">
         {/* Critical above-the-fold content - loaded immediately */}
         <HeroSection />
+
+        <Suspense fallback={<SectionLoader />}>
+          <HealthPackagesSection />
+        </Suspense>
 
         {/* Specialties section */}
         <Suspense fallback={<SectionLoader />}>

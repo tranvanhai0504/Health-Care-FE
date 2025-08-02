@@ -20,17 +20,7 @@ export class SpecialtyService {
     return response.data.data.data;
   }
 
-  /**
-   * Get specialties with pagination support
-   * @param params - Pagination parameters
-   * @returns Promise with paginated response containing specialties and pagination info
-   */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<Specialty>> {
-    const response = await api.get<PaginatedApiResponse<Specialty>>(`${this.basePath}/many`, {
-      params
-    });
-    return response.data;
-  }
+
 
   /**
    * Get a specialty by ID with related blogs

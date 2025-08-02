@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers/providers";
-import { LoginModal } from "@/components/auth/login-modal";
 import { Header } from "@/components/layout/header";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -43,8 +42,9 @@ export default function RootLayout({
         <Providers>
           <div className="flex flex-col min-h-screen">
             <Header />
-            <LoginModal />
-            <main className="relative space-y-10 min-h-screen z-40 pt-8">{children}</main>
+            <main className="relative space-y-10 min-h-screen z-40 pt-8">
+              {children}
+            </main>
           </div>
         </Providers>
       </body>

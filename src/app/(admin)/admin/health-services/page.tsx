@@ -3,11 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "@uidotdev/usehooks";
-import { consultationPackageService } from "@/services/consultationPackage.service";
-import {
-  ConsultationPackage,
-  PaginationInfo,
-} from "@/types";
+import { consultationServiceApi } from "@/services/consultationService.service";
+import { specialtyService } from "@/services";
+import { ConsultationService, PaginationInfo, Specialty } from "@/types";
 import {
   Table,
   TableBody,
@@ -42,16 +40,19 @@ import {
   Plus,
   Search,
   Trash2,
-  Package,
+  Stethoscope,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
   X,
   CalendarDays,
+  Clock,
   Filter,
   DollarSign,
+  User,
+  Timer,
 } from "lucide-react";
-import { useToast } from "@/hooks/useToast";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -71,17 +72,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export default function AdminHealthPackagesPage() {
-  const [packages, setPackages] = useState<ConsultationPackage[]>([]);
+export default function AdminHealthServicesPage() {
+  const [services, setServices] = useState<ConsultationService[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [specializationFilter, setSpecializationFilter] = useState<
+    string | null
+  >(null);
+  const [doctorFilter, setDoctorFilter] = useState<string>("all");
+  const [durationFilter, setDurationFilter] = useState<string>("");
   const [minPriceFilter, setMinPriceFilter] = useState<string>("");
   const [maxPriceFilter, setMaxPriceFilter] = useState<string>("");
-  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [allSpecialties, setAllSpecialties] = useState<Specialty[]>([]);
+  const [allDoctors, setAllDoctors] = useState<string[]>([]);
+  const [isLoadingFilters, setIsLoadingFilters] = useState(true);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [packageToDelete, setPackageToDelete] = useState<string | null>(null);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
     total: 0,
@@ -90,38 +97,51 @@ export default function AdminHealthPackagesPage() {
     totalPages: 0,
   });
   const router = useRouter();
-  const { toast } = useToast();
 
   // Debounce search query with 500ms delay
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const itemsPerPage = 10;
 
-  // Fetch categories for filter dropdown
+  // Fetch specialties and doctors for filter dropdowns
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchFilterData = async () => {
       try {
-        const response = await consultationPackageService.getMany({
+        setIsLoadingFilters(true);
+
+        // Fetch specialties from dedicated service - this is much more efficient
+        const specialties = await specialtyService.getAll();
+        setAllSpecialties(specialties);
+
+        // Fetch services to extract unique doctors (could be improved with dedicated endpoint)
+        const response = await consultationServiceApi.getMany({
           options: {
             filter: {},
-            pagination: { page: 1, limit: 1000 }, // Get all for categories
-            sort: { category: 1 },
+            pagination: { page: 1, limit: 1000 }, // Get all for filter options
+            sort: { createdAt: -1 },
           },
         });
-        const categories = [
-          ...new Set(response.data.map((pkg) => pkg.category)),
+
+        const doctors = [
+          ...new Set(
+            response.data.map((service) => service.doctor).filter(Boolean)
+          ),
         ];
-        setAllCategories(categories);
+
+        setAllDoctors(doctors as string[]);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching filter data:", error);
+        toast.error("Failed to load filter options");
+      } finally {
+        setIsLoadingFilters(false);
       }
     };
-    fetchCategories();
+    fetchFilterData();
   }, []);
 
-  // Fetch packages with pagination
+  // Fetch services with pagination
   useEffect(() => {
-    const fetchPackages = async () => {
+    const fetchServices = async () => {
       try {
         // Set searching state when there's a debounced search query
         if (debouncedSearchQuery.trim()) {
@@ -133,14 +153,26 @@ export default function AdminHealthPackagesPage() {
         // Build MongoDB-style filter object
         const filter: Record<string, unknown> = {};
 
-        // Add search as title filter (using regex for partial matching)
+        // Add search as name filter (using regex for partial matching)
         if (debouncedSearchQuery.trim()) {
-          filter.title = { $regex: debouncedSearchQuery.trim(), $options: "i" };
+          filter.name = { $regex: debouncedSearchQuery.trim(), $options: "i" };
         }
 
-        // Add category filter
-        if (categoryFilter !== "all") {
-          filter.category = categoryFilter;
+        // Add specialization filter
+        if (specializationFilter !== null) {
+          filter.specialization = specializationFilter; // Now filtering by _id
+        } else {
+          delete filter.specialization;
+        }
+
+        // Add doctor filter
+        if (doctorFilter !== "all") {
+          filter.doctor = doctorFilter;
+        }
+
+        // Add duration filter
+        if (durationFilter) {
+          filter.duration = parseInt(durationFilter);
         }
 
         // Add price range filter
@@ -162,79 +194,99 @@ export default function AdminHealthPackagesPage() {
             page: currentPage,
             limit: itemsPerPage,
           },
+          populateOptions: {
+            path: "specialization",
+            select: ["name", "description"],
+          },
           sort: { createdAt: -1 }, // Sort by newest first
         };
 
-        console.log("Making API call with options:", options);
-        const response = await consultationPackageService.getMany({
+        const response = await consultationServiceApi.getMany({
           options,
         });
-        setPackages(response.data);
+        setServices(response.data);
         setPaginationInfo(response.pagination);
       } catch (error) {
-        console.error("Error fetching packages:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch health packages",
-          type: "error",
-        });
+        console.error("Error fetching services:", error);
+        toast.error("Failed to fetch health services");
       } finally {
         setLoading(false);
         setIsSearching(false);
       }
     };
 
-    fetchPackages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchServices();
   }, [
     currentPage,
     debouncedSearchQuery,
-    categoryFilter,
+    specializationFilter,
+    doctorFilter,
+    durationFilter,
     minPriceFilter,
     maxPriceFilter,
   ]);
 
-  // Reset to first page when filters change (but not when currentPage changes)
+  // Reset to first page when search query changes (but not when currentPage changes)
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchQuery, categoryFilter, minPriceFilter, maxPriceFilter]); // Only depend on filters, not currentPage
+  }, [
+    debouncedSearchQuery,
+    specializationFilter,
+    doctorFilter,
+    durationFilter,
+    minPriceFilter,
+    maxPriceFilter,
+  ]); // Only depend on filters, not currentPage
 
-  const handleCreatePackage = () => {
-    router.push("/admin/health-packages/create");
+  const handleCreateService = () => {
+    router.push("/admin/health-services/create");
   };
 
-  const handleEditPackage = (id: string) => {
-    router.push(`/admin/health-packages/edit/${id}`);
+  const handleEditService = (id: string) => {
+    router.push(`/admin/health-services/edit/${id}`);
   };
 
-  const handleViewPackage = (id: string) => {
-    router.push(`/admin/health-packages/${id}`);
+  const handleViewService = (id: string) => {
+    router.push(`/admin/health-services/${id}`);
   };
 
   const confirmDelete = (id: string) => {
-    setPackageToDelete(id);
+    setServiceToDelete(id);
     setIsDeleteAlertOpen(true);
   };
 
-  const handleDeletePackage = async () => {
-    if (!packageToDelete) return;
+  const handleDeleteService = async () => {
+    if (!serviceToDelete) return;
 
     try {
-      await consultationPackageService.delete(packageToDelete);
+      await consultationServiceApi.delete(serviceToDelete);
       // Refresh the current page with all current filters
       const refreshFilter: Record<string, unknown> = {};
 
-      // Add search as title filter (using regex for partial matching)
+      // Add search as name filter (using regex for partial matching)
       if (debouncedSearchQuery.trim()) {
-        refreshFilter.title = { $regex: debouncedSearchQuery.trim(), $options: "i" };
+        refreshFilter.name = {
+          $regex: debouncedSearchQuery.trim(),
+          $options: "i",
+        };
       }
 
-      // Add category filter
-      if (categoryFilter !== "all") {
-        refreshFilter.category = categoryFilter;
+      // Add specialization filter
+      if (specializationFilter !== null) {
+        refreshFilter.specialization = specializationFilter; // Now filtering by _id
+      }
+
+      // Add doctor filter
+      if (doctorFilter !== "all") {
+        refreshFilter.doctor = doctorFilter;
+      }
+
+      // Add duration filter
+      if (durationFilter) {
+        refreshFilter.duration = parseInt(durationFilter);
       }
 
       // Add price range filter
@@ -259,26 +311,18 @@ export default function AdminHealthPackagesPage() {
         sort: { createdAt: -1 },
       };
 
-      const response = await consultationPackageService.getMany({
+      const response = await consultationServiceApi.getMany({
         options: refreshOptions,
       });
-      setPackages(response.data);
+      setServices(response.data);
       setPaginationInfo(response.pagination);
 
-      toast({
-        title: "Success",
-        description: "Health package deleted successfully",
-        type: "success",
-      });
+      toast.success("Health service deleted successfully");
     } catch (error) {
-      console.error("Error deleting package:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete health package",
-        type: "error",
-      });
+      console.error("Error deleting service:", error);
+      toast.error("Failed to delete health service");
     } finally {
-      setPackageToDelete(null);
+      setServiceToDelete(null);
       setIsDeleteAlertOpen(false);
     }
   };
@@ -324,14 +368,14 @@ export default function AdminHealthPackagesPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
-                <Package className="h-5 w-5" /> Health Packages Management
+                <Stethoscope className="h-5 w-5" /> Health Services Management
               </CardTitle>
               <CardDescription className="mt-1.5">
-                Manage all health packages available to users
+                Manage all consultation services available to users
               </CardDescription>
             </div>
-            <Button onClick={handleCreatePackage} className="w-full md:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Create New Package
+            <Button onClick={handleCreateService} className="w-full md:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Create New Service
             </Button>
           </div>
         </CardHeader>
@@ -342,7 +386,7 @@ export default function AdminHealthPackagesPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder={
-                  isSearching ? "Searching..." : "Search packages..."
+                  isSearching ? "Searching..." : "Search services..."
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -366,25 +410,75 @@ export default function AdminHealthPackagesPage() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
-              {/* Category Filter */}
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              {/* Specialization Filter */}
+              <Select
+                value={specializationFilter || "all"}
+                onValueChange={setSpecializationFilter}
+                disabled={isLoadingFilters}
+              >
                 <SelectTrigger className="w-full lg:w-[180px]">
                   <Filter className="w-4 h-4" />
-                  <SelectValue placeholder="Category" />
+                  <SelectValue
+                    placeholder={
+                      isLoadingFilters ? "Loading..." : "Specialization"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {allCategories.map((category) => (
+                  <SelectItem value="all">All Specializations</SelectItem>
+                  {allSpecialties.map((specialty) => (
                     <SelectItem
-                      key={category}
-                      value={category}
+                      key={specialty._id}
+                      value={specialty._id}
                       className="capitalize"
                     >
-                      {category}
+                      {specialty.name}
+                      {specialty.description && (
+                        <span className="text-xs text-muted-foreground block">
+                          {specialty.description.length > 50
+                            ? `${specialty.description.substring(0, 50)}...`
+                            : specialty.description}
+                        </span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Doctor Filter */}
+              <Select
+                value={doctorFilter}
+                onValueChange={setDoctorFilter}
+                disabled={isLoadingFilters}
+              >
+                <SelectTrigger className="w-full lg:w-[180px]">
+                  <User className="w-4 h-4" />
+                  <SelectValue
+                    placeholder={isLoadingFilters ? "Loading..." : "Doctor"}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Doctors</SelectItem>
+                  {allDoctors.map((doctor) => (
+                    <SelectItem key={doctor} value={doctor}>
+                      {doctor}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Duration Filter */}
+              <div className="relative">
+                <Timer className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Duration (min)"
+                  value={durationFilter}
+                  onChange={(e) => setDurationFilter(e.target.value)}
+                  className="pl-10 w-[140px]"
+                  type="number"
+                  min="0"
+                />
+              </div>
 
               {/* Price Range Filters */}
               <div className="flex gap-2">
@@ -411,12 +505,15 @@ export default function AdminHealthPackagesPage() {
                   />
                 </div>
               </div>
+
               <Button
                 variant="outline"
                 size="default"
                 onClick={() => {
                   setSearchQuery("");
-                  setCategoryFilter("all");
+                  setSpecializationFilter("all");
+                  setDoctorFilter("all");
+                  setDurationFilter("");
                   setMinPriceFilter("");
                   setMaxPriceFilter("");
                 }}
@@ -431,7 +528,9 @@ export default function AdminHealthPackagesPage() {
 
           {/* Active filters display */}
           {(searchQuery ||
-            categoryFilter !== "all" ||
+            specializationFilter !== null ||
+            doctorFilter !== "all" ||
+            durationFilter ||
             minPriceFilter ||
             maxPriceFilter) && (
             <div className="flex items-center gap-2 mb-4 p-3 bg-muted/50 rounded-lg flex-wrap">
@@ -449,11 +548,35 @@ export default function AdminHealthPackagesPage() {
                   </button>
                 </Badge>
               )}
-              {categoryFilter !== "all" && (
+              {specializationFilter !== null && (
                 <Badge variant="secondary" className="gap-1">
-                  Category: {categoryFilter}
+                  Specialization:{" "}
+                  {allSpecialties.find((s) => s._id === specializationFilter)
+                    ?.name || specializationFilter}
                   <button
-                    onClick={() => setCategoryFilter("all")}
+                    onClick={() => setSpecializationFilter(null)}
+                    className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              {doctorFilter !== "all" && (
+                <Badge variant="secondary" className="gap-1">
+                  Doctor: {doctorFilter}
+                  <button
+                    onClick={() => setDoctorFilter("all")}
+                    className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              {durationFilter && (
+                <Badge variant="secondary" className="gap-1">
+                  Duration: {durationFilter} min
+                  <button
+                    onClick={() => setDurationFilter("")}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
                   >
                     ×
@@ -494,7 +617,7 @@ export default function AdminHealthPackagesPage() {
                   paginationInfo.page * paginationInfo.limit,
                   paginationInfo.total
                 )}{" "}
-                of {paginationInfo.total} package
+                of {paginationInfo.total} service
                 {paginationInfo.total !== 1 ? "s" : ""}
               </Badge>
             </div>
@@ -515,29 +638,35 @@ export default function AdminHealthPackagesPage() {
                 </div>
               ))}
             </div>
-          ) : packages.length === 0 ? (
+          ) : services.length === 0 ? (
             <div className="text-center py-16">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-                <Package className="h-8 w-8 text-muted-foreground" />
+                <Stethoscope className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No packages found</h3>
+              <h3 className="text-lg font-medium mb-2">No services found</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery ||
-                categoryFilter !== "all" ||
+                specializationFilter !== "all" ||
+                doctorFilter !== "all" ||
+                durationFilter ||
                 minPriceFilter ||
                 maxPriceFilter
-                  ? "No packages match your current filters."
-                  : "No health packages have been created yet."}
+                  ? "No services match your current filters."
+                  : "No health services have been created yet."}
               </p>
               {searchQuery ||
-              categoryFilter !== "all" ||
+              specializationFilter !== "all" ||
+              doctorFilter !== "all" ||
+              durationFilter ||
               minPriceFilter ||
               maxPriceFilter ? (
                 <Button
                   variant="outline"
                   onClick={() => {
                     setSearchQuery("");
-                    setCategoryFilter("all");
+                    setSpecializationFilter("all");
+                    setDoctorFilter("all");
+                    setDurationFilter("");
                     setMinPriceFilter("");
                     setMaxPriceFilter("");
                   }}
@@ -545,9 +674,9 @@ export default function AdminHealthPackagesPage() {
                   Clear filters
                 </Button>
               ) : (
-                <Button onClick={handleCreatePackage}>
+                <Button onClick={handleCreateService}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create your first package
+                  Create your first service
                 </Button>
               )}
             </div>
@@ -557,44 +686,55 @@ export default function AdminHealthPackagesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[300px]">Package Title</TableHead>
-                      <TableHead>Category</TableHead>
+                      <TableHead className="w-[300px]">Service Name</TableHead>
+                      <TableHead>Specialization</TableHead>
+                      <TableHead>Duration</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {packages.map((pkg) => (
-                      <TableRow key={pkg._id}>
+                    {services.map((service) => (
+                      <TableRow key={service._id}>
                         <TableCell className="font-medium">
                           <div className="max-w-[280px]">
                             <p className="truncate text-sm font-medium">
-                              {pkg.title}
+                              {service.name}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                              {pkg.description
-                                ? pkg.description.substring(0, 80) + "..."
+                              {service.description
+                                ? service.description.substring(0, 80) + "..."
                                 : "No description"}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="capitalize">
-                            {pkg.category}
+                            {typeof service.specialization === "string"
+                              ? service.specialization
+                              : service.specialization?.name || "General"}
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            {service.duration} min
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <span className="font-medium text-primary">
-                            {pkg.price === 0
+                            {service.price === 0
                               ? "Free"
-                              : formatCurrency(pkg.price)}
+                              : formatCurrency(service.price)}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <CalendarDays className="h-3 w-3" />
-                            {pkg.createdAt ? formatDate(pkg.createdAt) : "N/A"}
+                            {service.createdAt
+                              ? formatDate(service.createdAt)
+                              : "N/A"}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
@@ -608,20 +748,20 @@ export default function AdminHealthPackagesPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
-                                onClick={() => handleViewPackage(pkg._id)}
+                                onClick={() => handleViewService(service._id)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 View
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleEditPackage(pkg._id)}
+                                onClick={() => handleEditService(service._id)}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => confirmDelete(pkg._id)}
+                                onClick={() => confirmDelete(service._id)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -686,13 +826,13 @@ export default function AdminHealthPackagesPage() {
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              health package and remove all associated data.
+              health service and remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeletePackage}
+              onClick={handleDeleteService}
               className="bg-red-600 text-white hover:bg-red-700"
             >
               Delete

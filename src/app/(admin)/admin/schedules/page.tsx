@@ -40,11 +40,10 @@ import {
   User,
   Package,
   RefreshCw,
-  Filter,
   Users,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,34 +62,41 @@ export default function AdminSchedulesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(null);
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo | null>(
+    null
+  );
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const router = useRouter();
   const { toast } = useToast();
 
+  console.log(schedules);
+
   const fetchSchedules = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await scheduleService.getManyWithPagination({
-        page: currentPage,
-        limit: itemsPerPage,
+      const response = await scheduleService.getMany({
+        options: {
+          pagination: {
+            page: currentPage,
+            limit: itemsPerPage,
+          },
+          populateOptions: {
+            path: "userId",
+            select: ["name", "email", "phoneNumber"],
+          },
+        },
       });
 
       // Sort the data client-side by creation date (newest first)
       const sortedSchedules = response.data.sort((a, b) => {
-        const dateA = new Date(a.createdAt || '').getTime();
-        const dateB = new Date(b.createdAt || '').getTime();
+        const dateA = new Date(a.createdAt || "").getTime();
+        const dateB = new Date(b.createdAt || "").getTime();
         return dateB - dateA; // Descending order (newest first)
       });
 
       setSchedules(sortedSchedules);
-      setPaginationInfo({
-        total: response.pagination?.total || response.data.length,
-        page: response.pagination?.page || currentPage,
-        limit: response.pagination?.limit || itemsPerPage,
-        totalPages: response.pagination?.totalPages || Math.ceil((response.pagination?.total || response.data.length) / itemsPerPage)
-      });
+      setPaginationInfo(response.pagination);
     } catch (error) {
       console.error("Error fetching schedules:", error);
       toast({
@@ -110,14 +116,16 @@ export default function AdminSchedulesPage() {
   }, []);
 
   // Apply client-side filtering
-  const filteredSchedules = schedules.filter(schedule => {
-    const matchesSearch = searchQuery === "" || 
-      schedule.userId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredSchedules = schedules.filter((schedule) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      schedule.userId.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       schedule._id?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || schedule.status === statusFilter;
+
+    const matchesStatus =
+      statusFilter === "all" || schedule.status === statusFilter;
     const matchesType = typeFilter === "all" || schedule.type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -143,23 +151,36 @@ export default function AdminSchedulesPage() {
   };
 
   const getTypeIcon = (type: string) => {
-    return type === "package" ? <Package className="h-4 w-4" /> : <Users className="h-4 w-4" />;
+    return type === "package" ? (
+      <Package className="h-4 w-4" />
+    ) : (
+      <Users className="h-4 w-4" />
+    );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatDate = (weekPeriod: any) => {
     if (!weekPeriod || !weekPeriod.from) return "Invalid Date";
     const date = new Date(weekPeriod.from);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const formatTimeSlot = (dayOffset: number, timeOffset: 0 | 1) => {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const dayName = days[dayOffset] || 'Unknown';
-    const timeSlot = timeOffset === 0 ? 'Morning' : 'Afternoon';
+    const days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+    const dayName = days[dayOffset] || "Unknown";
+    const timeSlot = timeOffset === 0 ? "Morning" : "Afternoon";
     return `${dayName} ${timeSlot}`;
   };
 
@@ -248,7 +269,10 @@ export default function AdminSchedulesPage() {
           {loading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, index) => (
-                <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center space-x-4 p-4 border rounded-lg"
+                >
                   <Skeleton className="h-4 w-1/6" />
                   <Skeleton className="h-4 w-1/4" />
                   <Skeleton className="h-4 w-1/6" />
@@ -267,8 +291,7 @@ export default function AdminSchedulesPage() {
               <p className="text-muted-foreground mb-6">
                 {searchQuery || statusFilter !== "all" || typeFilter !== "all"
                   ? "No schedules match your current filters."
-                  : "No schedules have been created yet."
-                }
+                  : "No schedules have been created yet."}
               </p>
               {searchQuery || statusFilter !== "all" || typeFilter !== "all" ? (
                 <Button variant="outline" onClick={resetFilters}>
@@ -306,7 +329,9 @@ export default function AdminSchedulesPage() {
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-gray-400" />
                             <span className="text-sm font-mono">
-                              {schedule.userId.substring(0, 8)}...
+                              {schedule.userId.name ??
+                                schedule.userId.email ??
+                                schedule.userId.phoneNumber}
                             </span>
                           </div>
                         </TableCell>
@@ -319,7 +344,10 @@ export default function AdminSchedulesPage() {
                         <TableCell>
                           <div className="flex items-center gap-1 text-sm">
                             <Clock className="h-3 w-3 text-gray-400" />
-                            {formatTimeSlot(schedule.dayOffset, schedule.timeOffset)}
+                            {formatTimeSlot(
+                              schedule.dayOffset,
+                              schedule.timeOffset
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -345,7 +373,8 @@ export default function AdminSchedulesPage() {
                             </div>
                             {schedule.payment && (
                               <div className="flex items-center gap-1 mt-1">
-                                {schedule.payment.totalPaid >= schedule.payment.totalPrice ? (
+                                {schedule.payment.totalPaid >=
+                                schedule.payment.totalPrice ? (
                                   <CheckCircle className="h-3 w-3 text-green-500" />
                                 ) : schedule.payment.totalPaid > 0 ? (
                                   <AlertCircle className="h-3 w-3 text-yellow-500" />
@@ -353,10 +382,11 @@ export default function AdminSchedulesPage() {
                                   <XCircle className="h-3 w-3 text-red-500" />
                                 )}
                                 <span className="text-xs text-gray-500">
-                                  {schedule.payment.totalPaid >= schedule.payment.totalPrice 
-                                    ? "Paid" 
-                                    : schedule.payment.totalPaid > 0 
-                                    ? "Partial" 
+                                  {schedule.payment.totalPaid >=
+                                  schedule.payment.totalPrice
+                                    ? "Paid"
+                                    : schedule.payment.totalPaid > 0
+                                    ? "Partial"
                                     : "Unpaid"}
                                 </span>
                               </div>
@@ -373,8 +403,10 @@ export default function AdminSchedulesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem 
-                                onClick={() => handleViewSchedule(schedule._id!)}
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleViewSchedule(schedule._id!)
+                                }
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Details
@@ -420,47 +452,54 @@ export default function AdminSchedulesPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
         {[
-          { 
-            label: "Total Schedules", 
-            count: schedules.length, 
+          {
+            label: "Total Schedules",
+            count: schedules.length,
             color: "text-blue-600",
-            icon: <Calendar className="h-4 w-4" />
+            icon: <Calendar className="h-4 w-4" />,
           },
-          { 
-            label: "Confirmed", 
-            count: schedules.filter(s => s.status === ScheduleStatus.CONFIRMED).length, 
+          {
+            label: "Confirmed",
+            count: schedules.filter(
+              (s) => s.status === ScheduleStatus.CONFIRMED
+            ).length,
             color: "text-blue-600",
-            icon: <Clock className="h-4 w-4" />
+            icon: <Clock className="h-4 w-4" />,
           },
-          { 
-            label: "In Progress", 
-            count: schedules.filter(s => s.status === ScheduleStatus.SERVING).length, 
+          {
+            label: "In Progress",
+            count: schedules.filter((s) => s.status === ScheduleStatus.SERVING)
+              .length,
             color: "text-yellow-600",
-            icon: <AlertCircle className="h-4 w-4" />
+            icon: <AlertCircle className="h-4 w-4" />,
           },
-          { 
-            label: "Completed", 
-            count: schedules.filter(s => s.status === ScheduleStatus.COMPLETED).length, 
+          {
+            label: "Completed",
+            count: schedules.filter(
+              (s) => s.status === ScheduleStatus.COMPLETED
+            ).length,
             color: "text-green-600",
-            icon: <CheckCircle className="h-4 w-4" />
+            icon: <CheckCircle className="h-4 w-4" />,
           },
-          { 
-            label: "Cancelled", 
-            count: schedules.filter(s => s.status === ScheduleStatus.CANCELLED).length, 
+          {
+            label: "Cancelled",
+            count: schedules.filter(
+              (s) => s.status === ScheduleStatus.CANCELLED
+            ).length,
             color: "text-red-600",
-            icon: <XCircle className="h-4 w-4" />
-          }
+            icon: <XCircle className="h-4 w-4" />,
+          },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className={`text-2xl font-bold ${stat.color}`}>{stat.count}</div>
+                  <div className={`text-2xl font-bold ${stat.color}`}>
+                    {stat.count}
+                  </div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
                 </div>
-                <div className={stat.color}>
-                  {stat.icon}
-                </div>
+                <div className={stat.color}>{stat.icon}</div>
               </div>
             </CardContent>
           </Card>
@@ -468,4 +507,4 @@ export default function AdminSchedulesPage() {
       </div>
     </div>
   );
-} 
+}

@@ -3,6 +3,7 @@ import api from "@/lib/axios";
 import { 
   Blog,
   BlogGetAllResponse,
+  BlogGetManyParams,
   ApiResponse,
   PaginatedApiResponse,
   PaginationParams
@@ -11,6 +12,24 @@ import {
 export class BlogService extends BaseService<Blog> {
   constructor() {
     super("/api/v1/blog");
+  }
+
+  /**
+   * Get many blogs
+   * @param params - Custom filter parameters for blogs
+   * @returns Promise with paginated response containing blogs
+   */
+  async getMany(params?: BlogGetManyParams): Promise<PaginatedApiResponse<Blog>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Blog>>>(
+      `${this.basePath}/many`,
+      {
+        params: {
+          ...params,
+          options: JSON.stringify(params?.options),
+        },
+      }
+    );
+    return response.data.data;
   }
 
   async getAllBlogs(): Promise<PaginatedApiResponse<BlogGetAllResponse>> {

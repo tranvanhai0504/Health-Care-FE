@@ -2,7 +2,6 @@ import api from "@/lib/axios";
 import { SignUpFormType } from "@/schemas/sign-up";
 import { 
   LoginCredentials,
-
   AuthResponse,
   OTPVerificationData,
   OTPVerificationResponse,

@@ -19,7 +19,7 @@ export function useAuth() {
     token,
     signin,
     signout,
-    signup,
+    createUser,
     fetchProfile
   } = useAuthStore();
 
@@ -82,7 +82,7 @@ export function useAuth() {
     token,
     login,
     logout,
-    signup,
+    createUser,
     refreshProfile: fetchProfile,
     authenticateAction
   };

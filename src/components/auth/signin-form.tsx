@@ -32,7 +32,7 @@ export default function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/";
-  const { login, isLoading, user } = useAuth();
+  const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginCredentials>({
     defaultValues: {
@@ -51,7 +51,7 @@ export default function SignInForm() {
       } else {
         // Auto-redirect based on user role from login response
         const userRole = result.user?.role;
-        
+
         switch (userRole) {
           case "doctor":
             router.push("/doctor/dashboard");
@@ -63,7 +63,7 @@ export default function SignInForm() {
             router.push("/admin/dashboard");
             break;
           default:
-            router.push("/dashboard"); // Default user dashboard
+            router.push("/"); // Default user dashboard
         }
       }
     } else {

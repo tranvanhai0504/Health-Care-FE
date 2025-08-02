@@ -147,6 +147,8 @@ export default function ScheduleDetailModal({
     useState<ConsultationPackage | null>(null);
   const [loading, setLoading] = useState(false);
 
+  console.log(serviceDetails, packageDetails);
+
   // Fetch service details when modal opens
   useEffect(() => {
     if (!schedule || !isOpen) {
@@ -158,11 +160,7 @@ export default function ScheduleDetailModal({
     const fetchDetails = async () => {
       setLoading(true);
       try {
-        if (
-          schedule.type === "services" &&
-          schedule.services &&
-          schedule.services.length > 0
-        ) {
+        if (schedule.services && schedule.services.length > 0) {
           // Extract service IDs from ScheduleService objects
           const serviceIds = schedule.services.map((s) =>
             typeof s === "string" ? s : s.service
@@ -171,12 +169,12 @@ export default function ScheduleDetailModal({
           // Fetch detailed service information
           const services = await consultationServiceApi.getByIds(serviceIds);
           setServiceDetails(services);
-        } else if (schedule.type === "package" && schedule.packageInfo) {
+        } else if (schedule.type === "package" && schedule.packageId) {
           // Fetch package details
           const packageId =
-            typeof schedule.packageInfo === "string"
-              ? schedule.packageInfo
-              : schedule.packageInfo._id;
+            typeof schedule.packageId === "string"
+              ? schedule.packageId
+              : schedule.packageId._id;
 
           if (packageId) {
             const packageData = await consultationPackageService.getById(
@@ -217,7 +215,7 @@ export default function ScheduleDetailModal({
     remainingBalance,
     type: schedule.type,
     services: schedule.services,
-    packageInfo: schedule.packageInfo,
+    packageId: schedule.packageId,
   });
 
   // Calculate fallback total price if payment.totalPrice is not available
@@ -472,112 +470,107 @@ export default function ScheduleDetailModal({
               </div>
             )}
 
-            {/* Services Details (for service-type schedules) */}
-            {schedule.type === "services" &&
-              schedule.services &&
-              schedule.services.length > 0 && (
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <Stethoscope className="h-3 w-3 text-white" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      Selected Services
-                    </h3>
-                    <Badge variant="outline" className="text-xs">
-                      {schedule.services.length} service
-                      {schedule.services.length !== 1 ? "s" : ""}
-                    </Badge>
+            {/* Services Details (for both types) */}
+            {schedule.services && schedule.services.length > 0 && (
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Stethoscope className="h-3 w-3 text-white" />
                   </div>
+                  <h3 className="text-sm font-semibold text-gray-800">
+                    {schedule.type === "package"
+                      ? "Package Services"
+                      : "Selected Services"}
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    {schedule.services.length} service
+                    {schedule.services.length !== 1 ? "s" : ""}
+                  </Badge>
+                </div>
 
-                  {loading ? (
-                    <div className="space-y-2">
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="animate-pulse h-16 bg-gray-200 rounded"
-                        ></div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {schedule.services.map((scheduleService, index) => {
-                        const serviceDetail = serviceDetails.find(
-                          (s) =>
-                            s._id ===
-                            (typeof scheduleService === "string"
-                              ? scheduleService
-                              : scheduleService.service)
-                        );
+                {loading ? (
+                  <div className="space-y-2">
+                    {[...Array(3)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="animate-pulse h-16 bg-gray-200 rounded"
+                      ></div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {schedule.services.map((scheduleService, index) => {
+                      const serviceDetail = serviceDetails.find(
+                        (s) =>
+                          s._id ===
+                          (typeof scheduleService === "string"
+                            ? scheduleService
+                            : scheduleService.service)
+                      );
 
-                        return (
-                          <div key={index} className="bg-white rounded-lg p-3">
-                            <div className="flex items-start gap-x-2">
-                              <div className="flex-1">
-                                <div className="flex items-center justify-start gap-2 mb-1">
-                                  <h4 className="text-sm font-semibold text-gray-900">
-                                    {serviceDetail?.name || "Service"}
-                                  </h4>
-                                  {typeof scheduleService === "object" &&
-                                    scheduleService.status && (
-                                      <Badge
-                                        variant="outline"
-                                        className={`text-xs ${
-                                          scheduleService.status === "completed"
-                                            ? "bg-green-50 text-green-700 border-green-200"
-                                            : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                        }`}
-                                      >
-                                        {scheduleService.status}
-                                      </Badge>
-                                    )}
-                                </div>
-                                {serviceDetail && (
-                                  <>
-                                    <p className="text-xs text-gray-600 mb-2">
-                                      {serviceDetail.description}
-                                    </p>
-                                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                                      <div className="flex items-center gap-1">
-                                        <Timer className="h-3 w-3" />
-                                        <span>
-                                          {formatDuration(
-                                            serviceDetail.duration
-                                          )}
-                                        </span>
-                                      </div>
-                                      {serviceDetail.specialization &&
-                                        typeof serviceDetail.specialization ===
-                                          "object" && (
-                                          <div className="flex items-center gap-1">
-                                            <Building2 className="h-3 w-3" />
-                                            <span>
-                                              {
-                                                serviceDetail.specialization
-                                                  .name
-                                              }
-                                            </span>
-                                          </div>
-                                        )}
-                                    </div>
-                                  </>
-                                )}
+                      return (
+                        <div key={index} className="bg-white rounded-lg p-3">
+                          <div className="flex items-start gap-x-2">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-start gap-2 mb-1">
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                  {serviceDetail?.name || "Service"}
+                                </h4>
+                                {typeof scheduleService === "object" &&
+                                  scheduleService.status && (
+                                    <Badge
+                                      variant="outline"
+                                      className={`text-xs ${
+                                        scheduleService.status === "completed"
+                                          ? "bg-green-50 text-green-700 border-green-200"
+                                          : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      }`}
+                                    >
+                                      {scheduleService.status}
+                                    </Badge>
+                                  )}
                               </div>
                               {serviceDetail && (
-                                <div className="text-right">
-                                  <div className="text-sm font-bold text-gray-700">
-                                    {formatPrice(serviceDetail.price)}
+                                <>
+                                  <p className="text-xs text-gray-600 mb-2">
+                                    {serviceDetail.description}
+                                  </p>
+                                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      <Timer className="h-3 w-3" />
+                                      <span>
+                                        {formatDuration(serviceDetail.duration)}
+                                      </span>
+                                    </div>
+                                    {serviceDetail.specialization &&
+                                      typeof serviceDetail.specialization ===
+                                        "object" && (
+                                        <div className="flex items-center gap-1">
+                                          <Building2 className="h-3 w-3" />
+                                          <span>
+                                            {serviceDetail.specialization.name}
+                                          </span>
+                                        </div>
+                                      )}
                                   </div>
-                                </div>
+                                </>
                               )}
                             </div>
+                            {serviceDetail && (
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-gray-700">
+                                  {formatPrice(serviceDetail.price)}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Package Details (for package-type schedules) */}
             {schedule.type === "package" && (packageDetails || packageName) && (
@@ -608,32 +601,7 @@ export default function ScheduleDetailModal({
                       "Comprehensive health package with multiple tests and consultations."}
                   </p>
 
-                  {packageDetails?.features &&
-                    packageDetails.features.length > 0 && (
-                      <div className="mt-3">
-                        <h5 className="text-xs font-semibold text-gray-700 mb-2">
-                          Included Features:
-                        </h5>
-                        <div className="grid grid-cols-2 gap-1">
-                          {packageDetails.features.map((feature, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-1.5 text-xs text-gray-600"
-                            >
-                              <CheckCircle className="h-3 w-3 text-gray-500" />
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  {!packageDetails?.features && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                      <CheckCircle className="h-3 w-3" />
-                      <span>All tests included</span>
-                    </div>
-                  )}
+                  {/* Remove fallback for features since features field is gone */}
                 </div>
               </div>
             )}

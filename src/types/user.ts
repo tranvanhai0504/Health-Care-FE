@@ -1,3 +1,5 @@
+import { GetManyParams } from "./api";
+
 /**
  * User interface
  */
@@ -28,3 +30,9 @@ export interface UpdateUserData {
   gender?: string;
   occupation?: string;
 } 
+
+export interface UserGetAllParams extends GetManyParams {
+  role?: string;
+  name?: string;
+  phoneNumber?: string;
+}

@@ -163,7 +163,11 @@ export default function ConsultationsPage() {
           params.sortBy = sortBy;
         }
 
-        const response = await consultationServiceApi.getPaginated(params);
+        const response = await consultationServiceApi.getMany({
+          options: {
+            pagination: params,
+          },
+        });
 
         // Handle different response structures for paginated data
         let servicesData: ConsultationService[] = [];

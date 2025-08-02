@@ -13,17 +13,7 @@ export class MedicalExaminationService extends BaseService<MedicalExamination> {
     super('/api/v1/medical-examinations');
   }
 
-  /**
-   * Get all medical examinations with pagination
-   * @param params - Pagination parameters and optional query parameters
-   * @returns Promise with paginated response containing examinations and pagination info
-   */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<MedicalExamination>> {
-    const response = await api.get<PaginatedApiResponse<MedicalExamination>>(this.basePath, {
-      params
-    });
-    return response.data;
-  }
+
 
   /**
    * Get all medical examinations

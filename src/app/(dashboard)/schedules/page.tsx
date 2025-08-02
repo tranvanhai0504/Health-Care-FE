@@ -115,6 +115,8 @@ const SchedulesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
+  console.log("check", selectedSchedule);
+
   // Fetch schedules
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -131,11 +133,11 @@ const SchedulesPage = () => {
               let packageName = undefined;
 
               // Only try to fetch package details if type is 'package' and packageInfo exists
-              if (schedule.type === "package" && schedule.packageInfo) {
+              if (schedule.type === "package" && schedule.packageId) {
                 const packageId =
-                  typeof schedule.packageInfo === "string"
-                    ? schedule.packageInfo
-                    : schedule.packageInfo._id;
+                  typeof schedule.packageId === "string"
+                    ? schedule.packageId
+                    : schedule.packageId._id;
 
                 if (packageId) {
                   const packageDetails =

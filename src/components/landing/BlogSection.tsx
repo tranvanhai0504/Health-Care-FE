@@ -89,16 +89,16 @@ export function BlogSection() {
   };
 
   return (
-    <section className="py-10 md:py-10 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-6 md:px-8">
-        <div className="flex flex-col items-center mb-16">
-          <Badge className="mb-4 px-3 py-1 bg-primary/10 text-primary hover:bg-primary/15">
-            Health & Wellness
-          </Badge>
-          <h2 className="text-4xl font-bold text-center mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6">
+            <Calendar className="h-8 w-8 text-primary" />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Latest Health Updates
           </h2>
-          <p className="text-gray-600 text-center max-w-2xl text-lg">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Stay informed with our latest healthcare articles, tips, and
             insights from our medical experts.
           </p>

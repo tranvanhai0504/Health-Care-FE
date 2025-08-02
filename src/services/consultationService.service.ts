@@ -3,6 +3,7 @@ import api from "@/lib/axios";
 import axios from "axios";
 import {
   ConsultationService,
+  ConsultationServiceGetManyParams,
   PaginatedApiResponse,
   PaginationParams,
   ApiResponse,
@@ -14,31 +15,21 @@ export class ConsultationServiceApiService extends BaseService<ConsultationServi
   }
 
   /**
-   * Get all consultation services
-   * @returns Promise with array of consultation services
+   * Get many consultation services
+   * @param params - Custom filter parameters for consultation services
+   * @returns Promise with paginated response containing consultation services
    */
-  async getAll(): Promise<ConsultationService[]> {
-    const response = await api.get<ApiResponse<ConsultationService[]>>(
-      this.basePath
-    );
-    return response.data.data || response.data;
-  }
-
-  /**
-   * Get consultation services with pagination info
-   * @param params - Pagination parameters
-   * @returns Promise with paginated response containing services and pagination info
-   */
-  async getPaginated(
-    params?: PaginationParams
-  ): Promise<PaginatedApiResponse<ConsultationService>> {
-    const response = await api.get<PaginatedApiResponse<ConsultationService>>(
+  async getMany(params?: ConsultationServiceGetManyParams): Promise<PaginatedApiResponse<ConsultationService>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<ConsultationService>>>(
       `${this.basePath}/many`,
       {
-        params,
+        params: {
+          ...params,
+          options: JSON.stringify(params?.options),
+        },
       }
     );
-    return response.data;
+    return response.data.data;
   }
 
   /**

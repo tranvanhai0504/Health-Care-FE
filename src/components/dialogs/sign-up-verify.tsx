@@ -7,12 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 import { authService } from "@/services";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
+import { useSetupStore } from "@/stores/setup";
 
 type Props = {
   isOpen: boolean;
@@ -28,8 +29,9 @@ export function SignUpVerifyModal({
   const [isPending, startTransition] = useTransition();
   const [otp, setOtp] = useState("");
   const router = useRouter();
+  const setUserInfo = useSetupStore((state) => state.setUserInfo);
 
-  const handleVerify = () => {
+  const handleVerify = useCallback(() => {
     if (otp.length !== 6) {
       toast.error("Please enter a valid 6-digit OTP");
       return;
@@ -43,13 +45,10 @@ export function SignUpVerifyModal({
         });
         toast.success("OTP verified successfully");
 
-        // Store the auth token if provided in the response
-        if (response.msg === "ok") {
-          localStorage.setItem("phoneNumber", phoneNumber);
+        // Store the phone number in Zustand setup store
+        if (response.msg.toLowerCase() === "ok") {
+          setUserInfo({ phoneNumber });
         }
-
-        // Close the modal
-        onOpenChange(false);
 
         // Redirect to appropriate page after successful verification
         router.push("/set-up");
@@ -58,9 +57,11 @@ export function SignUpVerifyModal({
         toast.error(
           axiosError.response?.data?.message || "Failed to verify OTP"
         );
+      } finally {
+        onOpenChange(false);
       }
     });
-  };
+  }, [otp, phoneNumber, setUserInfo, onOpenChange]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

@@ -24,17 +24,7 @@ export class PrescriptionService extends BaseService<Prescription> {
     return response.data.data;
   }
 
-  /**
-   * Get prescriptions with pagination support
-   * @param params - Pagination parameters
-   * @returns Promise with paginated response containing prescriptions and pagination info
-   */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<Prescription>> {
-    const response = await api.get<PaginatedApiResponse<Prescription>>(`${this.basePath}/many`, {
-      params
-    });
-    return response.data;
-  }
+
 
   /**
    * Get many prescriptions (paginated endpoint but return only data array)

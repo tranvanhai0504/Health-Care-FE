@@ -1,3 +1,6 @@
+import { GetManyParams } from "./api";
+import { User } from "./user";
+
 /**
  * Blog interface
  */
@@ -5,7 +8,7 @@ export interface Blog {
   _id: string;
   title: string;
   content: string;
-  author: string;
+  author: string | User;
   createdAt: string;
   updatedAt: string;
   active: boolean;
@@ -22,4 +25,13 @@ export interface BlogGetAllResponse {
   coverImage: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Blog get many params interface
+ */
+export interface BlogGetManyParams extends GetManyParams {
+  title?: string;
+  active?: boolean;
+  specialties?: string[];
 } 
