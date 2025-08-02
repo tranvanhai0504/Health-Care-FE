@@ -1,37 +1,35 @@
-import BaseService from './base.service';
-import api from '@/lib/axios';
-import { 
+import BaseService from "./base.service";
+import api from "@/lib/axios";
+import {
   Doctor,
   CreateDoctorData,
+  DoctorGetAllParams,
   ApiResponse,
   PaginatedApiResponse,
-  PaginationParams
-} from '@/types';
+  PaginationParams,
+} from "@/types";
 
 export class DoctorService extends BaseService<Doctor> {
   constructor() {
-    super('/api/v1/doctor');
+    super("/api/v1/doctor");
   }
 
   /**
    * Get all doctors
-   * @returns Promise with array of doctors
+   * @param params - Custom filter parameters for doctors
+   * @returns Promise with paginated response containing doctors
    */
-  async getAll(): Promise<Doctor[]> {
-    const response = await api.get<ApiResponse<Doctor[]>>(this.basePath);
+  async getAll(params?: DoctorGetAllParams): Promise<PaginatedApiResponse<Doctor>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Doctor>>>(
+      this.basePath,
+      {
+        params: {
+          ...params,
+          options: JSON.stringify(params?.options),
+        },
+      }
+    );
     return response.data.data;
-  }
-
-  /**
-   * Get doctors with pagination support
-   * @param params - Pagination parameters
-   * @returns Promise with paginated response containing doctors and pagination info
-   */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<Doctor>> {
-    const response = await api.get<PaginatedApiResponse<Doctor>>(`${this.basePath}/many`, {
-      params
-    });
-    return response.data;
   }
 
   /**
@@ -40,7 +38,9 @@ export class DoctorService extends BaseService<Doctor> {
    * @returns Promise with the doctor
    */
   async getById(id: string): Promise<Doctor> {
-    const response = await api.get<ApiResponse<Doctor>>(`${this.basePath}/${id}`);
+    const response = await api.get<ApiResponse<Doctor>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
   }
 
@@ -55,7 +55,7 @@ export class DoctorService extends BaseService<Doctor> {
     params?: PaginationParams & { search?: string; sortBy?: string }
   ): Promise<PaginatedApiResponse<Doctor>> {
     const response = await api.get<PaginatedApiResponse<Doctor>>(
-      `${this.basePath}/specialization/${specialization}`, 
+      `${this.basePath}/specialization/${specialization}`,
       { params }
     );
     return response.data;
@@ -78,7 +78,10 @@ export class DoctorService extends BaseService<Doctor> {
    * @returns Promise with the updated doctor profile
    */
   async update(id: string, data: Partial<CreateDoctorData>): Promise<Doctor> {
-    const response = await api.put<ApiResponse<Doctor>>(`${this.basePath}/${id}`, data);
+    const response = await api.put<ApiResponse<Doctor>>(
+      `${this.basePath}/${id}`,
+      data
+    );
     return response.data.data;
   }
 
@@ -88,9 +91,11 @@ export class DoctorService extends BaseService<Doctor> {
    * @returns Promise with the deleted doctor profile
    */
   async delete(id: string): Promise<Doctor> {
-    const response = await api.delete<ApiResponse<Doctor>>(`${this.basePath}/${id}`);
+    const response = await api.delete<ApiResponse<Doctor>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
   }
 }
 
-export const doctorService = new DoctorService(); 
+export const doctorService = new DoctorService();

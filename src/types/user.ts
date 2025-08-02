@@ -1,4 +1,4 @@
-import { PaginationParams } from "./api";
+import { GetManyParams } from "./api";
 
 /**
  * User interface
@@ -31,12 +31,7 @@ export interface UpdateUserData {
   occupation?: string;
 } 
 
-export interface UserGetAllParams {
-  options?: {
-    pagination?: PaginationParams;
-    filter?: Record<string, unknown>;
-    sort?: Record<string, unknown>;
-  };
+export interface UserGetAllParams extends GetManyParams {
   role?: string;
   name?: string;
   phoneNumber?: string;

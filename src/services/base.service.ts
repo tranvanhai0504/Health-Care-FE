@@ -3,7 +3,6 @@ import {
   ApiResponse,
   GetManyParams,
   PaginatedApiResponse,
-  PaginationParams,
 } from "@/types/api";
 
 // Re-export for compatibility
@@ -41,22 +40,7 @@ export default class BaseService<T> {
     return response.data.data;
   }
 
-  /**
-   * Get items with pagination support
-   * @param params - Pagination parameters and optional query parameters
-   * @returns Promise with paginated response containing items and pagination info
-   */
-  async getPaginated(
-    params?: PaginationParams & Record<string, unknown>
-  ): Promise<PaginatedApiResponse<T>> {
-    const response = await api.get<PaginatedApiResponse<T>>(
-      `${this.basePath}/many`,
-      {
-        params,
-      }
-    );
-    return response.data;
-  }
+
 
   /**
    * Get many items (paginated endpoint but return only data array)

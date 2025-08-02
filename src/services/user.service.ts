@@ -5,7 +5,6 @@ import {
   UpdateUserData,
   ApiResponse,
   PaginatedApiResponse,
-  PaginationParams,
   UserGetAllParams,
 } from "@/types";
 
@@ -29,23 +28,6 @@ class UserService extends BaseService<User> {
       }
     );
     return response.data.data;
-  }
-
-  /**
-   * Get users with pagination support (Admin functionality)
-   * @param params - Pagination parameters
-   * @returns Promise with paginated response containing users and pagination info
-   */
-  async getPaginated(
-    params?: PaginationParams & Record<string, unknown>
-  ): Promise<PaginatedApiResponse<User>> {
-    const response = await api.get<PaginatedApiResponse<User>>(
-      `${this.basePath}/many`,
-      {
-        params,
-      }
-    );
-    return response.data;
   }
 
   /**

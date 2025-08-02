@@ -1,3 +1,4 @@
+import { GetManyParams } from './api';
 import { Specialty } from './specialty';
 
 /**
@@ -32,4 +33,16 @@ export interface ConsultationService {
 export interface UpdateManyConsultationServiceRequest {
   ids: string[];
   data: Partial<ConsultationService>;
+}
+
+/**
+ * Consultation Service get many params interface
+ */
+export interface ConsultationServiceGetManyParams extends GetManyParams {
+  name?: string;
+  specialization?: string;
+  doctor?: string;
+  duration?: number;
+  minPrice?: number;
+  maxPrice?: number;
 } 

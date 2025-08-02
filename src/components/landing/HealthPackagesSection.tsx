@@ -32,9 +32,13 @@ export function HealthPackagesSection() {
     const fetchPackages = async () => {
       try {
         setLoading(true);
-        const response = await consultationPackageService.getPaginated({
-          page: 1,
-          limit: 6, // Show 6 packages on landing page
+        const response = await consultationPackageService.getMany({
+          options: {
+            pagination: {
+              page: 1,
+              limit: 6, // Show 6 packages on landing page
+            },
+          },
         });
         setPackages(response.data);
       } catch (err) {

@@ -139,7 +139,11 @@ const SearchService: React.FC<SearchServiceProps> = ({
           params
         );
       } else {
-        response = await consultationServiceApi.getPaginated(params);
+        response = await consultationServiceApi.getMany({
+          options: {
+            pagination: params,
+          },
+        });
       }
 
       setServices(response.data || []);

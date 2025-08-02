@@ -9,6 +9,7 @@ import {
   FileText,
   Calendar,
   Package,
+  Stethoscope,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -49,6 +50,11 @@ const AdminSidebar = () => {
       title: "Health Packages",
       href: "/admin/health-packages",
       icon: <Package className="w-5 h-5" />,
+    },
+    {
+      title: "Health Services",
+      href: "/admin/health-services",
+      icon: <Stethoscope className="w-5 h-5" />,
     },
     {
       title: "Settings",

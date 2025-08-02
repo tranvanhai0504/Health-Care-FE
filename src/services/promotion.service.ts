@@ -32,17 +32,7 @@ export class PromotionService extends BaseService<Promotion> {
     return response.data.data;
   }
 
-  /**
-   * Get promotions with pagination support
-   * @param params - Pagination parameters
-   * @returns Promise with paginated response containing promotions and pagination info
-   */
-  async getPaginated(params?: PaginationParams & Record<string, unknown>): Promise<PaginatedApiResponse<Promotion>> {
-    const response = await api.get<PaginatedApiResponse<Promotion>>(`${this.basePath}/many`, {
-      params
-    });
-    return response.data;
-  }
+
 
   /**
    * Get many promotions (paginated endpoint but return only data array)

@@ -1,3 +1,5 @@
+import { GetManyParams, PaginationParams } from "./api";
+
 /**
  * Price option interface
  */
@@ -60,15 +62,30 @@ export interface CreateConsultationPackageData {
   title: string;
   icon?: string;
   description: string;
-  priceOptions?: Omit<PriceOption, '_id'>[];
+  priceOptions?: Omit<PriceOption, "_id">[];
   tests?: string[];
-  faq?: Omit<FAQ, '_id'>[];
-  bookingOptions?: Omit<BookingOption, '_id'>[];
+  faq?: Omit<FAQ, "_id">[];
+  bookingOptions?: Omit<BookingOption, "_id">[];
   maxSlotPerPeriod?: number;
   // New fields
   category: string;
   titleImage: string;
   price: number;
+}
+
+/**
+ * Consultation Package get all params interface
+ */
+export interface ConsultationPackageGetAllParams extends GetManyParams {
+  options?: {
+    pagination?: PaginationParams;
+    filter?: Record<string, unknown>;
+    sort?: Record<string, unknown>;
+  };
+  title?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 /**
@@ -133,4 +150,4 @@ export interface CreatePeriodPackageData {
   booked: number;
   startTime: string;
   endTime: string;
-} 
+}

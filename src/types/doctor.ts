@@ -1,3 +1,5 @@
+import { GetManyParams } from "./api";
+
 /**
  * Doctor interface
  */
@@ -24,5 +26,18 @@ export interface CreateDoctorData {
   experience: number;
   qualifications: string[];
   consultationFee: number;
+  bio?: string;
+}
+
+/**
+ * Doctor get all params interface
+ */
+export interface DoctorGetAllParams extends GetManyParams {
+  specialization?: string;
+  minExperience?: number;
+  maxExperience?: number;
+  minConsultationFee?: number;
+  maxConsultationFee?: number;
+  minRating?: number;
   bio?: string;
 } 

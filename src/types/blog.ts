@@ -1,3 +1,4 @@
+import { GetManyParams } from "./api";
 import { User } from "./user";
 
 /**
@@ -24,4 +25,13 @@ export interface BlogGetAllResponse {
   coverImage: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Blog get many params interface
+ */
+export interface BlogGetManyParams extends GetManyParams {
+  title?: string;
+  active?: boolean;
+  specialties?: string[];
 } 

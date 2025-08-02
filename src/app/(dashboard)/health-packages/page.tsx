@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
 import { consultationPackageService } from "@/services/consultationPackage.service";
-import { PaginationInfo, ConsultationPackage as BaseConsultationPackage } from "@/types";
+import { PaginationInfo, ConsultationPackage as BaseConsultationPackage, ConsultationPackageGetAllParams } from "@/types";
 import {
   Card,
   CardContent,
@@ -73,8 +73,8 @@ const HealthPackagesPage = () => {
     async function fetchAllPackages() {
       try {
         setLoading(true);
-        const data = await consultationPackageService.getAll();
-        setAllPackages(data as ConsultationPackage[]);
+        const data = await consultationPackageService.getAll({});
+        setAllPackages(data.data as ConsultationPackage[]);
       } catch (error) {
         console.error("Error fetching all packages:", error);
       } finally {
@@ -91,25 +91,35 @@ const HealthPackagesPage = () => {
       try {
         if (loading) return; // Don't fetch if still loading all packages
         
-        // Build query parameters
-        const params: Record<string, string | number> = {
-          page: currentPage,
-          limit: itemsPerPage
+        // Build custom parameters for consultation packages
+        const params: ConsultationPackageGetAllParams = {
+          options: {
+            pagination: {
+              page: currentPage,
+              limit: itemsPerPage,
+            },
+          },
         };
 
+        // Add search as title filter
         if (searchQuery.trim()) {
-          params.search = searchQuery.trim();
+          params.title = searchQuery.trim();
         }
 
+        // Add category filter
         if (activeCategory !== "all") {
           params.category = activeCategory;
         }
 
+        // Add sorting
         if (sortOption !== "default") {
-          params.sortBy = sortOption;
+          if (!params.options) {
+            params.options = {};
+          }
+          params.options.sort = { [sortOption]: 1 };
         }
 
-        const response = await consultationPackageService.getPaginated(params);
+        const response = await consultationPackageService.getAll(params);
         console.log(response);
         setPackages(response.data as ConsultationPackage[]);
         setPaginationInfo(response.pagination);
