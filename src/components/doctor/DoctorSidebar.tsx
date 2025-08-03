@@ -6,7 +6,7 @@ import Link from "next/link";
 import { 
   BarChart3, 
   Users, 
-  FileText, 
+
   Calendar, 
   Stethoscope, 
   Settings, 

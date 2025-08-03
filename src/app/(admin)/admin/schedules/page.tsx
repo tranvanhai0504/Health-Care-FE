@@ -113,7 +113,7 @@ export default function AdminSchedulesPage() {
 
   useEffect(() => {
     fetchSchedules();
-  }, []);
+  }, [fetchSchedules]);
 
   // Apply client-side filtering
   const filteredSchedules = schedules.filter((schedule) => {

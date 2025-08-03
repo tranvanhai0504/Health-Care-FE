@@ -61,7 +61,7 @@ export function SignUpVerifyModal({
         onOpenChange(false);
       }
     });
-  }, [otp, phoneNumber, setUserInfo, onOpenChange]);
+  }, [otp, phoneNumber, setUserInfo, onOpenChange, router]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

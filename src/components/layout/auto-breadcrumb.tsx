@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { 
@@ -26,12 +26,9 @@ import { consultationServiceApi } from "@/services/consultationService.service";
 import { doctorService } from "@/services/doctor.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 
-// Type definition for entity resolver functions
-type EntityResolver = (id: string) => Promise<string | null>;
 
-interface EntityResolvers {
-  [key: string]: EntityResolver;
-}
+
+
 
 // Interface for path configuration
 interface PathConfig {
@@ -51,10 +48,10 @@ export function AutoBreadcrumb() {
   const [loading, setLoading] = useState(false);
 
   // Create service instances
-  const blogService = new BlogService();
+  const blogService = useMemo(() => new BlogService(), []);
 
   // Data fetchers for resolving dynamic paths to proper names
-  const entityResolvers: EntityResolvers = {
+  const entityResolvers = useMemo(() => ({
     // Resolve specialty ID to specialty name
     "specialties": async (id: string) => {
       try {
@@ -131,7 +128,7 @@ export function AutoBreadcrumb() {
         return `Book Dr. ${id.slice(-4)}`;
       }
     },
-  };
+  }), [blogService]);
 
   // Path configuration with icons and labels
   const pathConfig: Record<string, PathConfig> = {

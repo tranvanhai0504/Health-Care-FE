@@ -4,7 +4,7 @@ import {
   ApiResponse,
   GetManyParams,
   PaginatedApiResponse,
-  PaginationParams,
+
   Promotion,
   CreatePromotionData
 } from '@/types';
