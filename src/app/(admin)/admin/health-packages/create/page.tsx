@@ -102,6 +102,7 @@ export default function CreateHealthPackagePage() {
 
       await consultationPackageService.create({
         ...data,
+        titleImage: data.titleImage || "", // Ensure titleImage is always a string
         tests: serviceIds, // Store service IDs in the tests field
         // Add required fields with default values
         icon: "package",

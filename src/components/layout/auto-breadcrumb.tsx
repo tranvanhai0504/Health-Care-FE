@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import React, { useEffect, useState, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { 
@@ -67,7 +66,7 @@ export function AutoBreadcrumb() {
       // Resolve blog ID to blog title
       "blogs": async (id: string) => {
         try {
-          const response = await blogServiceInstance.getBlogById(id);
+          const response = await blogService.getBlogById(id);
           return response.data.title;
         } catch (error) {
           console.error("Failed to resolve blog:", error);
@@ -130,11 +129,6 @@ export function AutoBreadcrumb() {
       }
     },
   }), [blogService]);
-
-    return {
-      entityResolvers: resolvers
-    };
-  }, []); // Empty dependency array since these are stable
 
   // Memoize path configuration to prevent unnecessary re-renders
   const pathConfig = useMemo<Record<string, PathConfig>>(() => ({
@@ -233,10 +227,10 @@ export function AutoBreadcrumb() {
           const keyIndex = pathSegments.findIndex(seg => seg === value);
           const parentSegment = keyIndex > 0 ? pathSegments[keyIndex - 1] : null;
           
-          if (parentSegment && entityResolvers[parentSegment]) {
+          if (parentSegment && parentSegment in entityResolvers) {
             const resolverPromise = (async () => {
               try {
-                const resolver = entityResolvers[parentSegment];
+                const resolver = entityResolvers[parentSegment as keyof typeof entityResolvers];
                 const name = await resolver(value);
                 if (name) {
                   newDynamicNames[value] = name;

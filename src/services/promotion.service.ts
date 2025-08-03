@@ -18,8 +18,8 @@ export class PromotionService extends BaseService<Promotion> {
    * Get all promotions
    * @returns Promise with array of promotions
    */
-  async getAll(): Promise<Promotion[]> {
-    const response = await api.get<ApiResponse<Promotion[]>>(this.basePath);
+  async getAll(): Promise<PaginatedApiResponse<Promotion>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Promotion>>>(this.basePath);
     return response.data.data;
   }
 
@@ -35,21 +35,16 @@ export class PromotionService extends BaseService<Promotion> {
 
 
   /**
-   * Get many promotions (paginated endpoint but return only data array)
+   * Get many promotions (paginated endpoint)
    * @param params - Pagination parameters and optional query parameters
-   * @returns Promise with array of promotions
+   * @returns Promise with paginated promotions
    */
-  async getMany(params?: GetManyParams): Promise<Promotion[]> {
-    const response = await api.get<ApiResponse<Promotion[]> | PaginatedApiResponse<Promotion>>(`${this.basePath}/many`, {
+  async getMany(params?: GetManyParams): Promise<PaginatedApiResponse<Promotion>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Promotion>>>(`${this.basePath}/many`, {
       params
     });
     
-    // Handle both response formats
-    if ('pagination' in response.data) {
-      return response.data.data;
-    } else {
-      return response.data.data || response.data;
-    }
+    return response.data.data;
   }
 
   /**

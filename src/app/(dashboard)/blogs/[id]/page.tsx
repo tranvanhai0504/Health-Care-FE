@@ -99,7 +99,7 @@ const BlogDetailPage = () => {
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-gray-600">
             <div className="flex items-center">
               <User className="h-5 w-5 mr-2" />
-              <span>{blog.author}</span>
+              <span>{typeof blog.author === 'string' ? blog.author : blog.author?.name || "Unknown Author"}</span>
             </div>
             <div className="flex items-center">
               <Calendar className="h-5 w-5 mr-2" />

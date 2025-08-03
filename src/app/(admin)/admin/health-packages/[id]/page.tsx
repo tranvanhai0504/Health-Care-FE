@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ConsultationPackage, ConsultationService } from "@/types";
+import { ConsultationPackage, ConsultationService, Specialty } from "@/types";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import {
   Card,
@@ -322,7 +322,15 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                                         <p><span className="font-medium">Price:</span> {formatCurrency((test as ConsultationService).price)}</p>
                                       )}
                                       {(test as ConsultationService).specialization && (
-                                        <p><span className="font-medium">Specialization:</span> {(test as ConsultationService).specialization}</p>
+                                        <p>
+                                          <span className="font-medium">Specialization:</span>{" "}
+                                          {(() => {
+                                            const spec = (test as ConsultationService).specialization;
+                                            if (typeof spec === 'string') return spec;
+                                            if (spec && typeof spec === 'object') return (spec as Specialty).name;
+                                            return "Unknown";
+                                          })()}
+                                        </p>
                                       )}
                                     </div>
                                   )}

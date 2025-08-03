@@ -103,8 +103,8 @@ export class ScheduleService extends BaseService<Schedule> {
    * Get all schedules
    * @returns Promise with array of schedules
    */
-  async getAll(): Promise<ScheduleResponse[]> {
-    const response = await api.get<ApiResponse<ScheduleResponse[]>>(
+  async getAll(): Promise<PaginatedApiResponse<ScheduleResponse>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<ScheduleResponse>>>(
       this.basePath
     );
     return response.data.data;

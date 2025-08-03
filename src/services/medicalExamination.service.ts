@@ -2,6 +2,7 @@ import BaseService from './base.service';
 import api from '@/lib/axios';
 import { 
   ApiResponse,
+  PaginatedApiResponse,
   MedicalExamination,
   CreateMedicalExaminationData
 } from '@/types';
@@ -16,10 +17,10 @@ export class MedicalExaminationService extends BaseService<MedicalExamination> {
   /**
    * Get all medical examinations
    * @param params - Optional query parameters
-   * @returns Promise with array of examinations
+   * @returns Promise with paginated examinations
    */
-  async getAll(params?: Record<string, unknown>): Promise<MedicalExamination[]> {
-    const response = await api.get<ApiResponse<MedicalExamination[]>>(this.basePath, { params });
+  async getAll(params?: Record<string, unknown>): Promise<PaginatedApiResponse<MedicalExamination>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<MedicalExamination>>>(this.basePath, { params });
     return response.data.data;
   }
 

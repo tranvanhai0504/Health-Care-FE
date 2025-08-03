@@ -3,7 +3,8 @@ import api from '@/lib/axios';
 import { 
   Room,
   CreateRoomData,
-  ApiResponse
+  ApiResponse,
+  PaginatedApiResponse
 } from '@/types';
 
 export class RoomService extends BaseService<Room> {
@@ -15,8 +16,8 @@ export class RoomService extends BaseService<Room> {
    * Get all rooms
    * @returns Promise with array of rooms
    */
-  async getAll(): Promise<Room[]> {
-    const response = await api.get<ApiResponse<Room[]>>(this.basePath);
+  async getAll(): Promise<PaginatedApiResponse<Room>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Room>>>(this.basePath);
     return response.data.data;
   }
 
