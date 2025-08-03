@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { ConsultationService } from "@/types";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import SearchService from "@/components/dialogs/search-service";
@@ -247,9 +248,11 @@ export default function CreateHealthPackagePage() {
                             Preview
                           </h4>
                           <div className="relative w-full max-w-md">
-                            <img
+                            <Image
                               src={field.value}
                               alt="Package preview"
+                              width={400}
+                              height={192}
                               className="w-full h-48 aspect-video object-cover rounded-lg border shadow-sm"
                               onError={(e) => {
                                 e.currentTarget.style.display = "none";

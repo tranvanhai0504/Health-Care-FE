@@ -164,6 +164,7 @@ export default function AdminBlogsPage() {
     };
 
     fetchBlogs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, itemsPerPage, searchQuery, statusFilter, sortBy]);
 
   // Reset to first page when filters change
@@ -171,7 +172,7 @@ export default function AdminBlogsPage() {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchQuery, statusFilter, sortBy, itemsPerPage]);
+  }, [searchQuery, statusFilter, sortBy, itemsPerPage, currentPage]);
 
   const handleCreateBlog = () => {
     router.push("/admin/blogs/create");

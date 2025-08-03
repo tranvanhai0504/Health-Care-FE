@@ -2,8 +2,6 @@ import BaseService from './base.service';
 import api from '@/lib/axios';
 import { 
   ApiResponse,
-  PaginatedApiResponse,
-  PaginationParams,
   MedicalExamination,
   CreateMedicalExaminationData
 } from '@/types';

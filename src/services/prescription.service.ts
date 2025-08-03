@@ -3,7 +3,7 @@ import api from '@/lib/axios';
 import { 
   ApiResponse,
   PaginatedApiResponse,
-  PaginationParams,
+
   Prescription,
   CreatePrescriptionData,
   GetManyParams

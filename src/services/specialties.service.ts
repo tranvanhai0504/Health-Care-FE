@@ -4,7 +4,7 @@ import {
   SpecialtyWithBlogs,
   ApiResponse,
   PaginatedApiResponse,
-  PaginationParams,
+
   Blog
 } from '@/types';
 

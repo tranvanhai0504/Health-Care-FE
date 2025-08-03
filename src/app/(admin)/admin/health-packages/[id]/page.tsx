@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ConsultationPackage } from "@/types";
+import Image from "next/image";
+import { ConsultationPackage, ConsultationService } from "@/types";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import {
   Card,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils";
-import { Badge } from "@/components/ui/badge";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/useToast";
@@ -22,7 +23,7 @@ import {
   ArrowLeft,
   Pencil,
   Trash2,
-  CheckCircle2,
+
   Clock,
   Tag,
   HelpCircle,
@@ -55,27 +56,17 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
   const router = useRouter();
   const { toast } = useToast();
 
-  // Helper function to safely render feature text
-  const renderFeatureText = (feature: any): string => {
-    if (typeof feature === 'string') {
-      return feature;
-    }
-    if (typeof feature === 'object' && feature !== null) {
-      return feature.name || feature.description || feature.title || JSON.stringify(feature);
-    }
-    return String(feature);
-  };
-
   // Helper function to safely render test text
-  const renderTestText = (test: any): string => {
+  const renderTestText = (test: string | ConsultationService): string => {
     if (typeof test === 'string') {
       return test;
     }
     if (typeof test === 'object' && test !== null) {
-      return test.name || test.description || test.title || JSON.stringify(test);
+      return test.name || test.description || `Test ${test._id?.slice(-4) || ''}`;
     }
     return String(test);
   };
+
 
   useEffect(() => {
     const getParams = async () => {
@@ -102,6 +93,7 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -221,9 +213,11 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                       <div>
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Title Image</h3>
                         <div className="relative w-full">
-                          <img
+                          <Image
                             src={packageData.titleImage}
                             alt={packageData.title}
+                            width={600}
+                            height={280}
                             className="w-full h-70 aspect-video object-cover rounded-lg border shadow-sm"
                             onError={(e) => {
                               e.currentTarget.src = '/images/package-placeholder.jpg';
@@ -318,17 +312,17 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                                   </h4>
                                   {typeof test === 'object' && test !== null && (
                                     <div className="text-xs text-muted-foreground space-y-1">
-                                      {(test as any).description && (
-                                        <p><span className="font-medium">Description:</span> {(test as any).description}</p>
+                                      {(test as ConsultationService).description && (
+                                        <p><span className="font-medium">Description:</span> {(test as ConsultationService).description}</p>
                                       )}
-                                      {(test as any).duration && (
-                                        <p><span className="font-medium">Duration:</span> {(test as any).duration}</p>
+                                      {(test as ConsultationService).duration && (
+                                        <p><span className="font-medium">Duration:</span> {(test as ConsultationService).duration}</p>
                                       )}
-                                      {(test as any).price && (
-                                        <p><span className="font-medium">Price:</span> {formatCurrency((test as any).price)}</p>
+                                      {(test as ConsultationService).price && (
+                                        <p><span className="font-medium">Price:</span> {formatCurrency((test as ConsultationService).price)}</p>
                                       )}
-                                      {(test as any).specialization && (
-                                        <p><span className="font-medium">Specialization:</span> {(test as any).specialization}</p>
+                                      {(test as ConsultationService).specialization && (
+                                        <p><span className="font-medium">Specialization:</span> {(test as ConsultationService).specialization}</p>
                                       )}
                                     </div>
                                   )}
