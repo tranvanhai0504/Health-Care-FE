@@ -1,4 +1,4 @@
-export const host = "http://localhost:8081";
+export const host = "https://devq-be0x7.site";
 
 // Export all formatting utilities
 export * from './formatters';
