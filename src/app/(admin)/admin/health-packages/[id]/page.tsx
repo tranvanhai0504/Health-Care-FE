@@ -60,12 +60,10 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
 
   // Helper function to safely render test text
   const renderTestText = (test: string | ConsultationService): string => {
-  const renderTestText = (test: string | ConsultationService): string => {
     if (typeof test === 'string') {
       return test;
     }
     if (typeof test === 'object' && test !== null) {
-      return test.name || test.description || `Test ${test._id?.slice(-4) || ''}`;
       return test.name || test.description || `Test ${test._id?.slice(-4) || ''}`;
     }
     return String(test);
@@ -98,7 +96,6 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -220,11 +217,8 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Title Image</h3>
                         <div className="relative w-full">
                           <Image
-                          <Image
                             src={packageData.titleImage}
                             alt={packageData.title}
-                            width={600}
-                            height={280}
                             width={600}
                             height={280}
                             className="w-full h-70 aspect-video object-cover rounded-lg border shadow-sm"
@@ -323,16 +317,10 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                                     <div className="text-xs text-muted-foreground space-y-1">
                                       {(test as ConsultationService).description && (
                                         <p><span className="font-medium">Description:</span> {(test as ConsultationService).description}</p>
-                                      {(test as ConsultationService).description && (
-                                        <p><span className="font-medium">Description:</span> {(test as ConsultationService).description}</p>
                                       )}
                                       {(test as ConsultationService).duration && (
                                         <p><span className="font-medium">Duration:</span> {(test as ConsultationService).duration}</p>
-                                      {(test as ConsultationService).duration && (
-                                        <p><span className="font-medium">Duration:</span> {(test as ConsultationService).duration}</p>
                                       )}
-                                      {(test as ConsultationService).price && (
-                                        <p><span className="font-medium">Price:</span> {formatCurrency((test as ConsultationService).price)}</p>
                                       {(test as ConsultationService).price && (
                                         <p><span className="font-medium">Price:</span> {formatCurrency((test as ConsultationService).price)}</p>
                                       )}
