@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import {
   Clock, 
   Search,
   Plus,
-  User,
+
   Phone,
   Stethoscope,
   Edit,
@@ -154,15 +154,7 @@ export default function ReceptionistAppointments() {
     );
   };
 
-  const handleStatusChange = (appointmentId: string, newStatus: string) => {
-    setAppointments(prev => 
-      prev.map(apt => 
-        apt.id === appointmentId 
-          ? { ...apt, status: newStatus as any }
-          : apt
-      )
-    );
-  };
+
 
   return (
     <div className="space-y-6">

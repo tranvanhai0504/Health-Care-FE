@@ -52,7 +52,7 @@ export default function EditBlogPage() {
         setFormData({
           title: blogData.title || "",
           content: blogData.content || "",
-          author: blogData.author || "",
+          author: typeof blogData.author === 'string' ? blogData.author : blogData.author?.name || "",
           active: blogData.active ?? true,
           coverImage: blogData.coverImage || "",
           specialties: blogData.specialties || []

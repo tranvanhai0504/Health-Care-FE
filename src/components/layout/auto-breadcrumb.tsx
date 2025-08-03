@@ -26,12 +26,9 @@ import { consultationServiceApi } from "@/services/consultationService.service";
 import { doctorService } from "@/services/doctor.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 
-// Type definition for entity resolver functions
-type EntityResolver = (id: string) => Promise<string | null>;
 
-interface EntityResolvers {
-  [key: string]: EntityResolver;
-}
+
+
 
 // Interface for path configuration
 interface PathConfig {
@@ -50,26 +47,26 @@ export function AutoBreadcrumb() {
   const [dynamicNames, setDynamicNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  // Memoize service instances and entity resolvers to prevent infinite re-renders
-  const { entityResolvers } = useMemo(() => {
-    const blogServiceInstance = new BlogService();
+  // Create service instances
+  const blogService = useMemo(() => new BlogService(), []);
 
-    const resolvers: EntityResolvers = {
-      // Resolve specialty ID to specialty name
-      "specialties": async (id: string) => {
-        try {
-          const specialty = await specialtyService.getSpecialtyOnly(id);
-          return specialty.name;
-        } catch (error) {
-          console.error("Failed to resolve specialty:", error);
-          return `Specialty ${id.slice(-4)}`;
-        }
-      },
+  // Data fetchers for resolving dynamic paths to proper names
+  const entityResolvers = useMemo(() => ({
+    // Resolve specialty ID to specialty name
+    "specialties": async (id: string) => {
+      try {
+        const specialty = await specialtyService.getSpecialtyOnly(id);
+        return specialty.name;
+      } catch (error) {
+        console.error("Failed to resolve specialty:", error);
+        return `Specialty ${id.slice(-4)}`;
+      }
+    },
 
       // Resolve blog ID to blog title
       "blogs": async (id: string) => {
         try {
-          const response = await blogServiceInstance.getBlogById(id);
+          const response = await blogService.getBlogById(id);
           return response.data.title;
         } catch (error) {
           console.error("Failed to resolve blog:", error);
@@ -121,22 +118,17 @@ export function AutoBreadcrumb() {
         }
       },
 
-      // Additional resolvers for nested routes
-      "book-doctor": async (id: string) => {
-        try {
-          const doctor = await doctorService.getById(id);
-          return `Book Dr. ${doctor.user}`;
-        } catch (error) {
-          console.error("Failed to resolve doctor for booking:", error);
-          return `Book Dr. ${id.slice(-4)}`;
-        }
-      },
-    };
-
-    return {
-      entityResolvers: resolvers
-    };
-  }, []); // Empty dependency array since these are stable
+    // Additional resolvers for nested routes
+    "book-doctor": async (id: string) => {
+      try {
+        const doctor = await doctorService.getById(id);
+        return `Book Dr. ${doctor.user}`;
+      } catch (error) {
+        console.error("Failed to resolve doctor for booking:", error);
+        return `Book Dr. ${id.slice(-4)}`;
+      }
+    },
+  }), [blogService]);
 
   // Memoize path configuration to prevent unnecessary re-renders
   const pathConfig = useMemo<Record<string, PathConfig>>(() => ({
@@ -235,10 +227,10 @@ export function AutoBreadcrumb() {
           const keyIndex = pathSegments.findIndex(seg => seg === value);
           const parentSegment = keyIndex > 0 ? pathSegments[keyIndex - 1] : null;
           
-          if (parentSegment && entityResolvers[parentSegment]) {
+          if (parentSegment && parentSegment in entityResolvers) {
             const resolverPromise = (async () => {
               try {
-                const resolver = entityResolvers[parentSegment];
+                const resolver = entityResolvers[parentSegment as keyof typeof entityResolvers];
                 const name = await resolver(value);
                 if (name) {
                   newDynamicNames[value] = name;

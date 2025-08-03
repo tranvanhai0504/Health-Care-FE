@@ -9,11 +9,9 @@ import {
   Calendar, 
   Clock, 
   Search,
-  Filter,
   Plus,
   User,
-  Phone,
-  MapPin
+  Phone
 } from "lucide-react";
 import {
   Select,
@@ -246,7 +244,7 @@ export default function DoctorSchedules() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Today's Summary
+            Today&apos;s Summary
           </CardTitle>
         </CardHeader>
         <CardContent>

@@ -3,7 +3,7 @@ import api from '@/lib/axios';
 import { 
   ApiResponse,
   PaginatedApiResponse,
-  PaginationParams,
+
   Prescription,
   CreatePrescriptionData,
   GetManyParams
@@ -19,29 +19,24 @@ export class PrescriptionService extends BaseService<Prescription> {
    * @param params - Optional query parameters
    * @returns Promise with array of prescriptions
    */
-  async getAll(params?: Record<string, unknown>): Promise<Prescription[]> {
-    const response = await api.get<ApiResponse<Prescription[]>>(this.basePath, { params });
+  async getAll(params?: Record<string, unknown>): Promise<PaginatedApiResponse<Prescription>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Prescription>>>(this.basePath, { params });
     return response.data.data;
   }
 
 
 
   /**
-   * Get many prescriptions (paginated endpoint but return only data array)
+   * Get many prescriptions (paginated endpoint)
    * @param params - Pagination parameters and optional query parameters
-   * @returns Promise with array of prescriptions
+   * @returns Promise with paginated prescriptions
    */
-  async getMany(params?: GetManyParams): Promise<Prescription[]> {
-    const response = await api.get<ApiResponse<Prescription[]> | PaginatedApiResponse<Prescription>>(`${this.basePath}/many`, {
+  async getMany(params?: GetManyParams): Promise<PaginatedApiResponse<Prescription>> {
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Prescription>>>(`${this.basePath}/many`, {
       params
     });
     
-    // Handle both response formats
-    if ('pagination' in response.data) {
-      return response.data.data;
-    } else {
-      return response.data.data || response.data;
-    }
+    return response.data.data;
   }
 
   /**

@@ -94,6 +94,7 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, itemsPerPage, roleFilter, searchQuery]);
 
   useEffect(() => {
