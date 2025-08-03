@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils";
 import {
-  Check,
   Calendar,
   Stethoscope,
   AlertCircle,
@@ -51,8 +51,6 @@ const HealthPackageDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("tests");
   const [description, setDescription] = useState<string>("");
 
-
-
   useEffect(() => {
     const fetchPackageData = async () => {
       try {
@@ -82,15 +80,27 @@ const HealthPackageDetailsPage = () => {
   // Fetch test services when the tests tab is selected
   useEffect(() => {
     const fetchTestServices = async () => {
-      if (activeTab === "tests" && packageData && packageData.tests && packageData.tests.length > 0 && testServices.length === 0) {
+      if (
+        activeTab === "tests" &&
+        packageData &&
+        packageData.tests &&
+        packageData.tests.length > 0 &&
+        testServices.length === 0
+      ) {
         try {
           setTestsLoading(true);
-          const servicesData = await consultationServiceApi.getByIds(packageData.tests);
+          const servicesData = await consultationServiceApi.getByIds(
+            packageData.tests
+          );
           setTestServices(servicesData);
-          
+
           // If some tests couldn't be found, log it for debugging purposes
           if (servicesData.length < packageData.tests.length) {
-            console.log(`Some tests couldn't be found: ${packageData.tests.length - servicesData.length} missing`);
+            console.log(
+              `Some tests couldn't be found: ${
+                packageData.tests.length - servicesData.length
+              } missing`
+            );
           }
         } catch (err) {
           console.error("Failed to fetch test services:", err);
@@ -185,6 +195,28 @@ const HealthPackageDetailsPage = () => {
       {/* Package Header */}
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-2/3">
+          {/* Package Image */}
+          {packageData.titleImage && (
+            <div className="mb-6">
+              <div className="relative w-2/3 mx-auto">
+                <Image
+                  src={packageData.titleImage}
+                  alt={`${packageData.title} package image`}
+                  width={800}
+                  height={320}
+                  className="w-full h-64 md:h-80 object-cover rounded-lg border shadow-md"
+                  priority
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                  onError={() => {
+                    // Error handling will be managed by Next.js Image component
+                    console.log("Failed to load package image");
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Badge
@@ -195,43 +227,24 @@ const HealthPackageDetailsPage = () => {
                 {packageData.category}
               </Badge>
             </div>
-            <h1 className="text-3xl font-bold mb-4 text-foreground/90">{packageData.title}</h1>
+            <h1 className="text-3xl font-bold mb-4 text-foreground/90">
+              {packageData.title}
+            </h1>
             <div
               className="max-w-none text-muted-foreground blog-content [&_p]:indent-0 rounded-lg"
               dangerouslySetInnerHTML={{ __html: description }}
             />
             <div className="mt-4 p-4 bg-primary/10 rounded-lg">
               <p className="text-lg font-semibold text-primary">
-                Price: {packageData.price === 0 ? "Free" : formatCurrency(packageData.price)}
+                Price:{" "}
+                {packageData.price === 0
+                  ? "Free"
+                  : formatCurrency(packageData.price)}
               </p>
               {packageData.maxSlotPerPeriod && (
                 <p className="text-sm text-muted-foreground mt-1">
                   Max slots per period: {packageData.maxSlotPerPeriod}
                 </p>
-              )}
-            </div>
-          </div>
-
-          {/* Features highlight */}
-          <div className="mt-8 mb-6">
-            <h3 className="text-xl font-semibold mb-4 flex items-center text-foreground/90">
-              <CheckCircle className="h-5 w-5 mr-2 text-primary" />
-              Package Features
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {packageData.features?.map((feature, index) => (
-                <div key={index} className="flex items-start gap-3 group p-3 rounded-md hover:bg-muted/30 transition-colors">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <Check className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <p className="text-muted-foreground group-hover:text-foreground transition-colors">
-                    {feature}
-                  </p>
-                </div>
-              )) || (
-                <div className="col-span-2 text-center py-8 text-muted-foreground">
-                  No features information available
-                </div>
               )}
             </div>
           </div>
@@ -251,7 +264,8 @@ const HealthPackageDetailsPage = () => {
             <CardContent className="pt-5">
               {/* Package pricing */}
               <div className="mb-4">
-                {packageData.priceOptions && packageData.priceOptions.length > 0 ? (
+                {packageData.priceOptions &&
+                packageData.priceOptions.length > 0 ? (
                   <div className="flex flex-col space-y-3">
                     {packageData.priceOptions.map((option) => (
                       <div
@@ -286,7 +300,9 @@ const HealthPackageDetailsPage = () => {
                     <div className="text-center">
                       <h3 className="font-medium mb-2">Package Price</h3>
                       <p className="text-2xl font-bold text-primary">
-                        {packageData.price === 0 ? "Free" : formatCurrency(packageData.price)}
+                        {packageData.price === 0
+                          ? "Free"
+                          : formatCurrency(packageData.price)}
                       </p>
                       {packageData.bookingOption && (
                         <p className="text-sm text-muted-foreground mt-2">
@@ -372,66 +388,77 @@ const HealthPackageDetailsPage = () => {
             <CardContent className="pt-6">
               {testsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Array(4).fill(0).map((_, index) => (
-                    <div key={index} className="border border-border/60 rounded-md p-4">
-                      <div className="flex items-start">
-                        <Skeleton className="h-8 w-8 rounded-full mr-3" />
-                        <div className="w-full">
-                          <Skeleton className="h-5 w-3/4 mb-2" />
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-2/3 mt-1" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : packageData.tests && packageData.tests.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {testServices.length > 0 ? (
-                    testServices.map((service) => (
+                  {Array(4)
+                    .fill(0)
+                    .map((_, index) => (
                       <div
-                        key={service._id}
-                        className="border border-border/60 rounded-md p-4 flex items-start hover:border-primary/30 hover:bg-muted/10 transition-colors"
+                        key={index}
+                        className="border border-border/60 rounded-md p-4"
                       >
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
-                          <CheckCircle className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {service.description}
-                          </p>
-                          <div className="flex items-center mt-2">
-                            <Badge variant="outline" className="text-xs px-1.5 py-0">
-                              {formatCurrency(service.price)}
-                            </Badge>
-                            {service.specialization && (
-                              <Badge variant="secondary" className="text-xs ml-2 px-1.5 py-0">
-                                {typeof service.specialization === 'string' ? service.specialization : service.specialization.name}
-                              </Badge>
-                            )}
+                        <div className="flex items-start">
+                          <Skeleton className="h-8 w-8 rounded-full mr-3" />
+                          <div className="w-full">
+                            <Skeleton className="h-5 w-3/4 mb-2" />
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-2/3 mt-1" />
                           </div>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    packageData.tests.map((test, index) => (
-                    <div
-                      key={index}
-                      className="border border-border/60 rounded-md p-4 flex items-start hover:border-primary/30 hover:bg-muted/10 transition-colors"
-                    >
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Test {index + 1}</p>
-                        <p className="text-sm text-muted-foreground">
-                          ID: {test}
-                        </p>
-                      </div>
-                    </div>
-                    ))
-                  )}
+                    ))}
+                </div>
+              ) : packageData.tests && packageData.tests.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {testServices.length > 0
+                    ? testServices.map((service) => (
+                        <div
+                          key={service._id}
+                          className="border border-border/60 rounded-md p-4 flex items-start hover:border-primary/30 hover:bg-muted/10 transition-colors"
+                        >
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{service.name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {service.description}
+                            </p>
+                            <div className="flex items-center mt-2">
+                              <Badge
+                                variant="outline"
+                                className="text-xs px-1.5 py-0"
+                              >
+                                {formatCurrency(service.price)}
+                              </Badge>
+                              {service.specialization && (
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs ml-2 px-1.5 py-0"
+                                >
+                                  {typeof service.specialization === "string"
+                                    ? service.specialization
+                                    : service.specialization.name}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    : packageData.tests.map((test, index) => (
+                        <div
+                          key={index}
+                          className="border border-border/60 rounded-md p-4 flex items-start hover:border-primary/30 hover:bg-muted/10 transition-colors"
+                        >
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">Test {index + 1}</p>
+                            <p className="text-sm text-muted-foreground">
+                              ID: {test}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                 </div>
               ) : (
                 <div className="text-center py-12 bg-muted/10 rounded-lg">
@@ -462,7 +489,7 @@ const HealthPackageDetailsPage = () => {
                   {packageData.faq.map((item, index) => (
                     <div
                       key={index}
-                      className={`${index > 0 ? 'pt-5' : ''} last:pb-0`}
+                      className={`${index > 0 ? "pt-5" : ""} last:pb-0`}
                     >
                       <h3 className="font-medium text-lg mb-2 flex items-center">
                         <HelpCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
@@ -504,28 +531,29 @@ const HealthPackageDetailsPage = () => {
             <Calendar className="h-5 w-5" />
           </BookPackageButton>
 
-          {packageData.bookingOptions && packageData.bookingOptions.map((option, index) => (
-            <Button
-              key={index}
-              size="lg"
-              variant="outline"
-              className="h-12 min-w-40 gap-2 border-primary/20 hover:border-primary/30 hover:bg-primary/5"
-              asChild
-            >
-              <a
-                href={`${option.actionUrl}?package=${id}&tier=${selectedPriceOption}`}
+          {packageData.bookingOptions &&
+            packageData.bookingOptions.map((option, index) => (
+              <Button
+                key={index}
+                size="lg"
+                variant="outline"
+                className="h-12 min-w-40 gap-2 border-primary/20 hover:border-primary/30 hover:bg-primary/5"
+                asChild
               >
-                {option.type === "Branch" ? (
-                  <Stethoscope className="h-5 w-5" />
-                ) : (
-                  <Calendar className="h-5 w-5" />
-                )}
-                {option.type === "Branch"
-                  ? "Book at Clinic"
-                  : "Book Home Visit"}
-              </a>
-            </Button>
-          ))}
+                <a
+                  href={`${option.actionUrl}?package=${id}&tier=${selectedPriceOption}`}
+                >
+                  {option.type === "Branch" ? (
+                    <Stethoscope className="h-5 w-5" />
+                  ) : (
+                    <Calendar className="h-5 w-5" />
+                  )}
+                  {option.type === "Branch"
+                    ? "Book at Clinic"
+                    : "Book Home Visit"}
+                </a>
+              </Button>
+            ))}
         </div>
       </div>
     </div>

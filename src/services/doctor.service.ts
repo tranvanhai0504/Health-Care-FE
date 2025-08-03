@@ -78,7 +78,7 @@ export class DoctorService extends BaseService<Doctor> {
    * @returns Promise with the updated doctor profile
    */
   async update(id: string, data: Partial<CreateDoctorData>): Promise<Doctor> {
-    const response = await api.put<ApiResponse<Doctor>>(
+    const response = await api.patch<ApiResponse<Doctor>>(
       `${this.basePath}/${id}`,
       data
     );

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { 
@@ -50,91 +50,96 @@ export function AutoBreadcrumb() {
   const [dynamicNames, setDynamicNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  // Create service instances
-  const blogService = new BlogService();
+  // Memoize service instances and entity resolvers to prevent infinite re-renders
+  const { entityResolvers } = useMemo(() => {
+    const blogServiceInstance = new BlogService();
 
-  // Data fetchers for resolving dynamic paths to proper names
-  const entityResolvers: EntityResolvers = {
-    // Resolve specialty ID to specialty name
-    "specialties": async (id: string) => {
-      try {
-        const specialty = await specialtyService.getSpecialtyOnly(id);
-        return specialty.name;
-      } catch (error) {
-        console.error("Failed to resolve specialty:", error);
-        return `Specialty ${id.slice(-4)}`;
-      }
-    },
+    const resolvers: EntityResolvers = {
+      // Resolve specialty ID to specialty name
+      "specialties": async (id: string) => {
+        try {
+          const specialty = await specialtyService.getSpecialtyOnly(id);
+          return specialty.name;
+        } catch (error) {
+          console.error("Failed to resolve specialty:", error);
+          return `Specialty ${id.slice(-4)}`;
+        }
+      },
 
-    // Resolve blog ID to blog title
-    "blogs": async (id: string) => {
-      try {
-        const response = await blogService.getBlogById(id);
-        return response.data.title;
-      } catch (error) {
-        console.error("Failed to resolve blog:", error);
-        return `Blog ${id.slice(-4)}`;
-      }
-    },
+      // Resolve blog ID to blog title
+      "blogs": async (id: string) => {
+        try {
+          const response = await blogServiceInstance.getBlogById(id);
+          return response.data.title;
+        } catch (error) {
+          console.error("Failed to resolve blog:", error);
+          return `Blog ${id.slice(-4)}`;
+        }
+      },
 
-    // Resolve consultation service ID to service name
-    "consultations": async (id: string) => {
-      try {
-        const service = await consultationServiceApi.getById(id);
-        return service.name;
-      } catch (error) {
-        console.error("Failed to resolve consultation service:", error);
-        return `Service ${id.slice(-4)}`;
-      }
-    },
+      // Resolve consultation service ID to service name
+      "consultations": async (id: string) => {
+        try {
+          const service = await consultationServiceApi.getById(id);
+          return service.name;
+        } catch (error) {
+          console.error("Failed to resolve consultation service:", error);
+          return `Service ${id.slice(-4)}`;
+        }
+      },
 
-    // Resolve doctor ID to doctor name
-    "doctors": async (id: string) => {
-      try {
-        const doctor = await doctorService.getById(id);
-        return `Dr. ${doctor.user}`;
-      } catch (error) {
-        console.error("Failed to resolve doctor:", error);
-        return `Dr. ${id.slice(-4)}`;
-      }
-    },
+      // Resolve doctor ID to doctor name
+      "doctors": async (id: string) => {
+        try {
+          const doctor = await doctorService.getById(id);
+          return `Dr. ${doctor.user}`;
+        } catch (error) {
+          console.error("Failed to resolve doctor:", error);
+          return `Dr. ${id.slice(-4)}`;
+        }
+      },
 
-    // Resolve health package ID to package name
-    "health-packages": async (id: string) => {
-      try {
-        const packageData = await consultationPackageService.getById(id);
-        return packageData.title;
-      } catch (error) {
-        console.error("Failed to resolve health package:", error);
-        return `Package ${id.slice(-4)}`;
-      }
-    },
-    
-            // Resolve schedule ID to schedule reference
-        "schedules": async (id: string) => {
-      try {
-            // This would be replaced with an actual API call when schedule service is available
-            return `Schedule #${id.slice(-4)}`;
-      } catch (error) {
-            console.error("Failed to resolve schedule", error);
-            return `Schedule #${id.slice(-4)}`;
-      }
-    },
+      // Resolve health package ID to package name
+      "health-packages": async (id: string) => {
+        try {
+          const packageData = await consultationPackageService.getById(id);
+          return packageData.title;
+        } catch (error) {
+          console.error("Failed to resolve health package:", error);
+          return `Package ${id.slice(-4)}`;
+        }
+      },
+      
+      // Resolve schedule ID to schedule reference
+      "schedules": async (id: string) => {
+        try {
+          // This would be replaced with an actual API call when schedule service is available
+          return `Schedule #${id.slice(-4)}`;
+        } catch (error) {
+          console.error("Failed to resolve schedule", error);
+          return `Schedule #${id.slice(-4)}`;
+        }
+      },
 
-    // Additional resolvers for nested routes
-    "book-doctor": async (id: string) => {
-      try {
-        const doctor = await doctorService.getById(id);
-        return `Book Dr. ${doctor.user}`;
-      } catch (error) {
-        console.error("Failed to resolve doctor for booking:", error);
-        return `Book Dr. ${id.slice(-4)}`;
-      }
-    },
-  };
+      // Additional resolvers for nested routes
+      "book-doctor": async (id: string) => {
+        try {
+          const doctor = await doctorService.getById(id);
+          return `Book Dr. ${doctor.user}`;
+        } catch (error) {
+          console.error("Failed to resolve doctor for booking:", error);
+          return `Book Dr. ${id.slice(-4)}`;
+        }
+      },
+    };
 
-  // Path configuration with icons and labels
-  const pathConfig: Record<string, PathConfig> = {
+    return {
+      entityResolvers: resolvers
+    };
+  }, []); // Empty dependency array since these are stable
+
+  // Memoize path configuration to prevent unnecessary re-renders
+  const pathConfig = useMemo<Record<string, PathConfig>>(() => ({
     // Main sections
     "consultations": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Consultations" },
     "specialties": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: "Medical Specialties" },
@@ -143,7 +148,7 @@ export function AutoBreadcrumb() {
     "information": { icon: <FileText className="h-3.5 w-3.5" />, label: "Your Information" },
     "password": { icon: <Settings className="h-3.5 w-3.5" />, label: "Create Password" },
     "dashboard": { icon: <Home className="h-3.5 w-3.5" />, label: "Dashboard" },
-            "schedules": { icon: <Calendar className="h-3.5 w-3.5" />, label: "My Schedules" },
+    "schedules": { icon: <Calendar className="h-3.5 w-3.5" />, label: "My Schedules" },
     "profiles": { icon: <Users className="h-3.5 w-3.5" />, label: "Profiles" },
     "doctors": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: "Find Doctors" },
     "book-doctor": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Book Doctor" },
@@ -168,10 +173,10 @@ export function AutoBreadcrumb() {
     "edit": { icon: <FileText className="h-3.5 w-3.5" />, label: "Edit" },
     "create": { icon: <FileText className="h-3.5 w-3.5" />, label: "Create" },
     "view": { icon: <FileText className="h-3.5 w-3.5" />, label: "View" },
-  };
+  }), []);
 
-  // Paths to exclude from breadcrumb navigation
-  const excludePaths = [
+  // Memoize paths to exclude from breadcrumb navigation
+  const excludePaths = useMemo(() => [
     // Auth related paths
     "/sign-in",
     "/sign-up",
@@ -188,10 +193,10 @@ export function AutoBreadcrumb() {
     "/landing",
     "/welcome",
     "/intro"
-  ];
+  ], []);
 
-  // Generate path translations from config and resolved dynamic entities
-  const getPathTranslations = () => {
+  // Memoize path translations generation
+  const pathTranslations = useMemo(() => {
     const translations: Record<string, string> = {};
     
     // Add static translations from path config
@@ -205,12 +210,14 @@ export function AutoBreadcrumb() {
     });
     
     return translations;
-  };
+  }, [pathConfig, dynamicNames]);
 
-  // Check if a string looks like a MongoDB ObjectId
-  const isObjectId = (str: string): boolean => {
-    return /^[0-9a-fA-F]{24}$/.test(str);
-  };
+  // Memoize ObjectId checker function
+  const isObjectId = useMemo(() => {
+    return (str: string): boolean => {
+      return /^[0-9a-fA-F]{24}$/.test(str);
+    };
+  }, []);
 
   // Resolve dynamic path segments
   useEffect(() => {
@@ -278,7 +285,7 @@ export function AutoBreadcrumb() {
     };
 
     resolveDynamicPaths();
-  }, [params, pathname, entityResolvers]);
+  }, [params, pathname, entityResolvers, isObjectId]);
 
   // Render nothing while resolving dynamic paths for the first time
   if (loading && Object.keys(dynamicNames).length === 0) {
@@ -287,7 +294,7 @@ export function AutoBreadcrumb() {
 
   return (
     <Breadcrumb
-      pathTranslations={getPathTranslations()}
+      pathTranslations={pathTranslations}
       excludePaths={excludePaths}
       homeHref="/"
       className="mb-4 py-2"

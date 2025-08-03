@@ -13,6 +13,7 @@ export interface User {
   dateOfBirth: string;
   gender: string;
   occupation?: string;
+  avatar?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,6 +30,7 @@ export interface UpdateUserData {
   dateOfBirth?: string;
   gender?: string;
   occupation?: string;
+  avatar?: string;
 } 
 
 export interface UserGetAllParams extends GetManyParams {
