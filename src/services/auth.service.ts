@@ -63,6 +63,17 @@ const authService = {
   },
 
   /**
+   * Change user password
+   */
+  changePassword: async (data: { oldPassword: string; newPassword: string }) => {
+    const response = await api.post<ApiResponse<{ message: string }>>(
+      "/api/v1/auth/change-password",
+      data
+    );
+    return response.data;
+  },
+
+  /**
    * Create a new user (admin functionality)
    */
   createUser: async (data: CreateUserData) => {

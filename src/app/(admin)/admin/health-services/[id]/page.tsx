@@ -39,8 +39,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function ViewHealthServicePage({ params }: { params: Promise<{ id: string }> }) {
-  const [serviceData, setServiceData] = useState<ConsultationService | null>(null);
+export default function ViewHealthServicePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const [serviceData, setServiceData] = useState<ConsultationService | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [id, setId] = useState<string>("");
@@ -56,7 +62,7 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
 
   const fetchServiceData = useCallback(async () => {
     if (!id) return;
-    
+
     try {
       setLoading(true);
       const data = await consultationServiceApi.getById(id);
@@ -113,7 +119,10 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
     return (
       <div className="container mx-auto py-8 px-4 text-center">
         <h2 className="text-2xl font-bold mb-4">Service Not Found</h2>
-        <p className="mb-6">The health service you&apos;re looking for doesn&apos;t exist or has been removed.</p>
+        <p className="mb-6">
+          The health service you&apos;re looking for doesn&apos;t exist or has
+          been removed.
+        </p>
         <Button onClick={() => router.push("/admin/health-services")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Health Services
         </Button>
@@ -131,10 +140,7 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Health Services
         </Button>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleEditService}
-          >
+          <Button variant="outline" onClick={handleEditService}>
             <Pencil className="mr-2 h-4 w-4" /> Edit Service
           </Button>
           <Button
@@ -165,8 +171,12 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
-                  <p className="text-base">{serviceData.description || "No description available"}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Description
+                  </h3>
+                  <p className="text-base">
+                    {serviceData.description || "No description available"}
+                  </p>
                 </div>
 
                 <Separator />
@@ -218,16 +228,14 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
                         ? serviceData.specialization
                         : serviceData.specialization?.name || "General"}
                     </Badge>
-                    {typeof serviceData.specialization === "object" && 
-                     serviceData.specialization?.description && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {serviceData.specialization.description}
-                      </p>
-                    )}
+                    {typeof serviceData.specialization === "object" &&
+                      serviceData.specialization?.description && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {serviceData.specialization.description}
+                        </p>
+                      )}
                   </div>
                 </div>
-
-
               </div>
             </CardContent>
           </Card>
@@ -243,19 +251,23 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Created At</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                    Created At
+                  </h4>
                   <p className="font-medium">
-                    {serviceData.createdAt 
-                      ? new Date(serviceData.createdAt).toLocaleString() 
-                      : 'N/A'}
+                    {serviceData.createdAt
+                      ? new Date(serviceData.createdAt).toLocaleString()
+                      : "N/A"}
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Updated At</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                    Updated At
+                  </h4>
                   <p className="font-medium">
-                    {serviceData.updatedAt 
-                      ? new Date(serviceData.updatedAt).toLocaleString() 
-                      : 'N/A'}
+                    {serviceData.updatedAt
+                      ? new Date(serviceData.updatedAt).toLocaleString()
+                      : "N/A"}
                   </p>
                 </div>
               </div>
@@ -272,19 +284,25 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Duration</span>
-                  <span className="font-medium">{serviceData.duration} min</span>
+                  <span className="text-sm text-muted-foreground">
+                    Duration
+                  </span>
+                  <span className="font-medium">
+                    {serviceData.duration} min
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Price</span>
                   <span className="font-medium">
-                    {serviceData.price === 0 
-                      ? "Free" 
+                    {serviceData.price === 0
+                      ? "Free"
                       : formatCurrency(serviceData.price)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Specialization</span>
+                  <span className="text-sm text-muted-foreground">
+                    Specialization
+                  </span>
                   <span className="font-medium text-right max-w-[120px] truncate">
                     {typeof serviceData.specialization === "string"
                       ? serviceData.specialization
@@ -302,13 +320,13 @@ export default function ViewHealthServicePage({ params }: { params: Promise<{ id
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the health service
-              and all associated data.
+              This action cannot be undone. This will permanently delete the
+              health service and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeleteService}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

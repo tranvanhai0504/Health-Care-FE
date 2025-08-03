@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { userService } from "@/services/user.service";
+import utilService from "@/services/util.service";
 import { type User, type UpdateUserData } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +37,6 @@ import {
   Briefcase,
   Save,
   UserCircle,
-  Key,
   Lock,
   Bell,
   Eye,
@@ -45,6 +45,8 @@ import {
   ShieldCheck,
   CheckCircle,
   AlertCircle,
+  Camera,
+  Upload,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +59,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
+import { ChangePasswordDialog } from "@/components/dialogs/change-password-dialog";
 
 // Form validation schema
 const profileFormSchema = z.object({
@@ -79,11 +82,17 @@ const profileFormSchema = z.object({
   occupation: z.string().optional(),
 });
 
+
+
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const { fetchProfile } = useAuthStore();
 
   // Initialize form with react-hook-form
@@ -99,6 +108,8 @@ export default function ProfilePage() {
       occupation: "",
     },
   });
+
+
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -128,9 +139,70 @@ export default function ProfilePage() {
     fetchUserProfile();
   }, [form]);
 
+  // Cleanup avatar preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
+
+  // Handle avatar file selection
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file');
+        return;
+      }
+      
+      // Validate file size (e.g., max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      setSelectedAvatarFile(file);
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+    }
+  };
+
+  // Remove selected avatar
+  const removeSelectedAvatar = () => {
+    setSelectedAvatarFile(null);
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+      setAvatarPreview(null);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     try {
       setSaving(true);
+      
+      let avatarUrl: string | undefined;
+      
+      // Upload avatar if a new one is selected
+      if (selectedAvatarFile) {
+        try {
+          setUploadingAvatar(true);
+          const uploadResult = await utilService.uploadImage(selectedAvatarFile);
+          avatarUrl = uploadResult.url;
+          toast.success("Avatar uploaded successfully");
+        } catch (error) {
+          console.error("Failed to upload avatar:", error);
+          toast.error("Failed to upload avatar, but profile will still be updated");
+          // Continue with profile update even if avatar upload fails
+        } finally {
+          setUploadingAvatar(false);
+        }
+      }
+
       const updateData: UpdateUserData = {
         name: values.name,
         email: values.email,
@@ -139,20 +211,30 @@ export default function ProfilePage() {
         dateOfBirth: values.dateOfBirth,
         gender: values.gender,
         occupation: values.occupation,
+        ...(avatarUrl && { avatar: avatarUrl }), // Include avatar URL if uploaded
       };
 
       const updatedUser = await userService.updateProfile(updateData);
       await fetchProfile();
 
       setUser(updatedUser);
+      
+      // Clean up avatar selection after successful update
+      if (selectedAvatarFile) {
+        removeSelectedAvatar();
+      }
+      
       toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile information");
     } finally {
       setSaving(false);
+      setUploadingAvatar(false);
     }
   };
+
+
 
   if (loading) {
     return (
@@ -216,7 +298,7 @@ export default function ProfilePage() {
           <div className="flex items-center space-x-5 bg-card p-4 rounded-lg border shadow-sm">
             <Avatar className="h-20 w-20 border-4 border-background">
               <AvatarImage
-                src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`}
+                src={avatarPreview || user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`}
                 alt={user?.name}
               />
               <AvatarFallback className="text-xl font-bold">
@@ -298,22 +380,77 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="pt-6 pb-7">
                   <div className="flex flex-col items-center space-y-6">
-                    <div className="relative">
+                    <div className="relative group">
                       <Avatar className="h-32 w-32 border-4 border-background shadow-md">
                         <AvatarImage
-                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`}
+                          src={avatarPreview || user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`}
                           alt={user?.name}
                         />
                         <AvatarFallback className="text-4xl font-semibold">
                           {getInitials()}
                         </AvatarFallback>
                       </Avatar>
+                      
+                      {/* Upload overlay */}
+                      <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <div className="text-white text-center">
+                          <Camera className="h-6 w-6 mx-auto mb-1" />
+                          <span className="text-xs font-medium">Change Photo</span>
+                        </div>
+                      </div>
+                      
+                      {/* File input */}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
+                        disabled={saving || uploadingAvatar}
+                      />
+                      
                       <div className="absolute -bottom-2 -right-2">
                         <Badge className="rounded-full px-2 py-1 font-medium capitalize">
                           {user?.role || "User"}
                         </Badge>
                       </div>
+                      
+                      {/* Upload progress indicator */}
+                      {uploadingAvatar && (
+                        <div className="absolute inset-0 bg-primary/20 rounded-full flex items-center justify-center">
+                          <div className="text-primary text-center">
+                            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-1" />
+                            <span className="text-xs font-medium">Uploading...</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                    
+                    {/* Avatar actions */}
+                    {selectedAvatarFile && (
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={removeSelectedAvatar}
+                          disabled={saving || uploadingAvatar}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                            fileInput?.click();
+                          }}
+                          disabled={saving || uploadingAvatar}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose Different
+                        </Button>
+                      </div>
+                    )}
 
                     <div className="w-full pt-6 space-y-5 divide-y divide-border/60">
                       <div className="pb-2">
@@ -594,9 +731,14 @@ export default function ProfilePage() {
                         <Button
                           type="submit"
                           className="h-11 px-8 w-full sm:w-auto"
-                          disabled={saving}
+                          disabled={saving || uploadingAvatar}
                         >
-                          {saving ? (
+                          {uploadingAvatar ? (
+                            <span className="flex items-center">
+                              <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
+                              Uploading avatar...
+                            </span>
+                          ) : saving ? (
                             <span className="flex items-center">
                               <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
                               Saving changes...
@@ -605,6 +747,11 @@ export default function ProfilePage() {
                             <span className="flex items-center">
                               <Save className="mr-2 h-4 w-4" />
                               Save Changes
+                              {selectedAvatarFile && (
+                                <span className="ml-1 text-xs bg-primary/20 px-2 py-0.5 rounded-full">
+                                  +Avatar
+                                </span>
+                              )}
                             </span>
                           )}
                         </Button>
@@ -632,7 +779,7 @@ export default function ProfilePage() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-full bg-primary/10 text-primary">
-                        <Key className="h-5 w-5" />
+                        <Lock className="h-5 w-5" />
                       </div>
                       <div>
                         <h3 className="text-base font-medium">Password</h3>
@@ -641,7 +788,11 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" className="gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="gap-2"
+                      onClick={() => setChangePasswordOpen(true)}
+                    >
                       <Lock className="h-4 w-4" />
                       Change Password
                     </Button>
@@ -762,6 +913,12 @@ export default function ProfilePage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Change Password Dialog */}
+        <ChangePasswordDialog
+          isOpen={changePasswordOpen}
+          onOpenChange={setChangePasswordOpen}
+        />
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { consultationPackageService } from "@/services/consultationPackage.service";
-import { PaginationInfo, ConsultationPackage as BaseConsultationPackage, ConsultationPackageGetAllParams } from "@/types";
+import { PaginationInfo, ConsultationPackage as BaseConsultationPackage } from "@/types";
 import {
   Card,
   CardContent,
@@ -39,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 // Extend the base type with our UI-specific properties
 interface ConsultationPackage extends BaseConsultationPackage {
@@ -68,68 +69,86 @@ const HealthPackagesPage = () => {
 
   const itemsPerPage = 12;
 
-  // Fetch initial data for categories
+  // Fetch categories for filter dropdown
   useEffect(() => {
-    async function fetchAllPackages() {
+    const fetchCategories = async () => {
       try {
-        setLoading(true);
-        const data = await consultationPackageService.getAll({});
-        setAllPackages(data.data as ConsultationPackage[]);
+        const response = await consultationPackageService.getMany({
+          options: {
+            filter: {},
+            pagination: { page: 1, limit: 1000 }, // Get all for categories
+            sort: { category: 1 },
+          },
+        });
+        setAllPackages(response.data as ConsultationPackage[]);
       } catch (error) {
-        console.error("Error fetching all packages:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching categories:", error);
       }
-    }
-
-    fetchAllPackages();
+    };
+    fetchCategories();
   }, []);
 
-  // Fetch paginated packages
+  // Fetch packages with pagination and filters
   useEffect(() => {
-    async function fetchPaginatedPackages() {
+    const fetchPackages = async () => {
       try {
-        if (loading) return; // Don't fetch if still loading all packages
-        
-        // Build custom parameters for consultation packages
-        const params: ConsultationPackageGetAllParams = {
-          options: {
-            pagination: {
-              page: currentPage,
-              limit: itemsPerPage,
-            },
-          },
-        };
+        setLoading(true);
+
+        // Build filter object
+        const filter: Record<string, unknown> = {};
 
         // Add search as title filter
         if (searchQuery.trim()) {
-          params.title = searchQuery.trim();
+          filter.title = { $regex: searchQuery.trim(), $options: "i" };
         }
 
         // Add category filter
         if (activeCategory !== "all") {
-          params.category = activeCategory;
+          filter.category = activeCategory;
         }
 
-        // Add sorting
-        if (sortOption !== "default") {
-          if (!params.options) {
-            params.options = {};
-          }
-          params.options.sort = { [sortOption]: 1 };
+        // Map sort options to appropriate field names
+        let sortField = "createdAt";
+        let sortOrder = -1; // Default: newest first
+
+        if (sortOption === "price-low") {
+          sortField = "price";
+          sortOrder = 1;
+        } else if (sortOption === "price-high") {
+          sortField = "price";
+          sortOrder = -1;
+        } else if (sortOption === "newest") {
+          sortField = "createdAt";
+          sortOrder = -1;
+        } else if (sortOption === "popular") {
+          sortField = "popularity";
+          sortOrder = -1;
         }
 
-        const response = await consultationPackageService.getAll(params);
-        console.log(response);
+        // Build the options object
+        const options = {
+          filter,
+          pagination: {
+            page: currentPage,
+            limit: itemsPerPage,
+          },
+          sort: { [sortField]: sortOrder },
+        };
+
+        const response = await consultationPackageService.getMany({
+          options,
+        });
         setPackages(response.data as ConsultationPackage[]);
         setPaginationInfo(response.pagination);
       } catch (error) {
-        console.error("Error fetching paginated packages:", error);
+        console.error("Error fetching packages:", error);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    fetchPaginatedPackages();
-  }, [currentPage, searchQuery, sortOption, activeCategory, loading]);
+    fetchPackages();
+  }, [currentPage, searchQuery, sortOption, activeCategory]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -245,36 +264,29 @@ const HealthPackagesPage = () => {
         </div>
       </div>
 
-      {/* Categories tabs */}
+      {/* Categories filter */}
       <div className="mb-8">
-        <Tabs
-          defaultValue="all"
-          value={activeCategory}
-          onValueChange={setActiveCategory}
-          className="w-full"
-        >
-          <div className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-            <Tag className="h-4 w-4" />
-            Categories:
-          </div>
-          <TabsList className="bg-muted/50 p-4 h-auto grid grid-cols-2 md:flex md:flex-wrap gap-2 justify-start">
-            {getCategories().map((category) => (
-              <TabsTrigger
-                key={category}
-                value={category}
-                asChild
-                className="w-fit"
-              >
-                <Button
-                  variant="ghost"
-                  className="px-4 py-2 capitalize text-sm !w-fit"
-                >
-                  {category === "all" ? "All Packages" : category}
-                </Button>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+          <Tag className="h-4 w-4" />
+          Categories:
+        </div>
+        <div className="bg-muted/50 p-4 rounded-lg grid grid-cols-2 md:flex md:flex-wrap gap-2 justify-start">
+          {getCategories().map((category) => (
+            <Button
+              key={category}
+              variant={activeCategory === category ? "default" : "ghost"}
+              onClick={() => setActiveCategory(category)}
+              className={cn(
+                "px-4 py-2 capitalize text-sm w-fit transition-all",
+                activeCategory === category 
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "hover:bg-muted-foreground/10"
+              )}
+            >
+              {category === "all" ? "All Packages" : category}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Active filters display */}
@@ -398,6 +410,19 @@ const HealthPackagesPage = () => {
                   )}
                 />
 
+                {/* Package Image */}
+                {pkg.titleImage && (
+                  <div className="relative w-full h-60 overflow-hidden">
+                    <Image
+                      src={pkg.titleImage}
+                      alt={`${pkg.title} package image`}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  </div>
+                )}
+
                 <CardHeader className="pt-5 pb-3">
                   <div className="flex items-start justify-between">
                     <div>
@@ -461,7 +486,7 @@ const HealthPackagesPage = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="pt-3 flex flex-col space-y-2">
+                <CardFooter className="flex flex-col space-y-2">
                   <Button
                     variant="outline"
                     className="w-full justify-between group-hover:border-primary/40 group-hover:bg-primary/5 transition-colors"

@@ -43,7 +43,6 @@ export default function ConsultationsPage() {
   const [consultationServices, setConsultationServices] = useState<
     ConsultationService[]
   >([]);
-  const [allServices, setAllServices] = useState<ConsultationService[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [isPending, startTransition] = useTransition();
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,192 +62,85 @@ export default function ConsultationsPage() {
   // Service list store for cart functionality
   const { getTotalServices, getTotalPrice, toggleList } = useServiceListSafe();
 
-  // Fetch all services for filtering
+  // Fetch specialties for dropdown
   useEffect(() => {
-    const fetchAllServices = async () => {
+    const fetchSpecialties = async () => {
       try {
-        const [allServicesResponse, specialtiesResponse] = await Promise.all([
-          consultationServiceApi.getAll(),
-          specialtyService.getAll(),
-        ]);
-
-        // Handle different response structures for services
-        let servicesData: ConsultationService[] = [];
-        if (Array.isArray(allServicesResponse)) {
-          servicesData = allServicesResponse;
-        } else if (
-          allServicesResponse &&
-          typeof allServicesResponse === "object" &&
-          "data" in allServicesResponse
-        ) {
-          const dataProperty = (allServicesResponse as { data: unknown }).data;
-          if (Array.isArray(dataProperty)) {
-            servicesData = dataProperty;
-          } else {
-            console.error(
-              "Expected services data to be array but got:",
-              typeof dataProperty,
-              dataProperty
-            );
-          }
-        } else {
-          console.error(
-            "Unexpected services response structure:",
-            typeof allServicesResponse,
-            allServicesResponse
-          );
-        }
-
-        // Handle different response structures for specialties
+        const response = await specialtyService.getAll();
+        
+        // Handle different response structures
         let specialtiesData: Specialty[] = [];
-        if (Array.isArray(specialtiesResponse)) {
-          specialtiesData = specialtiesResponse;
-        } else if (
-          specialtiesResponse &&
-          typeof specialtiesResponse === "object" &&
-          "data" in specialtiesResponse
-        ) {
-          const dataProperty = (specialtiesResponse as { data: unknown }).data;
+        if (Array.isArray(response)) {
+          specialtiesData = response;
+        } else if (response && typeof response === "object" && "data" in response) {
+          const dataProperty = (response as { data: unknown }).data;
           if (Array.isArray(dataProperty)) {
             specialtiesData = dataProperty;
-          } else {
-            console.error(
-              "Expected specialties data to be array but got:",
-              typeof dataProperty,
-              dataProperty
-            );
           }
-        } else {
-          console.error(
-            "Unexpected specialties response structure:",
-            typeof specialtiesResponse,
-            specialtiesResponse
-          );
         }
-
-        setAllServices(Array.isArray(servicesData) ? servicesData : []);
-        setSpecialties(Array.isArray(specialtiesData) ? specialtiesData : []);
+        
+        setSpecialties(specialtiesData);
       } catch (error) {
-        console.error("Failed to fetch all services:", error);
-        setAllServices([]);
+        console.error("Error fetching specialties:", error);
         setSpecialties([]);
       }
     };
-
-    fetchAllServices();
+    fetchSpecialties();
   }, []);
 
-  // Fetch paginated services
+  // Fetch services with pagination and filters
   useEffect(() => {
-    const fetchPaginatedServices = async () => {
+    const fetchServices = async () => {
       try {
-        // Build query parameters
-        const params: Record<string, number | string> = {
-          page: currentPage,
-          limit: itemsPerPage,
-        };
+        // Build filter object  
+        const filter: Record<string, unknown> = {};
 
-        // Add search term if provided
+        // Add search as name filter
         if (searchTerm.trim()) {
-          params.search = searchTerm.trim();
+          filter.name = { $regex: searchTerm.trim(), $options: "i" };
         }
 
-        // Add specialty filter if selected
+        // Add specialty filter
         if (selectedSpecialty !== "all") {
-          params.specialization = selectedSpecialty;
+          filter.specialization = selectedSpecialty;
         }
 
-        // Add sorting parameter
-        if (sortBy !== "name") {
-          params.sortBy = sortBy;
+        // Map sort options to appropriate field names
+        let sortField = "name";
+        let sortOrder = 1; // Default: A-Z
+
+        if (sortBy === "price-low") {
+          sortField = "price";
+          sortOrder = 1;
+        } else if (sortBy === "price-high") {
+          sortField = "price";
+          sortOrder = -1;
+        } else if (sortBy === "duration") {
+          sortField = "duration";
+          sortOrder = 1;
+        } else if (sortBy === "name") {
+          sortField = "name";
+          sortOrder = 1;
         }
+
+        // Build the options object
+        const options = {
+          filter,
+          pagination: {
+            page: currentPage,
+            limit: itemsPerPage,
+          },
+          sort: { [sortField]: sortOrder },
+        };
 
         const response = await consultationServiceApi.getMany({
-          options: {
-            pagination: params,
-          },
+          options,
         });
 
-        // Handle different response structures for paginated data
-        let servicesData: ConsultationService[] = [];
-        let paginationData: PaginationInfo = {
-          total: 0,
-          page: 1,
-          limit: itemsPerPage,
-          totalPages: 0,
-        };
-
-        if (response && typeof response === "object") {
-          // Check if response has data property
-          if ("data" in response) {
-            const dataProperty = response.data;
-            console.log(
-              "Data property:",
-              dataProperty,
-              "Type:",
-              typeof dataProperty
-            );
-
-            if (Array.isArray(dataProperty)) {
-              servicesData = dataProperty;
-            } else if (
-              dataProperty &&
-              typeof dataProperty === "object" &&
-              "data" in dataProperty
-            ) {
-              // Nested data structure: response.data.data
-              const nestedData = (dataProperty as { data: unknown }).data;
-              if (Array.isArray(nestedData)) {
-                servicesData = nestedData;
-              } else {
-                console.error(
-                  "Expected nested data to be array but got:",
-                  typeof nestedData,
-                  nestedData
-                );
-              }
-            } else {
-              console.error(
-                "Expected services data to be array but got:",
-                typeof dataProperty,
-                dataProperty
-              );
-            }
-          } else if (Array.isArray(response)) {
-            // Direct array response (fallback)
-            servicesData = response;
-          }
-
-          // Extract pagination info if available
-          if ("pagination" in response && response.pagination) {
-            paginationData = response.pagination as PaginationInfo;
-          } else if (
-            "data" in response &&
-            response.data &&
-            typeof response.data === "object" &&
-            "pagination" in response.data
-          ) {
-            // Pagination might be nested in data
-            paginationData = (response.data as { pagination: unknown })
-              .pagination as PaginationInfo;
-          }
-        } else if (Array.isArray(response)) {
-          // Direct array response without pagination
-          servicesData = response;
-        } else {
-          console.error(
-            "Unexpected paginated response structure:",
-            typeof response,
-            response
-          );
-        }
-
-        setConsultationServices(
-          Array.isArray(servicesData) ? servicesData : []
-        );
-        setPaginationInfo(paginationData);
+        setConsultationServices(response.data as ConsultationService[]);
+        setPaginationInfo(response.pagination);
       } catch (error) {
-        console.error("Failed to fetch paginated services:", error);
+        console.error("Error fetching services:", error);
         setConsultationServices([]);
         setPaginationInfo({
           total: 0,
@@ -260,7 +152,7 @@ export default function ConsultationsPage() {
     };
 
     startTransition(() => {
-      fetchPaginatedServices();
+      fetchServices();
     });
   }, [currentPage, itemsPerPage, searchTerm, selectedSpecialty, sortBy]);
 
@@ -305,7 +197,7 @@ export default function ConsultationsPage() {
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="text-sm text-nowrap">
-            {allServices.length} total services
+            {paginationInfo.total} total services
           </Badge>
           {getTotalServices() > 0 && (
             <Button

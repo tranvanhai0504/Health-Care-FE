@@ -233,7 +233,7 @@ export default function ScheduleDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[95vh] p-0 overflow-hidden flex flex-col bg-white">
+      <DialogContent className="max-w-3xl w-[95vw] h-[95vh] p-0 overflow-hidden flex flex-col bg-white">
         {/* Compact Fixed Header */}
         <div className="border-b bg-white/80 backdrop-blur-sm p-4 pt-6 shadow-sm">
           <DialogHeader>
