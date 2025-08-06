@@ -38,4 +38,7 @@ export * from './schedule';
 export * from './specialty';
 
 // User types
-export * from './user'; 
+export * from './user';
+
+// Waiting message types
+export * from './waitingMessage'; 

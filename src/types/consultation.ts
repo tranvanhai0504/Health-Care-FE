@@ -24,6 +24,7 @@ export interface ConsultationService {
   specialization?: string | Specialty; // Can be either a string ID or populated object
   createdAt: string;
   updatedAt: string;
+  type: "consultation" | "treatment";
   __v?: number;
 }
 
