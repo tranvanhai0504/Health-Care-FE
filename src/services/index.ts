@@ -11,6 +11,7 @@ import { prescriptionService } from './prescription.service';
 import { medicalExaminationService } from './medicalExamination.service';
 import { promotionService } from './promotion.service';
 import { imageService } from './image.service';
+import { waitingMessageService } from './waittingMessage.service';
 import { ApiResponse } from './base.service';
 
 // Export the ApiResponse interface for use throughout the app
@@ -37,5 +38,6 @@ export {
   prescriptionService,
   medicalExaminationService,
   promotionService,
-  imageService
+  imageService,
+  waitingMessageService
 }; 

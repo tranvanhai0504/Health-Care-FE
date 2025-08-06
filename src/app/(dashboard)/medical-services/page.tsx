@@ -67,18 +67,22 @@ export default function ConsultationsPage() {
     const fetchSpecialties = async () => {
       try {
         const response = await specialtyService.getAll();
-        
+
         // Handle different response structures
         let specialtiesData: Specialty[] = [];
         if (Array.isArray(response)) {
           specialtiesData = response;
-        } else if (response && typeof response === "object" && "data" in response) {
+        } else if (
+          response &&
+          typeof response === "object" &&
+          "data" in response
+        ) {
           const dataProperty = (response as { data: unknown }).data;
           if (Array.isArray(dataProperty)) {
             specialtiesData = dataProperty;
           }
         }
-        
+
         setSpecialties(specialtiesData);
       } catch (error) {
         console.error("Error fetching specialties:", error);
@@ -92,7 +96,7 @@ export default function ConsultationsPage() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Build filter object  
+        // Build filter object
         const filter: Record<string, unknown> = {};
 
         // Add search as name filter
@@ -104,6 +108,9 @@ export default function ConsultationsPage() {
         if (selectedSpecialty !== "all") {
           filter.specialization = selectedSpecialty;
         }
+
+        // Add type filter
+        filter.type = "consultation";
 
         // Map sort options to appropriate field names
         let sortField = "name";
@@ -188,7 +195,7 @@ export default function ConsultationsPage() {
             </Link>
           </div>
           <h1 className="text-4xl font-bold tracking-tight">
-            Medical Services
+            Medical Consultation Services
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
             Browse our comprehensive range of medical services offered by expert
@@ -484,7 +491,7 @@ export default function ConsultationsPage() {
                         size={viewMode === "list" ? "sm" : "default"}
                         className={viewMode === "list" ? "w-full" : "flex-1"}
                         onClick={() =>
-                          router.push(`/consultations/${service._id}`)
+                          router.push(`/medical-services/${service._id}`)
                         }
                       >
                         View Details
