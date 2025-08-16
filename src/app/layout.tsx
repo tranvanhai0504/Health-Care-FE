@@ -42,7 +42,7 @@ export default function RootLayout({
         <Providers>
           <div className="flex flex-col min-h-screen">
             <Header />
-            <main className="relative space-y-10 min-h-screen z-40 pt-8">
+            <main className="relative space-y-10 min-h-screen z-40">
               {children}
             </main>
           </div>

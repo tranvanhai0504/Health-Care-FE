@@ -1,1 +1,0 @@
-export { default as ScheduleDetailModal } from './schedule-detail-modal'; 

@@ -1,36 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Calendar, 
-  Clock, 
-  Search,
-  Plus,
-  User,
-  Phone
-} from "lucide-react";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  ScheduleHeader,
+  ScheduleFilters,
+  AppointmentList,
+  AppointmentSummary,
+  AppointmentDetails,
+  MedicalExaminationForm,
+  PrescriptionForm,
+  ScheduleManager,
+} from "@/components/doctor/schedules";
+import { Appointment } from "@/types/appointment";
+import { CreateMedicalExaminationData } from "@/types/medicalExamination";
+import { CreatePrescriptionData } from "@/types/prescription";
+import { medicalExaminationService } from "@/services/medicalExamination.service";
 
-interface Appointment {
-  id: string;
-  patientName: string;
-  patientPhone: string;
-  time: string;
-  date: string;
-  type: string;
-  status: "upcoming" | "completed" | "cancelled" | "in-progress";
-  notes?: string;
-}
+type ViewMode = 
+  | "list" 
+  | "details" 
+  | "medical-examination" 
+  | "prescription" 
+  | "schedule-manager";
 
 export default function DoctorSchedules() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -38,9 +30,11 @@ export default function DoctorSchedules() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("today");
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
+  // Fetch appointments data
   useEffect(() => {
-    // TODO: Fetch actual data from API
     const fetchAppointments = async () => {
       try {
         // Simulated data - replace with actual API calls
@@ -49,31 +43,46 @@ export default function DoctorSchedules() {
             id: "1",
             patientName: "John Doe",
             patientPhone: "+1234567890",
+            patientEmail: "john.doe@email.com",
+            patientAddress: "123 Main St, City, State 12345",
             time: "09:00 AM",
             date: "2024-01-15",
             type: "Consultation",
             status: "upcoming",
-            notes: "Regular checkup"
+            notes: "Regular checkup",
+            duration: "30 minutes",
+            symptoms: "General health checkup, no specific complaints",
+            previousVisits: 3,
           },
           {
             id: "2",
             patientName: "Jane Smith",
             patientPhone: "+1234567891",
+            patientEmail: "jane.smith@email.com",
+            patientAddress: "456 Oak Ave, City, State 12346",
             time: "10:30 AM",
             date: "2024-01-15",
             type: "Follow-up",
-            status: "in-progress"
+            status: "in-progress",
+            duration: "45 minutes",
+            symptoms: "Follow-up for diabetes management",
+            previousVisits: 8,
           },
           {
             id: "3",
             patientName: "Robert Johnson",
             patientPhone: "+1234567892",
+            patientEmail: "robert.johnson@email.com",
+            patientAddress: "789 Pine St, City, State 12347",
             time: "02:00 PM",
             date: "2024-01-15",
             type: "Emergency",
             status: "completed",
-            notes: "Chest pain evaluation"
-          }
+            notes: "Chest pain evaluation",
+            duration: "60 minutes",
+            symptoms: "Chest pain, shortness of breath",
+            previousVisits: 1,
+          },
         ];
         setAppointments(mockAppointments);
       } catch (error) {
@@ -86,196 +95,184 @@ export default function DoctorSchedules() {
     fetchAppointments();
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "upcoming":
-        return "bg-blue-100 text-blue-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      case "in-progress":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "Emergency":
-        return "bg-red-100 text-red-800";
-      case "Follow-up":
-        return "bg-orange-100 text-orange-800";
-      case "Consultation":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.patientName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || appointment.status === statusFilter;
+  // Filter appointments based on search and filters
+  const filteredAppointments = appointments.filter((appointment) => {
+    const matchesSearch = appointment.patientName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || appointment.status === statusFilter;
     // Add date filtering logic here based on dateFilter
     return matchesSearch && matchesStatus;
   });
 
+  // Event handlers
+  const handleViewDetails = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setViewMode("details");
+  };
+
+  const handleStartConsultation = (appointment: Appointment) => {
+    // TODO: Implement consultation start logic
+    console.log("Starting consultation for:", appointment.patientName);
+  };
+
+  const handleCreateExamination = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setViewMode("medical-examination");
+  };
+
+  const handleCreatePrescription = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setViewMode("prescription");
+  };
+
+  const handleManageSchedule = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setViewMode("schedule-manager");
+  };
+
+  const handleSaveMedicalExamination = async (data: CreateMedicalExaminationData) => {
+    try {
+      await medicalExaminationService.create(data);
+      setViewMode("details");
+      // TODO: Show success message
+    } catch (error) {
+      console.error("Error creating medical examination:", error);
+      // TODO: Show error message
+    }
+  };
+
+  const handleSavePrescription = async (data: CreatePrescriptionData) => {
+    try {
+      // TODO: Implement prescription service
+      console.log("Saving prescription:", data);
+      setViewMode("details");
+      // TODO: Show success message
+    } catch (error) {
+      console.error("Error creating prescription:", error);
+      // TODO: Show error message
+    }
+  };
+
+  const handleSaveSchedule = async (updatedAppointment: Appointment, services: unknown[]) => {
+    try {
+      // TODO: Implement schedule update logic
+      console.log("Saving schedule:", updatedAppointment, services);
+      setAppointments(prev => 
+        prev.map(apt => apt.id === updatedAppointment.id ? updatedAppointment : apt)
+      );
+      setSelectedAppointment(updatedAppointment);
+      setViewMode("details");
+      // TODO: Show success message
+    } catch (error) {
+      console.error("Error updating schedule:", error);
+      // TODO: Show error message
+    }
+  };
+
+  const handleCloseRightPanel = () => {
+    setSelectedAppointment(null);
+    setViewMode("list");
+  };
+
+  const handleAddAppointment = () => {
+    // TODO: Implement add appointment logic
+    console.log("Add new appointment");
+  };
+
+  // Determine if right panel should be shown
+  const showRightPanel = viewMode !== "list" && selectedAppointment;
+
+  // Render right panel content based on view mode
+  const renderRightPanel = () => {
+    if (!selectedAppointment) return null;
+
+    switch (viewMode) {
+      case "details":
+        return (
+          <AppointmentDetails
+            appointment={selectedAppointment}
+            onClose={handleCloseRightPanel}
+            onStartConsultation={handleStartConsultation}
+            onCreateExamination={handleCreateExamination}
+            onCreatePrescription={handleCreatePrescription}
+            onManageSchedule={handleManageSchedule}
+          />
+        );
+      case "medical-examination":
+        return (
+          <MedicalExaminationForm
+            appointment={selectedAppointment}
+            onSave={handleSaveMedicalExamination}
+            onCancel={handleCloseRightPanel}
+          />
+        );
+      case "prescription":
+        return (
+          <PrescriptionForm
+            appointment={selectedAppointment}
+            onSave={handleSavePrescription}
+            onCancel={handleCloseRightPanel}
+          />
+        );
+      case "schedule-manager":
+        return (
+          <ScheduleManager
+            appointment={selectedAppointment}
+            onSave={handleSaveSchedule}
+            onCancel={handleCloseRightPanel}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Schedules</h1>
-          <p className="text-gray-600 mt-2">Manage your appointments and patient visits</p>
-        </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Appointment
-        </Button>
-      </div>
+    <div className="h-[calc(100vh-64px)]">
+      <PanelGroup direction="horizontal" className="h-full">
+        {/* Left Panel - Schedules List */}
+        <Panel defaultSize={showRightPanel ? 50 : 100} minSize={40}>
+          <div className="h-full space-y-6 overflow-auto p-6">
+            {/* Header */}
+            <ScheduleHeader onAddAppointment={handleAddAppointment} />
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search patients..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="tomorrow">Tomorrow</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+            {/* Filters */}
+            <ScheduleFilters
+              searchQuery={searchQuery}
+              statusFilter={statusFilter}
+              dateFilter={dateFilter}
+              onSearchChange={setSearchQuery}
+              onStatusFilterChange={setStatusFilter}
+              onDateFilterChange={setDateFilter}
+            />
 
-      {/* Appointments List */}
-      <div className="grid gap-4">
-        {loading ? (
-          <div className="text-center py-8">
-            <p>Loading appointments...</p>
+            {/* Appointments List */}
+            <AppointmentList
+              appointments={filteredAppointments}
+              loading={loading}
+              onViewDetails={handleViewDetails}
+              onStartConsultation={handleStartConsultation}
+            />
+
+            {/* Summary Card */}
+            <AppointmentSummary appointments={appointments} />
           </div>
-        ) : filteredAppointments.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-8">
-              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
-              <p className="text-gray-600">No appointments match your current filters.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredAppointments.map((appointment) => (
-            <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{appointment.patientName}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                        <span className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {appointment.time}
-                        </span>
-                        <span className="flex items-center">
-                          <Phone className="h-4 w-4 mr-1" />
-                          {appointment.patientPhone}
-                        </span>
-                      </div>
-                      {appointment.notes && (
-                        <p className="text-sm text-gray-600 mt-2">{appointment.notes}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge className={getTypeColor(appointment.type)}>
-                      {appointment.type}
-                    </Badge>
-                    <Badge className={getStatusColor(appointment.status)}>
-                      {appointment.status}
-                    </Badge>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                      {appointment.status === "upcoming" && (
-                        <Button size="sm">
-                          Start Consultation
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+        </Panel>
+
+        {/* Panel Resize Handle and Right Panel */}
+        {showRightPanel && (
+          <>
+            <PanelResizeHandle className="w-1 bg-gray-200 hover:bg-gray-300 transition-colors" />
+            <Panel defaultSize={50} minSize={35}>
+              <div className="h-full pl-3 overflow-auto">
+                {renderRightPanel()}
+              </div>
+            </Panel>
+          </>
         )}
-      </div>
-
-      {/* Summary Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Today&apos;s Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {appointments.filter(a => a.status === "upcoming").length}
-              </div>
-              <div className="text-sm text-gray-600">Upcoming</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {appointments.filter(a => a.status === "in-progress").length}
-              </div>
-              <div className="text-sm text-gray-600">In Progress</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {appointments.filter(a => a.status === "completed").length}
-              </div>
-              <div className="text-sm text-gray-600">Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {appointments.filter(a => a.status === "cancelled").length}
-              </div>
-              <div className="text-sm text-gray-600">Cancelled</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      </PanelGroup>
     </div>
   );
-} 
+}

@@ -1,6 +1,9 @@
 // API types
 export * from './api';
 
+// Appointment types
+export * from './appointment';
+
 // Authentication types
 export * from './auth';
 

@@ -1,45 +1,93 @@
+import { GetManyParams } from "./api";
+
 /**
- * Vital signs interface for medical examinations
+ * Subclinical result interface for medical examinations
  */
-export interface VitalSigns {
-  bloodPressure?: string;
-  heartRate?: number;
-  temperature?: number;
-  respiratoryRate?: number;
-  weight?: number;
-  height?: number;
-  bmi?: number;
+export interface SubclinicalResult {
+  service: string; // ObjectId
+  resultData: string;
+  performedAt: string | Date;
+  performedBy?: string; // ObjectId
+  notes?: string;
 }
 
 /**
- * Subclinical test interface for medical examinations
+ * Populated subclinical result interface
  */
-export interface SubclinicalTest {
-  testName: string;
-  result: string;
-  referenceRange?: string;
-  unit?: string;
-  status: 'normal' | 'abnormal' | 'critical';
+export interface PopulatedSubclinicalResult {
+  service: {
+    _id: string;
+    name: string;
+    description: string;
+  };
+  resultData: string;
+  performedAt: string | Date;
+  performedBy?: {
+    _id: string;
+    fullName: string;
+  };
+  notes?: string;
+}
+
+/**
+ * Final diagnosis interface
+ */
+export interface FinalDiagnosis {
+  icdCode: string;
+  description: string;
+}
+
+/**
+ * Follow-up information interface
+ */
+export interface FollowUp {
+  nextVisit?: string;
+  notes?: string;
 }
 
 /**
  * Medical examination interface
  */
 export interface MedicalExamination {
-  id: string;
-  patientId: string;
-  doctorId: string;
-  scheduleId?: string;
-  diagnosis: string;
-  icd10Code?: string;
+  _id: string;
+  patient: string; // ObjectId
+  examinationDate: string;
   symptoms: string[];
-  vitalSigns: VitalSigns;
-  subclinicalTests: SubclinicalTest[];
-  treatment: string;
-  followUpDate?: string;
-  prescriptionId?: string;
-  notes?: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  subclinicalResults: SubclinicalResult[];
+  services?: string[]; // ObjectId array
+  finalDiagnosis: FinalDiagnosis[];
+  prescription?: string; // ObjectId
+  followUp?: FollowUp;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Populated medical examination interface (with populated references)
+ */
+export interface PopulatedMedicalExamination {
+  _id: string;
+  patient: {
+    _id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+  };
+  examinationDate: string;
+  symptoms: string[];
+  subclinicalResults: PopulatedSubclinicalResult[];
+  services?: {
+    _id: string;
+    name: string;
+    description: string;
+    price: number;
+  }[];
+  finalDiagnosis: FinalDiagnosis[];
+  prescription?: {
+    _id: string;
+    medications: unknown[];
+  };
+  followUp?: FollowUp;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,14 +96,38 @@ export interface MedicalExamination {
  * Create medical examination data interface
  */
 export interface CreateMedicalExaminationData {
-  patientId: string;
-  scheduleId?: string;
-  diagnosis: string;
-  icd10Code?: string;
-  symptoms: string[];
-  vitalSigns: VitalSigns;
-  subclinicalTests?: SubclinicalTest[];
-  treatment: string;
-  followUpDate?: string;
-  notes?: string;
+  patient: string; // ObjectId, required
+  examinationDate: string; // date, required
+  symptoms: string[]; // required, array
+  subclinicalResults?: SubclinicalResult[];
+  services?: string[]; // ObjectId array, optional
+  finalDiagnosis?: FinalDiagnosis[];
+  prescription?: string; // ObjectId, optional
+  followUp?: FollowUp;
+}
+
+/**
+ * Update medical examination data interface
+ */
+export interface UpdateMedicalExaminationData {
+  patient?: string;
+  examinationDate?: string;
+  symptoms?: string[];
+  subclinicalResults?: SubclinicalResult[];
+  services?: string[];
+  finalDiagnosis?: FinalDiagnosis[];
+  prescription?: string;
+  followUp?: FollowUp;
+}
+
+/**
+ * Medical examination query parameters for filtering
+ */
+export interface MedicalExaminationGetManyParams extends GetManyParams {
+  patient?: string;
+  examinationDate?: string;
+  startDate?: string;
+  endDate?: string;
+  prescription?: string;
+  hasServices?: string; // "true" or "false"
 } 

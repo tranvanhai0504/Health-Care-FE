@@ -11,9 +11,9 @@ export default function DoctorLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={["doctor"]}>
-      <div className="flex min-h-screen pt-10">
+      <div className="min-h-screen pt-16">
         <DoctorSidebar />
-        <main className="flex-1 px-8 py-6">{children}</main>
+        <main className="ml-64">{children}</main>
       </div>
     </ProtectedRoute>
   );

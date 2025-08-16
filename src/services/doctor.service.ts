@@ -2,6 +2,7 @@ import BaseService from "./base.service";
 import api from "@/lib/axios";
 import {
   Doctor,
+  DoctorWithPopulatedData,
   CreateDoctorData,
   DoctorGetAllParams,
   ApiResponse,
@@ -93,6 +94,26 @@ export class DoctorService extends BaseService<Doctor> {
   async delete(id: string): Promise<Doctor> {
     const response = await api.delete<ApiResponse<Doctor>>(
       `${this.basePath}/${id}`
+    );
+    return response.data.data;
+  }
+
+  /**
+   * Find one doctor by user ID with populated user and specialization data
+   * @param userId - The user ID to find the doctor for
+   * @returns Promise with the doctor profile including populated user and specialization
+   */
+  async findOneByUserId(userId: string): Promise<DoctorWithPopulatedData> {
+    const response = await api.get<ApiResponse<DoctorWithPopulatedData>>(
+      `${this.basePath}/findOne`,
+      {
+        params: {
+          options: JSON.stringify({
+            filter: { user: userId },
+            populateOptions: { path: "user specialization" }
+          })
+        }
+      }
     );
     return response.data.data;
   }
