@@ -1,6 +1,9 @@
 // API types
 export * from './api';
 
+// Appointment types
+export * from './appointment';
+
 // Authentication types
 export * from './auth';
 
@@ -40,5 +43,11 @@ export * from './specialty';
 // User types
 export * from './user';
 
+// Chat types
+export * from './chat';
+
+// Payment types
+export * from './payment';
+
 // Waiting message types
-export * from './waitingMessage'; 
+export * from './waitingMessage';

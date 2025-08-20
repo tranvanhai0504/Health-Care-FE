@@ -10,15 +10,15 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       router.push("/");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, isLoading]);
 
   return (
     <div className="container flex mx-auto justify-center pt-8 items-center">

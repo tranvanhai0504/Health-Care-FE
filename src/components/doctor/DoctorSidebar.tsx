@@ -73,7 +73,7 @@ const DoctorSidebar = () => {
   };
 
   return (
-    <div className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col">
+    <div className="fixed left-0 top-20 w-64 h-[calc(100vh-80px)] bg-white border-r border-gray-200 flex flex-col z-30">
       <div className="px-6 py-5 border-b">
         <h1 className="text-xl font-bold text-primary">Doctor Portal</h1>
       </div>

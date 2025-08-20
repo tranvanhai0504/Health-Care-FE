@@ -36,7 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ScheduleDetailModal } from "@/components/schedules";
+import ScheduleDetailModal from "@/components/doctor/schedules/schedule-detail-modal";
 
 // Extended interface for schedules with additional details
 interface ScheduleWithDetails extends ScheduleResponse {

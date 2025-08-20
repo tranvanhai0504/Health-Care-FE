@@ -5,6 +5,8 @@ import Script from "next/script";
 
 // Static imports for critical above-the-fold content
 import { HeroSection } from "@/components/landing";
+import { FloatingChatButton } from "@/components/chat/floating-chat-button";
+import { ChatPopup } from "@/components/chat/chat-popup";
 
 // Custom loading component for a better user experience
 const SectionLoader = () => (
@@ -86,7 +88,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
-      <div className="min-h-screen">
+      <div className="min-h-screen relative">
         {/* Critical above-the-fold content - loaded immediately */}
         <HeroSection />
 
@@ -115,6 +117,10 @@ export default function Home() {
         <Suspense fallback={<SectionLoader />}>
           <CTASection />
         </Suspense>
+
+        {/* AI Chat Components */}
+        <FloatingChatButton />
+        <ChatPopup />
       </div>
 
       {/* Structured data for SEO */}

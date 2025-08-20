@@ -195,6 +195,51 @@ export class ScheduleService extends BaseService<Schedule> {
   getDayOffset(selectedDate: Date): number {
     return selectedDate.getDay();
   }
+
+  /**
+   * Get schedules by doctor with week period filtering
+   * @param doctorId - The ID of the doctor
+   * @param from - Start date of the week period (ISO format)
+   * @param to - End date of the week period (ISO format)
+   * @param dayOffset - Day of week (0 = Monday, 6 = Sunday). Optional when fullWeek is true
+   * @param fullWeek - Boolean to fetch full week schedules
+   * @returns Promise with array of doctor schedules
+   */
+  async getByDoctor(
+    doctorId: string,
+    from: string,
+    to: string,
+    dayOffset: number | undefined,
+    fullWeek: boolean
+  ): Promise<ScheduleResponse[]> {
+    const params: {
+      from: string;
+      to: string;
+      fullWeek: boolean;
+      dayOffset?: number;
+    } = {
+      from,
+      to,
+      fullWeek,
+    };
+
+    // Only include dayOffset if it's provided (not for full week requests)
+    if (dayOffset !== undefined) {
+      params.dayOffset = dayOffset;
+    }
+
+    const response = await api.get<ApiResponse<ScheduleResponse[]>>(
+      `${this.basePath}/doctor/${doctorId}`,
+      {
+        params: {
+          ...params,
+          // Request populated user data
+          populate: 'userId',
+        },
+      }
+    );
+    return response.data.data;
+  }
 }
 
 export const scheduleService = new ScheduleService();

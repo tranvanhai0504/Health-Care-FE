@@ -99,6 +99,11 @@ class UserService extends BaseService<User> {
       data as Record<string, unknown>
     );
   }
+
+  async getUserById(id: string): Promise<User> {
+    const response = await api.get<ApiResponse<User>>(`${this.basePath}/${id}`);
+    return response.data.data;
+  }
 }
 
 export const userService = new UserService();
