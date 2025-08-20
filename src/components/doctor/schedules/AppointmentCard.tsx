@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Clock, Phone } from "lucide-react";
+import { User, Clock, Phone, Mail, Users } from "lucide-react";
 import { Appointment } from "@/types/appointment";
 
 interface AppointmentCardProps {
@@ -66,6 +66,18 @@ export function AppointmentCard({
                   <Phone className="h-3 w-3 mr-1" />
                   <span className="truncate">{appointment.patientPhone}</span>
                 </span>
+                {appointment.patientEmail && appointment.patientEmail !== "N/A" && (
+                  <span className="flex items-center truncate">
+                    <Mail className="h-3 w-3 mr-1" />
+                    <span className="truncate">{appointment.patientEmail}</span>
+                  </span>
+                )}
+                {appointment.patientGender && appointment.patientGender !== "N/A" && (
+                  <span className="flex items-center">
+                    <Users className="h-3 w-3 mr-1" />
+                    <span className="capitalize">{appointment.patientGender}</span>
+                  </span>
+                )}
               </div>
               {appointment.notes && (
                 <p className="text-xs text-gray-600 mt-1 line-clamp-1">

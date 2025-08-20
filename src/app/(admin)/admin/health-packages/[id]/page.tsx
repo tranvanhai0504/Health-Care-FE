@@ -31,6 +31,9 @@ import {
   HelpCircle,
   Calendar,
   DollarSign,
+  Stethoscope,
+  Timer,
+  Building2,
 } from "lucide-react";
 
 import {
@@ -58,15 +61,15 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
   const router = useRouter();
   const { toast } = useToast();
 
-  // Helper function to safely render test text
-  const renderTestText = (test: string | ConsultationService): string => {
-    if (typeof test === 'string') {
-      return test;
+  // Helper function to safely render service text
+  const renderServiceText = (service: string | ConsultationService): string => {
+    if (typeof service === 'string') {
+      return service;
     }
-    if (typeof test === 'object' && test !== null) {
-      return test.name || test.description || `Test ${test._id?.slice(-4) || ''}`;
+    if (typeof service === 'object' && service !== null) {
+      return service.name || service.description || `Service ${service._id?.slice(-4) || ''}`;
     }
-    return String(test);
+    return String(service);
   };
 
 
@@ -239,7 +242,7 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                             {formatCurrency(packageData.price || 0)}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Package price includes all listed tests
+                            Package price includes all listed services
                           </p>
                         </div>
                       </div>
@@ -260,7 +263,7 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                           {formatCurrency(packageData.price || 0)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Package price includes all listed tests
+                          Package price includes all listed services
                         </p>
                       </div>
                     </div>
@@ -296,45 +299,70 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
 
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <Tag className="h-4 w-4 text-primary" />
-                    <h3 className="text-lg font-medium">Tests Included</h3>
+                    <Stethoscope className="h-4 w-4 text-primary" />
+                    <h3 className="text-lg font-medium">Services Included</h3>
                   </div>
                   {packageData.tests && packageData.tests.length > 0 ? (
                     <div className="space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {packageData.tests.map((test, i) => (
-                          <Card key={i} className="bg-muted/30 border-border">
+                      <div className="grid grid-cols-1 gap-3">
+                        {packageData.tests.map((service, i) => (
+                          <Card key={i} className="bg-muted/30 border-border hover:shadow-md transition-shadow">
                             <CardContent className="p-4">
                               <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                                  <span className="text-sm font-medium text-primary">{i + 1}</span>
+                                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                  <Stethoscope className="h-5 w-5 text-primary" />
                                 </div>
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-sm mb-1">
-                                    {renderTestText(test)}
-                                  </h4>
-                                  {typeof test === 'object' && test !== null && (
-                                    <div className="text-xs text-muted-foreground space-y-1">
-                                      {(test as ConsultationService).description && (
-                                        <p><span className="font-medium">Description:</span> {(test as ConsultationService).description}</p>
-                                      )}
-                                      {(test as ConsultationService).duration && (
-                                        <p><span className="font-medium">Duration:</span> {(test as ConsultationService).duration}</p>
-                                      )}
-                                      {(test as ConsultationService).price && (
-                                        <p><span className="font-medium">Price:</span> {formatCurrency((test as ConsultationService).price)}</p>
-                                      )}
-                                      {(test as ConsultationService).specialization && (
-                                        <p>
-                                          <span className="font-medium">Specialization:</span>{" "}
-                                          {(() => {
-                                            const spec = (test as ConsultationService).specialization;
-                                            if (typeof spec === 'string') return spec;
-                                            if (spec && typeof spec === 'object') return (spec as Specialty).name;
-                                            return "Unknown";
-                                          })()}
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="font-semibold text-base text-gray-900">
+                                      {renderServiceText(service)}
+                                    </h4>
+                                    {typeof service === 'object' && service !== null && (service as ConsultationService).price && (
+                                      <div className="text-right">
+                                        <span className="text-lg font-bold text-primary">
+                                          {formatCurrency((service as ConsultationService).price)}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {typeof service === 'object' && service !== null && (
+                                    <div className="space-y-2">
+                                      {(service as ConsultationService).description && (
+                                        <p className="text-sm text-gray-600">
+                                          {(service as ConsultationService).description}
                                         </p>
                                       )}
+
+                                      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                                        {(service as ConsultationService).duration && (
+                                          <div className="flex items-center gap-1">
+                                            <Timer className="h-3 w-3" />
+                                            <span>{(service as ConsultationService).duration} minutes</span>
+                                          </div>
+                                        )}
+
+                                        {(service as ConsultationService).type && (
+                                          <div className="flex items-center gap-1">
+                                            <Tag className="h-3 w-3" />
+                                            <span className="capitalize">{(service as ConsultationService).type}</span>
+                                          </div>
+                                        )}
+
+                                        {(service as ConsultationService).specialization && (
+                                          <div className="flex items-center gap-1">
+                                            <Building2 className="h-3 w-3" />
+                                            <span>
+                                              {(() => {
+                                                const spec = (service as ConsultationService).specialization;
+                                                if (typeof spec === 'string') return spec;
+                                                if (spec && typeof spec === 'object') return (spec as Specialty).name;
+                                                return "General";
+                                              })()}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
                                   )}
                                 </div>
@@ -343,24 +371,39 @@ export default function ViewHealthPackagePage({ params }: { params: Promise<{ id
                           </Card>
                         ))}
                       </div>
-                      <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Tag className="h-4 w-4 text-blue-600" />
-                          <h4 className="font-medium text-blue-900">Package Summary</h4>
+
+                      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Stethoscope className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-semibold text-blue-900">Package Summary</h4>
                         </div>
-                        <div className="text-sm text-blue-800 space-y-1">
-                          <p><span className="font-medium">Total Tests:</span> {packageData.tests.length}</p>
-                          <p><span className="font-medium">Package Price:</span> {formatCurrency(packageData.price || 0)}</p>
-                          <p className="text-xs text-blue-600 mt-2">
-                            All tests listed above are included in this health package at the package price.
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="text-blue-800">
+                            <span className="font-medium">Total Services:</span>
+                            <div className="text-xl font-bold text-blue-900">{packageData.tests.length}</div>
+                          </div>
+                          <div className="text-blue-800">
+                            <span className="font-medium">Package Price:</span>
+                            <div className="text-xl font-bold text-blue-900">{formatCurrency(packageData.price || 0)}</div>
+                          </div>
+                          <div className="text-blue-800">
+                            <span className="font-medium">Category:</span>
+                            <div className="text-lg font-semibold text-blue-900">{packageData.category || 'General'}</div>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-blue-200">
+                          <p className="text-xs text-blue-700">
+                            💡 All services listed above are included in this health package at the package price.
+                            Individual service prices are shown for reference only.
                           </p>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
-                      <Tag className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">No tests specified for this package</p>
+                    <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
+                      <Stethoscope className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h4 className="font-medium text-muted-foreground mb-2">No Services Specified</h4>
+                      <p className="text-sm text-muted-foreground">This health package doesn&apos;t have any services configured yet.</p>
                     </div>
                   )}
                 </div>

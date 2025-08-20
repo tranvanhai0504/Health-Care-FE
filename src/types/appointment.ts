@@ -12,6 +12,10 @@ export interface Appointment {
   duration?: string;
   symptoms?: string;
   previousVisits?: number;
+  // Additional patient information
+  patientGender?: string;
+  patientDateOfBirth?: string;
+  patientOccupation?: string;
 }
 
 export type AppointmentStatus = "upcoming" | "completed" | "cancelled" | "in-progress";

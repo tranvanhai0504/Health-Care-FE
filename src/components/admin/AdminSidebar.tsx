@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
-  BarChart3,
   Users,
   FileText,
   Calendar,
@@ -27,9 +26,9 @@ const AdminSidebar = () => {
 
   const sidebarItems: SidebarItem[] = [
     {
-      title: "Dashboard",
-      href: "/admin/dashboard",
-      icon: <BarChart3 className="w-5 h-5" />,
+      title: "Schedules",
+      href: "/admin/schedules",
+      icon: <Calendar className="w-5 h-5" />,
     },
     {
       title: "Users",
@@ -37,14 +36,9 @@ const AdminSidebar = () => {
       icon: <Users className="w-5 h-5" />,
     },
     {
-      title: "Blogs",
-      href: "/admin/blogs",
-      icon: <FileText className="w-5 h-5" />,
-    },
-    {
-      title: "Schedules",
-      href: "/admin/schedules",
-      icon: <Calendar className="w-5 h-5" />,
+      title: "Health Services",
+      href: "/admin/health-services",
+      icon: <Stethoscope className="w-5 h-5" />,
     },
     {
       title: "Health Packages",
@@ -52,9 +46,9 @@ const AdminSidebar = () => {
       icon: <Package className="w-5 h-5" />,
     },
     {
-      title: "Health Services",
-      href: "/admin/health-services",
-      icon: <Stethoscope className="w-5 h-5" />,
+      title: "Blogs",
+      href: "/admin/blogs",
+      icon: <FileText className="w-5 h-5" />,
     },
     {
       title: "Settings",
@@ -72,7 +66,7 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div className="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col pt-16">
+    <div className="fixed left-0 top-20 w-64 h-[calc(100vh-80px)] bg-white border-r border-gray-200 flex flex-col z-30">
       <div className="px-6 py-5 border-b">
         <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
       </div>

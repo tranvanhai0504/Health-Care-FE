@@ -60,7 +60,7 @@ export default function SignInForm() {
             router.push("/receptionist/dashboard");
             break;
           case "admin":
-            router.push("/admin/dashboard");
+            router.push("/admin/schedules");
             break;
           default:
             router.push("/"); // Default user dashboard

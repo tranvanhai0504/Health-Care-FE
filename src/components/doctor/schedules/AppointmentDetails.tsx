@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Phone, Mail, MapPin, Calendar, Clock, X, FileText } from "lucide-react";
+import { User, Phone, Mail, MapPin, Calendar, Clock, X, FileText, Users, Briefcase } from "lucide-react";
 import { Appointment } from "@/types/appointment";
 
 interface AppointmentDetailsProps {
@@ -73,12 +73,12 @@ export function AppointmentDetails({
         {/* Patient Information */}
         <div>
           <h3 className="text-base font-semibold mb-3">Patient Information</h3>
-          <div className="space-y-2 grid grid-cols-2">
+          <div className="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-center gap-2">
               <User className="h-3 w-3 text-gray-500" />
               <div>
                 <p className="text-sm font-medium">{appointment.patientName}</p>
-                <p className="text-xs text-gray-600">Patient</p>
+                <p className="text-xs text-gray-600">Patient Name</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export function AppointmentDetails({
                 <p className="text-xs text-gray-600">Phone Number</p>
               </div>
             </div>
-            {appointment.patientEmail && (
+            {appointment.patientEmail && appointment.patientEmail !== "N/A" && (
               <div className="flex items-center gap-2">
                 <Mail className="h-3 w-3 text-gray-500" />
                 <div>
@@ -97,12 +97,41 @@ export function AppointmentDetails({
                 </div>
               </div>
             )}
-            {appointment.patientAddress && (
+            {appointment.patientAddress && appointment.patientAddress !== "N/A" && (
               <div className="flex items-center gap-2">
                 <MapPin className="h-3 w-3 text-gray-500" />
                 <div>
                   <p className="text-sm font-medium">{appointment.patientAddress}</p>
                   <p className="text-xs text-gray-600">Address</p>
+                </div>
+              </div>
+            )}
+            {appointment.patientGender && appointment.patientGender !== "N/A" && (
+              <div className="flex items-center gap-2">
+                <Users className="h-3 w-3 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium capitalize">{appointment.patientGender}</p>
+                  <p className="text-xs text-gray-600">Gender</p>
+                </div>
+              </div>
+            )}
+            {appointment.patientDateOfBirth && appointment.patientDateOfBirth !== "N/A" && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-3 w-3 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium">
+                    {new Date(appointment.patientDateOfBirth).toLocaleDateString()}
+                  </p>
+                  <p className="text-xs text-gray-600">Date of Birth</p>
+                </div>
+              </div>
+            )}
+            {appointment.patientOccupation && appointment.patientOccupation !== "N/A" && (
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-3 w-3 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium">{appointment.patientOccupation}</p>
+                  <p className="text-xs text-gray-600">Occupation</p>
                 </div>
               </div>
             )}

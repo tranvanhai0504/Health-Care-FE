@@ -20,8 +20,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user on initial mount or token change (only if we don't have user data)
   useEffect(() => {
-    // If we have a token but no authenticated user and no user data, try loading the user
-    if (token && !isAuthenticated && !user && !loading) {
+    // If we have a token and are authenticated but no user data, try loading the user
+    if (token && isAuthenticated && !user && !loading) {
       fetchProfile();
     }
   }, [token, isAuthenticated, user, loading, fetchProfile]);

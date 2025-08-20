@@ -7,3 +7,6 @@ export { AppointmentDetails } from './AppointmentDetails';
 export { MedicalExaminationForm } from './MedicalExaminationForm';
 export { PrescriptionForm } from './PrescriptionForm';
 export { ScheduleManager } from './ScheduleManager';
+
+// Re-export the hook for convenience
+export { useDoctorSchedules, getWeekPeriod, getDayOffset } from '@/hooks/useDoctorSchedules';
