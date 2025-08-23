@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { userService } from "@/services/user.service";
-import utilService from "@/services/util.service";
 import { type User, type UpdateUserData } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,13 +37,9 @@ import {
   Save,
   UserCircle,
   Lock,
-  Bell,
-  Eye,
   Clock,
   BadgeInfo,
   ShieldCheck,
-  CheckCircle,
-  AlertCircle,
   Camera,
   Upload,
 } from "lucide-react";
@@ -82,18 +77,20 @@ const profileFormSchema = z.object({
   occupation: z.string().optional(),
 });
 
-
-
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
+    null
+  );
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
   const { fetchProfile } = useAuthStore();
+
+  console.log(user);
 
   // Initialize form with react-hook-form
   const form = useForm<z.infer<typeof profileFormSchema>>({
@@ -108,8 +105,6 @@ export default function ProfilePage() {
       occupation: "",
     },
   });
-
-
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -153,19 +148,19 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select a valid image file');
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select a valid image file");
         return;
       }
-      
+
       // Validate file size (e.g., max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size should be less than 5MB');
+        toast.error("Image size should be less than 5MB");
         return;
       }
 
       setSelectedAvatarFile(file);
-      
+
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
       setAvatarPreview(previewUrl);
@@ -184,57 +179,29 @@ export default function ProfilePage() {
   const onSubmit = async (values: z.infer<typeof profileFormSchema>) => {
     try {
       setSaving(true);
-      
-      let avatarUrl: string | undefined;
-      
-      // Upload avatar if a new one is selected
-      if (selectedAvatarFile) {
-        try {
-          setUploadingAvatar(true);
-          const uploadResult = await utilService.uploadImage(selectedAvatarFile);
-          avatarUrl = uploadResult.url;
-          toast.success("Avatar uploaded successfully");
-        } catch (error) {
-          console.error("Failed to upload avatar:", error);
-          toast.error("Failed to upload avatar, but profile will still be updated");
-          // Continue with profile update even if avatar upload fails
-        } finally {
-          setUploadingAvatar(false);
-        }
-      }
 
       const updateData: UpdateUserData = {
-        name: values.name,
-        email: values.email,
-        phoneNumber: values.phoneNumber,
-        address: values.address,
-        dateOfBirth: values.dateOfBirth,
-        gender: values.gender,
-        occupation: values.occupation,
-        ...(avatarUrl && { avatar: avatarUrl }), // Include avatar URL if uploaded
+        ...values,
+        ...(selectedAvatarFile && { avatar: selectedAvatarFile }),
       };
 
       const updatedUser = await userService.updateProfile(updateData);
       await fetchProfile();
 
       setUser(updatedUser);
-      
-      // Clean up avatar selection after successful update
+
       if (selectedAvatarFile) {
         removeSelectedAvatar();
       }
-      
+
       toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error("Failed to update profile information");
     } finally {
       setSaving(false);
-      setUploadingAvatar(false);
     }
   };
-
-
 
   if (loading) {
     return (
@@ -298,7 +265,11 @@ export default function ProfilePage() {
           <div className="flex items-center space-x-5 bg-card p-4 rounded-lg border shadow-sm">
             <Avatar className="h-20 w-20 border-4 border-background">
               <AvatarImage
-                src={avatarPreview || user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`}
+                src={
+                  avatarPreview ||
+                  user?.avatar ||
+                  `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`
+                }
                 alt={user?.name}
               />
               <AvatarFallback className="text-xl font-bold">
@@ -355,16 +326,6 @@ export default function ProfilePage() {
               <ShieldCheck className="h-4 w-4" />
               <span>Security</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="privacy"
-              className={cn(
-                "flex items-center gap-2 px-5 py-3 transition-all",
-                activeTab === "privacy" ? "font-medium" : ""
-              )}
-            >
-              <Eye className="h-4 w-4" />
-              <span>Privacy</span>
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="mt-6 space-y-6">
@@ -383,48 +344,46 @@ export default function ProfilePage() {
                     <div className="relative group">
                       <Avatar className="h-32 w-32 border-4 border-background shadow-md">
                         <AvatarImage
-                          src={avatarPreview || user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`}
+                          src={
+                            avatarPreview ||
+                            user?.avatar ||
+                            `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`
+                          }
                           alt={user?.name}
                         />
                         <AvatarFallback className="text-4xl font-semibold">
                           {getInitials()}
                         </AvatarFallback>
                       </Avatar>
-                      
+
                       {/* Upload overlay */}
                       <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <div className="text-white text-center">
                           <Camera className="h-6 w-6 mx-auto mb-1" />
-                          <span className="text-xs font-medium">Change Photo</span>
+                          <span className="text-xs font-medium">
+                            Change Photo
+                          </span>
                         </div>
                       </div>
-                      
+
                       {/* File input */}
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleAvatarChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
-                        disabled={saving || uploadingAvatar}
+                        disabled={saving}
                       />
-                      
+
                       <div className="absolute -bottom-2 -right-2">
                         <Badge className="rounded-full px-2 py-1 font-medium capitalize">
                           {user?.role || "User"}
                         </Badge>
                       </div>
-                      
-                      {/* Upload progress indicator */}
-                      {uploadingAvatar && (
-                        <div className="absolute inset-0 bg-primary/20 rounded-full flex items-center justify-center">
-                          <div className="text-primary text-center">
-                            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-1" />
-                            <span className="text-xs font-medium">Uploading...</span>
-                          </div>
-                        </div>
-                      )}
+
+
                     </div>
-                    
+
                     {/* Avatar actions */}
                     {selectedAvatarFile && (
                       <div className="flex gap-2">
@@ -433,7 +392,7 @@ export default function ProfilePage() {
                           variant="outline"
                           size="sm"
                           onClick={removeSelectedAvatar}
-                          disabled={saving || uploadingAvatar}
+                          disabled={saving}
                         >
                           Cancel
                         </Button>
@@ -441,10 +400,12 @@ export default function ProfilePage() {
                           type="button"
                           size="sm"
                           onClick={() => {
-                            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                            const fileInput = document.querySelector(
+                              'input[type="file"]'
+                            ) as HTMLInputElement;
                             fileInput?.click();
                           }}
-                          disabled={saving || uploadingAvatar}
+                          disabled={saving}
                         >
                           <Upload className="h-4 w-4 mr-2" />
                           Choose Different
@@ -731,14 +692,9 @@ export default function ProfilePage() {
                         <Button
                           type="submit"
                           className="h-11 px-8 w-full sm:w-auto"
-                          disabled={saving || uploadingAvatar}
+                          disabled={saving}
                         >
-                          {uploadingAvatar ? (
-                            <span className="flex items-center">
-                              <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
-                              Uploading avatar...
-                            </span>
-                          ) : saving ? (
+                          {saving ? (
                             <span className="flex items-center">
                               <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
                               Saving changes...
@@ -788,124 +744,13 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="gap-2"
                       onClick={() => setChangePasswordOpen(true)}
                     >
                       <Lock className="h-4 w-4" />
                       Change Password
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border rounded-lg p-5 transition-all hover:border-primary/40 hover:bg-muted/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/10 text-primary">
-                        <Bell className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-base font-medium">
-                            Two-Factor Authentication
-                          </h3>
-                          <Badge
-                            variant="outline"
-                            className="text-muted-foreground"
-                          >
-                            Recommended
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Add an extra layer of security
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <ShieldCheck className="h-4 w-4" />
-                      Enable 2FA
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border rounded-lg p-5 transition-all hover:border-primary/40 hover:bg-muted/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                        <CheckCircle className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-medium">
-                          Active Sessions
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Manage your active sessions and devices
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <Eye className="h-4 w-4" />
-                      View Sessions
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="privacy" className="mt-6">
-            <Card className="border border-border/60 shadow-sm">
-              <CardHeader className="pb-4 bg-muted/30 rounded-t-lg">
-                <CardTitle className="flex items-center">
-                  <Eye className="mr-2 h-5 w-5 text-primary" />
-                  Privacy Settings
-                </CardTitle>
-                <CardDescription>
-                  Manage your privacy preferences and data sharing options
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-5">
-                <div className="border rounded-lg p-5 transition-all hover:border-primary/40 hover:bg-muted/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-medium">
-                          Data Usage & Analytics
-                        </h3>
-                        <Badge variant="success" className="text-xs">
-                          Opt-in
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Control how your data is used for analytics
-                      </p>
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <AlertCircle className="h-4 w-4" />
-                      Configure
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border rounded-lg p-5 transition-all hover:border-primary/40 hover:bg-muted/20">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-medium">
-                          Communication Preferences
-                        </h3>
-                        <Badge variant="warning" className="text-xs">
-                          Review
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Manage email and notification settings
-                      </p>
-                    </div>
-                    <Button variant="outline" className="gap-2">
-                      <Bell className="h-4 w-4" />
-                      Manage
                     </Button>
                   </div>
                 </div>

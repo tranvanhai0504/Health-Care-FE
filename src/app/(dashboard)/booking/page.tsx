@@ -8,9 +8,9 @@ import {
   Package,
   Settings,
   Plus,
-  AlertTriangle,
   Home,
   RefreshCw,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import { convertMarkdown } from "@/utils/markdown";
@@ -155,7 +155,7 @@ function BookingPageContent() {
   // Handle booking submission
   const processBooking = async () => {
     if (!selectedDate || !selectedTimePeriod) {
-              toast.error("Please select date and time period for your schedule");
+      toast.error("Please select date and time period for your schedule");
       return;
     }
 
@@ -244,7 +244,7 @@ function BookingPageContent() {
       // Submit booking
       await scheduleService.create(bookingData);
 
-              toast.success("Booking successful! Your schedule has been created.");
+      toast.success("Booking successful! Your schedule has been created.");
       setShowConfirmDialog(false);
 
       // Clear service list if booking services
@@ -307,11 +307,8 @@ function BookingPageContent() {
         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
           {/* Error Icon */}
           <div className="relative mb-6">
-            <div className="w-24 h-24 bg-red-50 dark:bg-red-950 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-12 h-12 text-red-500" />
-            </div>
-            <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">!</span>
+            <div className="w-24 h-24 bg-primary/10 dark:bg-primary/90 rounded-full flex items-center justify-center">
+              <Calendar className="w-12 h-12 text-primary" />
             </div>
           </div>
 
@@ -321,9 +318,9 @@ function BookingPageContent() {
               Booking Unavailable
             </h1>
             <div className="max-w-md mx-auto">
-                             <p className="text-lg text-muted-foreground mb-2">
-                 We couldn&apos;t load your booking details
-               </p>
+              <p className="text-lg text-muted-foreground mb-2">
+                We couldn&apos;t load your booking details
+              </p>
               <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 border">
                 {error}
               </p>
@@ -332,26 +329,23 @@ function BookingPageContent() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               variant="default"
               className="flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
-            <Button 
-              onClick={() => router.push("/")} 
+            <Button
+              onClick={() => router.push("/")}
               variant="outline"
               className="flex items-center gap-2"
             >
               <Home className="h-4 w-4" />
               Go to Home
             </Button>
-            <Button 
-              onClick={() => router.back()} 
-              variant="outline"
-            >
+            <Button onClick={() => router.back()} variant="outline">
               Go Back
             </Button>
           </div>
@@ -367,10 +361,12 @@ function BookingPageContent() {
                 Browse our available medical services and health packages
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer group" 
-                    onClick={() => router.push("/medical-services")}>
+              <Card
+                className="hover:shadow-md transition-shadow cursor-pointer group"
+                onClick={() => router.push("/medical-services")}
+              >
                 <CardContent className="p-6 text-center">
                   <Settings className="h-8 w-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform" />
                   <h4 className="font-semibold mb-2">Medical Services</h4>
@@ -385,8 +381,10 @@ function BookingPageContent() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow cursor-pointer group" 
-                    onClick={() => router.push("/health-packages")}>
+              <Card
+                className="hover:shadow-md transition-shadow cursor-pointer group"
+                onClick={() => router.push("/health-packages")}
+              >
                 <CardContent className="p-6 text-center">
                   <Package className="h-8 w-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform" />
                   <h4 className="font-semibold mb-2">Health Packages</h4>
@@ -410,7 +408,8 @@ function BookingPageContent() {
                 Need Help?
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                If this problem persists, please contact our support team for assistance.
+                If this problem persists, please contact our support team for
+                assistance.
               </p>
             </div>
           </div>

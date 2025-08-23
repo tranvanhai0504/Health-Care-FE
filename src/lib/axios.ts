@@ -43,32 +43,26 @@ api.interceptors.request.use(
 
 // Helper to get refresh token from storage
 function getRefreshToken() {
-  const authStorage = localStorage.getItem('auth-storage');
-  if (authStorage) {
-    try {
-      const { state } = JSON.parse(authStorage);
-      return state?.refreshToken;
-    } catch {
-      return null;
-    }
-  }
-  return null;
+  return localStorage.getItem('refresh_token');
 }
 
 // Helper to set new access and refresh tokens in storage
 function setTokens(authenToken: string, refreshToken: string) {
+  localStorage.setItem('jwt_token', authenToken);
+  localStorage.setItem('refresh_token', refreshToken);
+
+  // Also update the zustand storage to keep it in sync
   const authStorage = localStorage.getItem('auth-storage');
   if (authStorage) {
     try {
       const parsed = JSON.parse(authStorage);
-      parsed.state = parsed.state || {};
-      parsed.state.token = authenToken;
-      parsed.state.refreshToken = refreshToken;
-      localStorage.setItem('auth-storage', JSON.stringify(parsed));
-      localStorage.setItem('jwt_token', authenToken);
-    } catch {}
-  } else {
-    localStorage.setItem('jwt_token', authenToken);
+      if (parsed.state) {
+        parsed.state.token = authenToken;
+        localStorage.setItem('auth-storage', JSON.stringify(parsed));
+      }
+    } catch (e) {
+      console.error('Failed to update auth-storage during token refresh', e);
+    }
   }
 }
 
@@ -112,14 +106,14 @@ api.interceptors.response.use(
         const refreshToken = getRefreshToken();
         if (!refreshToken) throw new Error('No refresh token');
         const res = await axios.post(
-          `${host}/auth/refresh-token`,
+          `${host}/api/v1/auth/refresh-token`,
           { refreshToken },
           { withCredentials: true }
         );
-        // Expect { status: 'success', data: { authenToken, refreshToken } }
-        if (res.data?.status === 'success' && res.data.data?.authenToken) {
-          const newToken = res.data.data.authenToken;
-          const newRefreshToken = res.data.data.refreshToken;
+        // Expect { authenToken, refreshToken }
+        if (res.data?.authenToken) {
+          const newToken = res.data.authenToken;
+          const newRefreshToken = res.data.refreshToken;
           setTokens(newToken, newRefreshToken);
           api.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
           onRefreshed(newToken);
@@ -127,7 +121,7 @@ api.interceptors.response.use(
           originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
           return api(originalRequest);
         } else {
-          throw new Error(res.data?.error?.message || 'Failed to refresh token');
+          throw new Error(res.data?.message || 'Failed to refresh token');
         }
       } catch (refreshError) {
         isRefreshing = false;

@@ -6,6 +6,7 @@ import { ApiResponse } from "./api";
 export interface LoginCredentials {
   phoneNumber: string;
   password: string;
+  rememberMe: boolean;
 }
 
 /**
@@ -13,6 +14,7 @@ export interface LoginCredentials {
  */
 export type AuthData = {
   authenToken: string;
+  refreshToken?: string;
   user?: UserProfile;
   // For login, the user properties are directly on the data object
   name?: string | null;
@@ -64,6 +66,7 @@ export interface UserProfile {
   name: string | null;
   email: string | null;
   role: string;
+  avatar: string | null;
   phoneNumber: string;
   address: string | null;
   dateOfBirth: string | null;
@@ -88,6 +91,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   token: string | null;
+  refreshToken: string | null;
 
   // Actions
   initializeFromStorage: () => void;

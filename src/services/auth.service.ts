@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
 import { SignUpFormType } from "@/schemas/sign-up";
-import { 
+import {
   LoginCredentials,
   AuthResponse,
   OTPVerificationData,
@@ -80,6 +80,17 @@ const authService = {
     const response = await api.post<
       ApiResponse<{ user: UserProfile; authenToken: string }>
     >("/api/v1/user", data);
+    return response.data;
+  },
+
+  /**
+   * Refresh the authentication token
+   */
+  refreshToken: async (refreshToken: string) => {
+    const response = await api.post<AuthResponse>(
+      "/api/v1/auth/refresh-token",
+      { refreshToken }
+    );
     return response.data;
   },
 };

@@ -54,14 +54,6 @@ const BlogSection = dynamic(
   { loading: () => <SectionLoader /> }
 );
 
-const CTASection = dynamic(
-  () =>
-    import("@/components/landing/CTASection").then((mod) => ({
-      default: mod.CTASection,
-    })),
-  { loading: () => <SectionLoader /> }
-);
-
 export const metadata: Metadata = {
   title: "Health Care Solutions | Modern Healthcare Services",
   description:
@@ -112,10 +104,6 @@ export default function Home() {
 
         <Suspense fallback={<SectionLoader />}>
           <BlogSection />
-        </Suspense>
-
-        <Suspense fallback={<SectionLoader />}>
-          <CTASection />
         </Suspense>
 
         {/* AI Chat Components */}

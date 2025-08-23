@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogOut, User, LayoutDashboard } from "lucide-react";
 import { UserProfile as UserProfileType } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -41,9 +41,7 @@ const UserProfile = ({ user }: UserProfileProps) => {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={`https://api.dicebear.com/7.x/initials/svg?seed=${
-                user.name || "user"
-              }`}
+              src={user.avatar || "https://api.dicebear.com/7.x/initials/svg?seed=user"}
               alt={user.name || "User"}
             />
             <AvatarFallback>{getInitials(user.name || "User")}</AvatarFallback>
@@ -85,12 +83,6 @@ const UserProfile = ({ user }: UserProfileProps) => {
           <Link href="/profile" className="flex w-full items-center">
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex w-full items-center">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

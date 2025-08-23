@@ -30,7 +30,7 @@ export interface UpdateUserData {
   dateOfBirth?: string;
   gender?: string;
   occupation?: string;
-  avatar?: string;
+  avatar?: string | File;
 } 
 
 export interface UserGetAllParams extends GetManyParams {
