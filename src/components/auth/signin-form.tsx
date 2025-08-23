@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -38,6 +39,7 @@ export default function SignInForm() {
     defaultValues: {
       phoneNumber: "",
       password: "",
+      rememberMe: false,
     },
   });
 
@@ -130,6 +132,25 @@ export default function SignInForm() {
                     </div>
                   </FormControl>
                   <FormMessage />
+
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Remember me</FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

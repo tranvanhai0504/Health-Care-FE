@@ -44,8 +44,30 @@ class UserService extends BaseService<User> {
    * Update the current user's profile
    */
   async updateProfile(data: UpdateUserData): Promise<User> {
-    const response = await api.patch<ApiResponse<User>>(this.basePath, data);
-    return response.data.data;
+    if (data.avatar && data.avatar instanceof File) {
+      const formData = new FormData();
+
+      Object.keys(data).forEach((key) => {
+        const value = data[key as keyof UpdateUserData];
+        if (value !== undefined && value !== null) {
+          formData.append(key, value);
+        }
+      });
+
+      const response = await api.patch<ApiResponse<User>>(
+        this.basePath,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data.data;
+    } else {
+      const response = await api.patch<ApiResponse<User>>(this.basePath, data);
+      return response.data.data;
+    }
   }
 
   /**

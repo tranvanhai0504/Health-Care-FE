@@ -11,10 +11,12 @@ export const useAuthStore = create<AuthState>((set, get) => {
     isAuthenticated: false,
     loading: true,
     token: null,
+    refreshToken: null,
 
     initializeFromStorage: () => {
       if (typeof window !== 'undefined') {
         const jwtToken = localStorage.getItem('jwt_token');
+        const refreshToken = localStorage.getItem('refresh_token');
         const authStorageStr = localStorage.getItem('auth-storage');
 
         if (jwtToken && authStorageStr) {
@@ -28,6 +30,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
               set({
                 token,
+                refreshToken,
                 user,
                 isAuthenticated: true,
                 loading: false, // Ensure loading is false after initialization
@@ -85,9 +88,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
         const response = await authService.login(credentials);
 
         const token = response.data.authenToken;
+        const refreshToken = response.data.refreshToken;
 
         // Save token to localStorage
         localStorage.setItem("jwt_token", token);
+
+        if (credentials.rememberMe && refreshToken) {
+          localStorage.setItem("refresh_token", refreshToken);
+        }
 
         const userData: UserProfile = {
           _id: response.data._id ?? "",
@@ -113,6 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
         set({
           token,
+          refreshToken: credentials.rememberMe ? refreshToken : null,
           user: userData,
           isAuthenticated: true,
         });
@@ -136,6 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         // Clean up localStorage
         api.defaults.headers.common.Authorization = "";
         localStorage.removeItem("jwt_token");
+        localStorage.removeItem("refresh_token");
         localStorage.removeItem("auth-storage");
 
         set({

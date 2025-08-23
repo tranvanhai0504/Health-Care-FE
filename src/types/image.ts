@@ -2,8 +2,9 @@
  * Image upload response interface
  */
 export interface ImageUploadResponse {
+  user: string;
   url: string;
-  filename: string;
+  _id: string;
   size: number;
   mimetype: string;
 }
@@ -16,4 +17,4 @@ export interface ImageUploadOptions {
   resize?: boolean;
   maxWidth?: number;
   maxHeight?: number;
-} 
+}

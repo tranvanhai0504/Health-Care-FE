@@ -16,9 +16,6 @@ import {
   X,
   BookOpen,
   Eye,
-  Heart,
-  Share2,
-  Bookmark,
   ArrowRight,
 } from "lucide-react";
 import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
@@ -571,30 +568,6 @@ const BlogsPage = () => {
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                   </Link>
                                 </Button>
-
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-gray-400 hover:text-red-500"
-                                  >
-                                    <Heart className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-gray-400 hover:text-blue-500"
-                                  >
-                                    <Share2 className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-gray-400 hover:text-yellow-500"
-                                  >
-                                    <Bookmark className="h-4 w-4" />
-                                  </Button>
-                                </div>
                               </div>
                             </div>
                           </div>
