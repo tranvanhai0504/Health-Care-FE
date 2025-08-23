@@ -30,6 +30,7 @@ export function ChatPopup() {
       // Reset when chat is closed
       hasMarkedAsReadRef.current = false;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isClient]); // Stable dependencies
 
   // Don't render anything during SSR or when closed

@@ -65,8 +65,8 @@ export function useDoctorSchedules(
         const isFullWeek = params.fullWeek ?? true;
 
         // Normalize dates to ensure proper time boundaries
-        let fromDate = params.from ? new Date(params.from) : startOfWeek;
-        let toDate = params.to ? new Date(params.to) : endOfWeek;
+        const fromDate = params.from ? new Date(params.from) : startOfWeek;
+        const toDate = params.to ? new Date(params.to) : endOfWeek;
 
         // Convert to UTC+7 timezone (backend timezone)
         // Set from date to start of day in UTC+7 (17:00:00.000 UTC)

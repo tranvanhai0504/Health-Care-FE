@@ -31,32 +31,32 @@ export function useChat(): UseChatReturn {
   const sendMessage = useCallback(async (message: string) => {
     if (!isClient) return;
     return chatStore.sendMessage(message);
-  }, [isClient]);
+  }, [chatStore, isClient]);
 
   const toggleChat = useCallback(() => {
     if (!isClient) return;
     chatStore.toggleChat();
-  }, [isClient]);
+  }, [chatStore, isClient]);
 
   const openChat = useCallback(() => {
     if (!isClient) return;
     chatStore.openChat();
-  }, [isClient]);
+  }, [chatStore, isClient]);
 
   const closeChat = useCallback(() => {
     if (!isClient) return;
     chatStore.closeChat();
-  }, [isClient]);
+  }, [chatStore, isClient]);
 
   const clearConversation = useCallback(() => {
     if (!isClient) return;
     chatStore.clearConversation();
-  }, [isClient]);
+  }, [chatStore, isClient]);
 
   const markAsRead = useCallback(() => {
     if (!isClient) return;
     chatStore.markAsRead();
-  }, [isClient]);
+  }, [chatStore, isClient]);
 
   return {
     // State

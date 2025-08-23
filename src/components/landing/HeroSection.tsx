@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
-    <section className="flex h-screen justify-center items-center relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white">
+    <section className="flex h-screen justify-center items-center relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white pt-16">
       {/* Background decorative elements */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
       <div className="absolute top-1/3 -right-24 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
