@@ -37,7 +37,7 @@ export function Header() {
           {isAuthenticated && user ? (
             <>
               {/* Notifications */}
-              <Notifications count={3} />
+              <Notifications />
 
               {/* Schedules shortcut */}
               <ScheduleButton />

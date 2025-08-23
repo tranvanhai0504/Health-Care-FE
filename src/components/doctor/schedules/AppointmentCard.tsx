@@ -57,8 +57,8 @@ export function AppointmentCard({
               <h3 className="font-medium text-sm truncate">
                 {appointment.patientName}
               </h3>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-gray-600 mt-1">
-                <span className="flex items-center">
+              <div className="grid grid-cols-2 sm:grid-cols-2 sm:items-center gap-1 sm:gap-1 text-xs text-gray-600 mt-1">
+                <span className="flex items-center text-nowrap">
                   <Clock className="h-3 w-3 mr-1" />
                   {appointment.time}
                 </span>
@@ -66,18 +66,24 @@ export function AppointmentCard({
                   <Phone className="h-3 w-3 mr-1" />
                   <span className="truncate">{appointment.patientPhone}</span>
                 </span>
-                {appointment.patientEmail && appointment.patientEmail !== "N/A" && (
-                  <span className="flex items-center truncate">
-                    <Mail className="h-3 w-3 mr-1" />
-                    <span className="truncate">{appointment.patientEmail}</span>
-                  </span>
-                )}
-                {appointment.patientGender && appointment.patientGender !== "N/A" && (
-                  <span className="flex items-center">
-                    <Users className="h-3 w-3 mr-1" />
-                    <span className="capitalize">{appointment.patientGender}</span>
-                  </span>
-                )}
+                {appointment.patientEmail &&
+                  appointment.patientEmail !== "N/A" && (
+                    <span className="flex items-center truncate">
+                      <Mail className="h-3 w-3 mr-1" />
+                      <span className="truncate">
+                        {appointment.patientEmail}
+                      </span>
+                    </span>
+                  )}
+                {appointment.patientGender &&
+                  appointment.patientGender !== "N/A" && (
+                    <span className="flex items-center">
+                      <Users className="h-3 w-3 mr-1" />
+                      <span className="capitalize">
+                        {appointment.patientGender}
+                      </span>
+                    </span>
+                  )}
               </div>
               {appointment.notes && (
                 <p className="text-xs text-gray-600 mt-1 line-clamp-1">
@@ -89,12 +95,16 @@ export function AppointmentCard({
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
             <div className="flex gap-1">
               <Badge
-                className={`${getTypeColor(appointment.type)} text-xs px-2 py-0.5`}
+                className={`${getTypeColor(
+                  appointment.type
+                )} text-xs px-2 py-0.5`}
               >
                 {appointment.type}
               </Badge>
               <Badge
-                className={`${getStatusColor(appointment.status)} text-xs px-2 py-0.5`}
+                className={`${getStatusColor(
+                  appointment.status
+                )} text-xs px-2 py-0.5`}
               >
                 {appointment.status}
               </Badge>

@@ -92,7 +92,9 @@ api.interceptors.response.use(
       error.response &&
       error.response.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes('/auth/refresh-token')
+      !originalRequest.url.includes('/auth/refresh-token') &&
+      // Do not attempt refresh for unsignup flow; surface error to UI instead
+      !originalRequest.url.includes('/user/unsignup')
     ) {
       // Try to refresh token
       if (isRefreshing) {
@@ -161,6 +163,10 @@ api.interceptors.response.use(
       
       switch (status) {
         case 401:
+          // Skip forced logout for unsignup endpoint; let caller handle error
+          if (originalRequest?.url?.includes('/user/unsignup')) {
+            break;
+          }
           // If we're already on the login page, don't show the toast
           if (!window.location.pathname.includes('/login')) {
             toast.error('Session expired. Please sign in again.');

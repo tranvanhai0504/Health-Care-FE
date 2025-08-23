@@ -104,6 +104,15 @@ class UserService extends BaseService<User> {
     const response = await api.get<ApiResponse<User>>(`${this.basePath}/${id}`);
     return response.data.data;
   }
+
+  /**
+   * Create a non-registered user (unsignup)
+   * Backend: POST /api/v1/user/unsignup
+   */
+  async unsignup(data: Partial<User> & { phoneNumber: string; name?: string; gender?: string }): Promise<User> {
+    const response = await api.post<ApiResponse<User>>(`${this.basePath}/unsignup`, data);
+    return response.data.data;
+  }
 }
 
 export const userService = new UserService();

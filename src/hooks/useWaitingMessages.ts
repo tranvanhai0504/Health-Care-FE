@@ -36,7 +36,8 @@ export function useWaitingMessages() {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user]);
 
   const markAsRead = useCallback(async (messageId: string) => {
     try {

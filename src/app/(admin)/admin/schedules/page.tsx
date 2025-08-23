@@ -43,6 +43,7 @@ import {
   XCircle,
   AlertCircle,
   UserCheck,
+  Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,12 +126,20 @@ export default function AdminSchedulesPage() {
   const filteredSchedules = schedules.filter((schedule) => {
     const matchesSearch =
       searchQuery === "" ||
-      schedule.userId.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      schedule._id?.toLowerCase().includes(searchQuery.toLowerCase());
+      (schedule.userId?.name && schedule.userId.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (schedule._id && schedule._id.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesStatus =
       statusFilter === "all" || schedule.status === statusFilter;
     const matchesType = typeFilter === "all" || schedule.type === typeFilter;
+
+    // Temporary debugging to check actual values
+    if (statusFilter !== "all" && !matchesStatus) {
+      console.log(`Filter debug: schedule.status="${schedule.status}", statusFilter="${statusFilter}", type: ${typeof schedule.status}`);
+    }
+    if (typeFilter !== "all" && !matchesType) {
+      console.log(`Filter debug: schedule.type="${schedule.type}", typeFilter="${typeFilter}", type: ${typeof schedule.type}`);
+    }
 
     return matchesSearch && matchesStatus && matchesType;
   });
@@ -234,6 +243,8 @@ export default function AdminSchedulesPage() {
     setStatusFilter("all");
     setTypeFilter("all");
     setCurrentPage(1);
+    // Refresh the data after resetting filters to ensure clean state
+    fetchSchedules();
   };
 
   return (
@@ -280,7 +291,7 @@ export default function AdminSchedulesPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Status</SelectItem>
-                          <SelectItem value="pending">Confirmed</SelectItem>
+                          <SelectItem value="confirmed">Confirmed</SelectItem>
                           <SelectItem value="checkedIn">Checked In</SelectItem>
                           <SelectItem value="serving">Serving</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
@@ -307,6 +318,15 @@ export default function AdminSchedulesPage() {
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Reset
+                      </Button>
+
+                      <Button
+                        size="default"
+                        className="w-full sm:w-auto gap-2"
+                        onClick={() => (window.location.href = "/admin/schedules/create")}
+                      >
+                        <Plus className="h-4 w-4" />
+                        New Schedule
                       </Button>
                     </div>
                   </div>

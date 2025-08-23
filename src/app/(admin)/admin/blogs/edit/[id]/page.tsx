@@ -71,7 +71,8 @@ export default function EditBlogPage() {
     };
 
     fetchBlog();
-  }, [blogId, router, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blogId, router]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({

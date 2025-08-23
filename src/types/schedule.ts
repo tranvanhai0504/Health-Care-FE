@@ -1,4 +1,5 @@
 import { ConsultationPackage } from './package';
+import { Payment } from './payment';
 import { User } from './user';
 /**
  * Date range interface
@@ -51,6 +52,12 @@ export interface ScheduleResponse extends Schedule {
     totalPrice: number;
     totalPaid: number;
     payments: string[]
+  },
+  payments?: {
+    _id?: string;
+    totalPrice: number;
+    totalPaid: number;
+    payments: (string | Payment)[];
   },
   services?: ScheduleService[];
 }

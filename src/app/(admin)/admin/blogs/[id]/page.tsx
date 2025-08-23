@@ -49,7 +49,8 @@ export default function ViewBlogPage() {
     };
 
     fetchBlog();
-  }, [blogId, router, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blogId, router]);
 
   const handleBack = () => {
     router.push("/admin/blogs");
