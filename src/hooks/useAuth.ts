@@ -51,7 +51,8 @@ export function useAuth() {
         return { success: false, user: null };
       }
     },
-    [signin, toast]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [signin]
   );
 
   const logout = useCallback(async () => {

@@ -13,7 +13,7 @@ import {
 
 export class PaymentService extends BaseService<Payment> {
   constructor() {
-    super("/api/v1/payments");
+    super("/api/v1/payment");
   }
 
   /**

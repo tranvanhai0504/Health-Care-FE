@@ -1,3 +1,6 @@
+import { ScheduleResponse } from './schedule';
+import { User } from './user';
+
 export interface Appointment {
   id: string;
   patientName: string;
@@ -16,6 +19,9 @@ export interface Appointment {
   patientGender?: string;
   patientDateOfBirth?: string;
   patientOccupation?: string;
+  // Additional fields for enhanced functionality
+  originalSchedule?: ScheduleResponse; // Store the original schedule data
+  userId?: string | User; // Store the user ID or user object
 }
 
 export type AppointmentStatus = "upcoming" | "completed" | "cancelled" | "in-progress";

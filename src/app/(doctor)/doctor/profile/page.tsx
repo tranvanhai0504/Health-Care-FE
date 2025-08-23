@@ -245,9 +245,9 @@ export default function DoctorProfilePage() {
   };
 
   return (
-    <div className=" bg-gray-50">
+    <div className=" bg-gray-50 p-4">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white border-b p-4 rounded-lg">
         <div className="container mx-auto py-8">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
             <div className="flex items-center gap-6">

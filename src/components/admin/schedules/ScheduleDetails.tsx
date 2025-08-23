@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { scheduleService, userService } from "@/services";
+import React, { useEffect, useMemo, useState } from "react";
+import { scheduleService, userService, paymentService } from "@/services";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import { ScheduleResponse, ScheduleStatus } from "@/types/schedule";
@@ -132,6 +132,67 @@ const formatDuration = (minutes: number): string => {
   }
 };
 
+type PaymentAggregate = {
+  totalPrice: number;
+  totalPaid: number;
+  paymentsCount: number;
+};
+
+type PaymentListItem = {
+  _id: string;
+  service?: string;
+  amount?: number;
+  method?: string;
+  status?: string;
+};
+
+const getPaymentAggregate = (sch: ScheduleResponse): PaymentAggregate => {
+  const candidate: unknown = (sch as unknown as { payments?: { totalPrice?: number; totalPaid?: number; payments?: unknown[] } }).payments;
+  if (candidate && typeof candidate === "object") {
+    const agg = candidate as { totalPrice?: number; totalPaid?: number; payments?: unknown[] };
+    return {
+      totalPrice: typeof agg.totalPrice === "number" ? agg.totalPrice : 0,
+      totalPaid: typeof agg.totalPaid === "number" ? agg.totalPaid : 0,
+      paymentsCount: Array.isArray(agg.payments) ? agg.payments.length : 0,
+    };
+  }
+  const legacy = sch.payment as unknown as { totalPrice?: number; totalPaid?: number; payments?: unknown[] } | undefined;
+  return {
+    totalPrice: (legacy && typeof legacy.totalPrice === "number") ? legacy.totalPrice : 0,
+    totalPaid: (legacy && typeof legacy.totalPaid === "number") ? legacy.totalPaid : 0,
+    paymentsCount: legacy && Array.isArray(legacy.payments) ? legacy.payments.length : 0,
+  };
+};
+
+const getPaymentsFromSchedule = (sch: ScheduleResponse): PaymentListItem[] => {
+  const candidate: unknown = (sch as unknown as { payments?: { payments?: unknown[] } }).payments;
+  const arr: unknown[] = (candidate && typeof candidate === "object" && Array.isArray((candidate as { payments?: unknown[] }).payments))
+    ? ((candidate as { payments?: unknown[] }).payments as unknown[])
+    : [];
+  return arr
+    .map((item) => {
+      if (typeof item === "string") {
+        return { _id: item } as PaymentListItem;
+      }
+      if (item && typeof item === "object") {
+        const obj = item as { _id?: string; service?: string | { _id?: string }; amount?: number; method?: string; status?: string };
+        const id = typeof obj._id === "string" ? obj._id : "";
+        const serviceId = typeof obj.service === "string" ? obj.service : (obj.service && typeof obj.service === "object" ? obj.service._id : undefined);
+        return {
+          _id: id,
+          service: serviceId,
+          amount: typeof obj.amount === "number" ? obj.amount : undefined,
+          method: typeof obj.method === "string" ? obj.method : undefined,
+          status: typeof obj.status === "string" ? obj.status : undefined,
+        } as PaymentListItem;
+      }
+      return null;
+    })
+    .filter((x): x is PaymentListItem => !!x && typeof x._id === "string" && x._id.length > 0);
+};
+
+// Duplicate definitions cleanup
+
 export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -143,6 +204,7 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
     useState<ConsultationPackage | null>(null);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [packageLoading, setPackageLoading] = useState(false);
+  const [updatingPaymentIds, setUpdatingPaymentIds] = useState<Set<string>>(new Set());
 
   // Editing states
   const [isEditing, setIsEditing] = useState(false);
@@ -159,6 +221,8 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
     paymentMethod: "",
     paymentNotes: "",
   });
+
+  console.log("check schedule", schedule);
 
   // Collapsible states
   const [isServicesOpen, setIsServicesOpen] = useState(true);
@@ -202,9 +266,10 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
         setSchedule(data);
         setEditedSchedule(data);
         // Initialize payment form
+        const initAgg = getPaymentAggregate(data);
         setPaymentForm({
-          totalPrice: data.payment?.totalPrice || 0,
-          totalPaid: data.payment?.totalPaid || 0,
+          totalPrice: initAgg.totalPrice,
+          totalPaid: initAgg.totalPaid,
           paymentMethod: "cash", // Default payment method
           paymentNotes: "", // Default notes
         });
@@ -231,9 +296,10 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
     setEditedSchedule(schedule);
     setIsEditingPayment(false);
     if (schedule) {
+      const agg = getPaymentAggregate(schedule);
       setPaymentForm({
-        totalPrice: schedule.payment?.totalPrice || 0,
-        totalPaid: schedule.payment?.totalPaid || 0,
+        totalPrice: agg.totalPrice,
+        totalPaid: agg.totalPaid,
         paymentMethod: "cash",
         paymentNotes: "",
       });
@@ -352,6 +418,35 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
       .finally(() => setServicesLoading(false));
   }, [schedule]);
 
+  // Ensure we have service details for any services referenced by payments as well
+  useEffect(() => {
+    if (!schedule) return;
+    const payments = getPaymentsFromSchedule(schedule);
+    const neededIds = Array.from(
+      new Set(
+        payments
+          .map((p) => p.service)
+          .filter((id): id is string => typeof id === "string" && id.length > 0)
+      )
+    );
+    const existingIds = new Set(serviceDetails.map((s) => s._id));
+    const missingIds = neededIds.filter((id) => !existingIds.has(id));
+    if (missingIds.length === 0) return;
+    consultationServiceApi.getByIds(missingIds).then((extras) => {
+      if (!extras || extras.length === 0) return;
+      // Merge uniquely by _id
+      const byId = new Map<string, ConsultationService>();
+      [...serviceDetails, ...extras].forEach((s) => byId.set(s._id, s));
+      setServiceDetails(Array.from(byId.values()));
+    });
+  }, [schedule, serviceDetails]);
+
+  const serviceById = useMemo(() => {
+    const map = new Map<string, ConsultationService>();
+    serviceDetails.forEach((s) => map.set(s._id, s));
+    return map;
+  }, [serviceDetails]);
+
   // Fetch package details if type is package
   useEffect(() => {
     if (!schedule || schedule.type !== "package" || !schedule.packageId) {
@@ -439,8 +534,7 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
   }
 
   const scheduleDate = getScheduleDate(schedule);
-  const totalPrice = schedule.payment?.totalPrice || 0;
-  const totalPaid = schedule.payment?.totalPaid || 0;
+  const { totalPrice, totalPaid, paymentsCount } = getPaymentAggregate(schedule);
   const remainingBalance = totalPrice - totalPaid;
   const isFullyPaid = remainingBalance <= 0;
   const fallbackTotalPrice =
@@ -931,11 +1025,103 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                     <div className="flex items-center gap-2">
                       <Receipt className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-600">Payments:</span>
-                      <span className="text-xs">
-                        {schedule.payment?.payments?.length || 0} transaction(s)
-                      </span>
+                      <span className="text-xs">{paymentsCount} transaction(s)</span>
                     </div>
+                    {/* Payment actions moved below to be full width */}
                   </div>
+                </div>
+                {/* Full-width payment actions */}
+                <div className="mt-3 border rounded-lg overflow-hidden w-full">
+                  <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600">
+                    Confirm payments
+                  </div>
+                  <div className="divide-y">
+                    {getPaymentsFromSchedule(schedule).map((p) => {
+                      const s = p.service ? serviceById.get(p.service) : undefined;
+                      const label = s?.name || (p.service ? `Service ${p.service.slice(-6)}` : `Payment ${p._id.slice(-6)}`);
+                      const disabled = p.status === "paid" || updatingPaymentIds.has(p._id);
+                      return (
+                        <div key={p._id} className="flex items-center justify-between px-3 py-2">
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">{label}</div>
+                            <div className="text-xs text-gray-500">
+                              {p.amount ? formatPrice(p.amount) : "-"} • {p.method || "-"}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className={`text-xxs ${p.status === "paid" ? "bg-green-50 text-green-700 border-green-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}`}
+                            >
+                              {p.status || "pending"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant={p.status === "paid" ? "outline" : "default"}
+                              disabled={disabled}
+                              className={p.status === "paid" ? "text-gray-500" : "bg-green-600 hover:bg-green-700 text-white"}
+                              onClick={async () => {
+                                try {
+                                  setUpdatingPaymentIds((prev) => new Set(prev).add(p._id));
+                                  await paymentService.updateStatus(p._id, { status: "paid" });
+                                  const refreshed = await scheduleService.getById(scheduleId);
+                                  setSchedule(refreshed);
+                                  setEditedSchedule(refreshed);
+                                  toast({ title: "Payment updated", description: `${label} marked as paid`, type: "success" });
+                                } catch (err) {
+                                  console.error("Failed to update payment status", err);
+                                  toast({ title: "Error", description: "Failed to mark payment as paid", type: "error" });
+                                } finally {
+                                  setUpdatingPaymentIds((prev) => {
+                                    const clone = new Set(prev);
+                                    clone.delete(p._id);
+                                    return clone;
+                                  });
+                                }
+                              }}
+                            >
+                              {updatingPaymentIds.has(p._id) ? (
+                                <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full" />
+                              ) : p.status === "paid" ? (
+                                "Paid"
+                              ) : (
+                                "Mark paid"
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {getPaymentsFromSchedule(schedule).some((p) => p.status !== "paid") && (
+                    <div className="bg-gray-50 px-3 py-2 text-right">
+                      <Button
+                        size="sm"
+                        disabled={Array.from(updatingPaymentIds).length > 0}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={async () => {
+                          try {
+                            const pending = getPaymentsFromSchedule(schedule).filter((p) => p.status !== "paid");
+                            setUpdatingPaymentIds(new Set(pending.map((p) => p._id)));
+                            await Promise.all(
+                              pending.map((p) => paymentService.updateStatus(p._id, { status: "paid" }))
+                            );
+                            const refreshed = await scheduleService.getById(scheduleId);
+                            setSchedule(refreshed);
+                            setEditedSchedule(refreshed);
+                            toast({ title: "Payments updated", description: `Marked ${pending.length} payment(s) as paid`, type: "success" });
+                          } catch (err) {
+                            console.error("Failed to update all payments", err);
+                            toast({ title: "Error", description: "Failed to mark all payments as paid", type: "error" });
+                          } finally {
+                            setUpdatingPaymentIds(new Set());
+                          }
+                        }}
+                      >
+                        Mark all as paid
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

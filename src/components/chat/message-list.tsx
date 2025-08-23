@@ -59,8 +59,8 @@ export function MessageList() {
     >
       {/* Welcome message when no messages */}
       {messages.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-full text-center p-6">
-          <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center h-full text-center p-6 pt-60 pb-60">
+          <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 py-2">
             <Bot size={24} className="text-primary" />
           </div>
           <h3 className="font-semibold text-lg mb-2">Welcome to AI Assistant</h3>

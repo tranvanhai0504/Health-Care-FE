@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import {
   ScheduleHeader,
@@ -8,27 +8,28 @@ import {
   AppointmentList,
   AppointmentSummary,
   AppointmentDetails,
-  MedicalExaminationForm,
-  PrescriptionForm,
-  ScheduleManager,
 } from "@/components/doctor/schedules";
 import { Appointment } from "@/types/appointment";
 import { CreateMedicalExaminationData } from "@/types/medicalExamination";
-import { CreatePrescriptionData } from "@/types/prescription";
 import { medicalExaminationService } from "@/services/medicalExamination.service";
-import { useDoctorSchedules, getWeekPeriod, getDayOffset } from "@/hooks/useDoctorSchedules";
+import { userService } from "@/services/user.service";
+import {
+  useDoctorSchedules,
+  getWeekPeriod,
+  getDayOffset,
+} from "@/hooks/useDoctorSchedules";
 import { ScheduleStatus } from "@/types/schedule";
 import { AppointmentStatus } from "@/types/appointment";
+import { User } from "@/types/user";
+import { consultationServiceApi } from "@/services/consultationService.service";
+import { ConsultationService } from "@/types/consultation";
 
-type ViewMode =
-  | "list"
-  | "details"
-  | "medical-examination"
-  | "prescription"
-  | "schedule-manager";
+type ViewMode = "list" | "details";
 
 // Helper function to map schedule status to appointment status
-function mapScheduleStatusToAppointmentStatus(scheduleStatus: ScheduleStatus): AppointmentStatus {
+function mapScheduleStatusToAppointmentStatus(
+  scheduleStatus: ScheduleStatus
+): AppointmentStatus {
   switch (scheduleStatus) {
     case ScheduleStatus.CONFIRMED:
       return "upcoming";
@@ -49,39 +50,160 @@ export default function DoctorSchedules() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("today");
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [serviceDetails, setServiceDetails] = useState<
+    Record<string, ConsultationService>
+  >({});
+  const [patientDetails, setPatientDetails] = useState<Record<string, User>>(
+    {}
+  );
+  const [loadingPatients, setLoadingPatients] = useState<
+    Record<string, boolean>
+  >({});
 
   // Use the custom hook to fetch doctor's schedules
-  const { schedules, loading, error, refetch, fetchSchedules } = useDoctorSchedules();
+  const { schedules, loading, error, refetch, fetchSchedules } =
+    useDoctorSchedules();
+
+  // Function to fetch patient details by ID
+  const fetchPatientDetails = useCallback(
+    async (userId: string) => {
+      if (patientDetails[userId] || loadingPatients[userId]) {
+        return patientDetails[userId];
+      }
+
+      setLoadingPatients((prev) => ({ ...prev, [userId]: true }));
+
+      try {
+        const user = await userService.getUserById(userId);
+        setPatientDetails((prev) => ({ ...prev, [userId]: user }));
+        setLoadingPatients((prev) => ({ ...prev, [userId]: false }));
+        return user;
+      } catch (error) {
+        console.error(`Error fetching patient details for ${userId}:`, error);
+        setLoadingPatients((prev) => ({ ...prev, [userId]: false }));
+        return null;
+      }
+    },
+    [patientDetails, loadingPatients]
+  );
+
+  // Function to get patient info (from cache or schedule data)
+  const getPatientInfo = (schedule: (typeof schedules)[0]) => {
+    const userId =
+      typeof schedule.userId === "string"
+        ? schedule.userId
+        : schedule.userId?._id;
+    const userObj =
+      typeof schedule.userId === "object" ? schedule.userId : null;
+
+    // If we have detailed patient data, use it
+    if (userId && patientDetails[userId]) {
+      return patientDetails[userId];
+    }
+
+    // Otherwise, use what's available from the schedule
+    return userObj;
+  };
 
   // Convert schedules to appointments format for compatibility with existing components
   const appointments: Appointment[] = schedules.map((schedule) => {
-    // Extract user information from schedule
-    const user = typeof schedule.userId === 'object' ? schedule.userId : null;
+    // Get enhanced patient information
+    const user = getPatientInfo(schedule);
+    const userId =
+      typeof schedule.userId === "string"
+        ? schedule.userId
+        : schedule.userId?._id;
 
     return {
       id: schedule._id || "",
-      patientName: user?.name || `Patient ${typeof schedule.userId === 'string' ? schedule.userId : schedule.userId._id}`,
+      patientName: user?.name || `Patient ${userId || "Unknown"}`,
       patientPhone: user?.phoneNumber || "N/A",
       patientEmail: user?.email || "N/A",
       patientAddress: user?.address || "N/A",
       time: schedule.timeOffset === 0 ? "09:00 AM" : "02:00 PM", // Convert timeOffset to time format
-      date: new Date(schedule.weekPeriod.from).toISOString().split('T')[0],
+      date: new Date(new Date(schedule.weekPeriod.from).getTime() + schedule.dayOffset * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000).toISOString().split("T")[0],
       type: schedule.type === "services" ? "Services" : "Package",
       status: mapScheduleStatusToAppointmentStatus(schedule.status),
-      notes: schedule.packageId ? `Package: ${schedule.packageId}` : "Services appointment",
+      notes: schedule.packageId
+        ? `Package: ${schedule.packageId}`
+        : "Services appointment",
       duration: "N/A", // Not available in schedule data
-      symptoms: schedule.services?.map(s => s.service).join(", ") || "No services specified",
+      symptoms:
+        schedule.services
+          ?.map((s) => serviceDetails[s.service]?.name || s.service)
+          .join(", ") || "No services specified",
       previousVisits: 0, // Not available in schedule data
-      // Add additional user info that might be useful
-      ...(user && {
-        patientGender: user.gender || "N/A",
-        patientDateOfBirth: user.dateOfBirth || "N/A",
-        patientOccupation: user.occupation || "N/A",
-      })
+      // Add enhanced user info
+      patientGender: user?.gender || "N/A",
+      patientDateOfBirth: user?.dateOfBirth || "N/A",
+      patientOccupation: user?.occupation || "N/A",
+      // Store the user ID for future reference
+      userId: userId,
+      originalSchedule: schedule,
     };
   });
+
+  // Fetch patient details when schedules are loaded
+  useEffect(() => {
+    const fetchAllPatientDetails = async () => {
+      const userIds = schedules
+        .map((schedule) =>
+          typeof schedule.userId === "string"
+            ? schedule.userId
+            : schedule.userId?._id
+        )
+        .filter(
+          (id): id is string =>
+            !!id && !patientDetails[id] && !loadingPatients[id]
+        );
+
+      // Fetch details for users we don't have yet
+      const promises = userIds.map((userId) => fetchPatientDetails(userId));
+      await Promise.allSettled(promises);
+    };
+
+    if (schedules.length > 0) {
+      fetchAllPatientDetails();
+    }
+  }, [schedules, patientDetails, loadingPatients, fetchPatientDetails]);
+
+  // Fetch service details when schedules are loaded
+  useEffect(() => {
+    const fetchAllServiceDetails = async () => {
+      // Extract all unique service IDs from all schedules
+      const serviceIds = schedules
+        .flatMap((schedule) => schedule.services?.map((s) => s.service) || [])
+        .filter((id): id is string => !!id && !serviceDetails[id]);
+
+      if (serviceIds.length > 0) {
+        try {
+          const uniqueServiceIds = [...new Set(serviceIds)];
+          const services = await consultationServiceApi.getByIds(
+            uniqueServiceIds
+          );
+
+          // Create a map of service details by ID
+          const serviceDetailsMap = services.reduce((acc, service) => {
+            if (service?._id) {
+              acc[service._id] = service;
+            }
+            return acc;
+          }, {} as Record<string, ConsultationService>);
+
+          setServiceDetails((prev) => ({ ...prev, ...serviceDetailsMap }));
+        } catch (error) {
+          console.error("Error fetching service details:", error);
+        }
+      }
+    };
+
+    if (schedules.length > 0) {
+      fetchAllServiceDetails();
+    }
+  }, [schedules, serviceDetails]);
 
   // Handle date filter changes to refetch data
   useEffect(() => {
@@ -92,26 +214,30 @@ export default function DoctorSchedules() {
 
       switch (dateFilter) {
         case "today":
-          const today = new Date(now);
-          today.setHours(0, 0, 0, 0);
-          const endOfDay = new Date(now);
-          endOfDay.setHours(23, 59, 59, 999);
-          // Convert to UTC+7 timezone
-          const todayUTC = new Date(today.getTime() - (7 * 60 * 60 * 1000));
-          const endOfDayUTC = new Date(endOfDay.getTime() - (7 * 60 * 60 * 1000));
-          from = todayUTC.toISOString();
-          to = endOfDayUTC.toISOString();
-          break;
-        case "week":
           const weekPeriod = getWeekPeriod(now);
           // Parse the week period dates and convert to UTC+7
           const weekStart = new Date(weekPeriod.from);
           const weekEnd = new Date(weekPeriod.to);
           // Convert to UTC+7 timezone
-          const weekStartUTC = new Date(weekStart.getTime() - (7 * 60 * 60 * 1000));
-          const weekEndUTC = new Date(weekEnd.getTime() - (7 * 60 * 60 * 1000));
+          const weekStartUTC = new Date(
+            weekStart.getTime() - 7 * 60 * 60 * 1000
+          );
+          const weekEndUTC = new Date(weekEnd.getTime() - 7 * 60 * 60 * 1000);
           from = weekStartUTC.toISOString();
           to = weekEndUTC.toISOString();
+          break;
+        case "week":
+          const weekPeriod2 = getWeekPeriod(now);
+          // Parse the week period dates and convert to UTC+7
+          const weekStart2 = new Date(weekPeriod2.from);
+          const weekEnd2 = new Date(weekPeriod2.to);
+          // Convert to UTC+7 timezone
+          const weekStartUTC2 = new Date(
+            weekStart2.getTime() - 7 * 60 * 60 * 1000
+          );
+          const weekEndUTC2 = new Date(weekEnd2.getTime() - 7 * 60 * 60 * 1000);
+          from = weekStartUTC2.toISOString();
+          to = weekEndUTC2.toISOString();
           isFullWeek = true;
           break;
         case "month":
@@ -120,8 +246,12 @@ export default function DoctorSchedules() {
           const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
           endOfMonth.setHours(23, 59, 59, 999);
           // Convert to UTC+7 timezone
-          const startOfMonthUTC = new Date(startOfMonth.getTime() - (7 * 60 * 60 * 1000));
-          const endOfMonthUTC = new Date(endOfMonth.getTime() - (7 * 60 * 60 * 1000));
+          const startOfMonthUTC = new Date(
+            startOfMonth.getTime() - 7 * 60 * 60 * 1000
+          );
+          const endOfMonthUTC = new Date(
+            endOfMonth.getTime() - 7 * 60 * 60 * 1000
+          );
           from = startOfMonthUTC.toISOString();
           to = endOfMonthUTC.toISOString();
           break;
@@ -163,69 +293,81 @@ export default function DoctorSchedules() {
     return matchesSearch && matchesStatus;
   });
 
+  // Function to get enhanced appointment with latest patient data
+  const getEnhancedAppointment = (appointment: Appointment): Appointment => {
+    if (
+      appointment.userId &&
+      typeof appointment.userId === "string" &&
+      patientDetails[appointment.userId]
+    ) {
+      const user = patientDetails[appointment.userId];
+      return {
+        ...appointment,
+        patientName: user.name || appointment.patientName,
+        patientPhone: user.phoneNumber || appointment.patientPhone,
+        patientEmail: user.email || appointment.patientEmail,
+        patientAddress: user.address || appointment.patientAddress,
+        patientGender: user.gender || appointment.patientGender,
+        patientDateOfBirth: user.dateOfBirth || appointment.patientDateOfBirth,
+        patientOccupation: user.occupation || appointment.patientOccupation,
+      };
+    }
+    return appointment;
+  };
+
   // Event handlers
-  const handleViewDetails = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
+  const handleViewDetails = async (appointment: Appointment) => {
+    const enhancedAppointment = getEnhancedAppointment(appointment);
+    setSelectedAppointment(enhancedAppointment);
     setViewMode("details");
+
+    // Fetch detailed patient information if we have the user ID and don't have the details yet
+    if (
+      appointment.userId &&
+      typeof appointment.userId === "string" &&
+      !patientDetails[appointment.userId]
+    ) {
+      const patientData = await fetchPatientDetails(appointment.userId);
+      if (patientData) {
+        // Update the selected appointment with fresh data
+        const updatedAppointment = getEnhancedAppointment(appointment);
+        setSelectedAppointment(updatedAppointment);
+      }
+    }
   };
 
-  const handleStartConsultation = (appointment: Appointment) => {
-    // TODO: Implement consultation start logic
-    console.log("Starting consultation for:", appointment.patientName);
-  };
+  const handleStartConsultation = async (appointment: Appointment) => {
+    if (
+      !appointment.userId ||
+      typeof appointment.userId !== "string" ||
+      !appointment.originalSchedule
+    ) {
+      console.error(
+        "Cannot create medical examination: missing patient ID or original schedule."
+      );
+      // TODO: Show error message to user
+      return;
+    }
 
-  const handleCreateExamination = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setViewMode("medical-examination");
-  };
-
-  const handleCreatePrescription = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setViewMode("prescription");
-  };
-
-  const handleManageSchedule = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setViewMode("schedule-manager");
-  };
-
-  const handleSaveMedicalExamination = async (data: CreateMedicalExaminationData) => {
     try {
-      await medicalExaminationService.create(data);
-      setViewMode("details");
-      // TODO: Show success message
+      const examinationData: CreateMedicalExaminationData = {
+        patient: appointment.userId,
+        examinationDate: new Date(appointment.date).toISOString(),
+        symptoms: appointment.symptoms?.split(", ") || [],
+        services: appointment.originalSchedule.services
+          ?.map((s) => s.service)
+          .filter((id): id is string => !!id),
+      };
+
+      const newExamination = await medicalExaminationService.create(
+        examinationData
+      );
+      console.log("Successfully created medical examination:", newExamination);
+
+      // TODO: Show success message and navigate or update UI
     } catch (error) {
       console.error("Error creating medical examination:", error);
-      // TODO: Show error message
-    }
-  };
-
-  const handleSavePrescription = async (data: CreatePrescriptionData) => {
-    try {
-      // TODO: Implement prescription service
-      console.log("Saving prescription:", data);
-      setViewMode("details");
-      // TODO: Show success message
-    } catch (error) {
-      console.error("Error creating prescription:", error);
-      // TODO: Show error message
-    }
-  };
-
-  const handleSaveSchedule = async (updatedAppointment: Appointment, services: unknown[]) => {
-    try {
-      // TODO: Implement schedule update logic using the schedule service
-      console.log("Saving schedule:", updatedAppointment, services);
-
-      // Refetch the schedules to get the updated data
-      await refetch();
-
-      setSelectedAppointment(updatedAppointment);
-      setViewMode("details");
-      // TODO: Show success message
-    } catch (error) {
-      console.error("Error updating schedule:", error);
-      // TODO: Show error message
+      // TODO: Show error message to user
     }
   };
 
@@ -246,42 +388,32 @@ export default function DoctorSchedules() {
   const renderRightPanel = () => {
     if (!selectedAppointment) return null;
 
+    // Check if we're loading patient details for the selected appointment
+    const isLoadingPatientDetails =
+      selectedAppointment.userId &&
+      typeof selectedAppointment.userId === "string" &&
+      loadingPatients[selectedAppointment.userId];
+
     switch (viewMode) {
       case "details":
         return (
-          <AppointmentDetails
-            appointment={selectedAppointment}
-            onClose={handleCloseRightPanel}
-            onStartConsultation={handleStartConsultation}
-            onCreateExamination={handleCreateExamination}
-            onCreatePrescription={handleCreatePrescription}
-            onManageSchedule={handleManageSchedule}
-          />
+          <div className="relative">
+            {isLoadingPatientDetails && (
+              <div className="absolute top-4 right-4 z-10">
+                <div className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                  <div className="animate-spin h-3 w-3 border border-blue-600 border-t-transparent rounded-full"></div>
+                  Loading patient details...
+                </div>
+              </div>
+            )}
+            <AppointmentDetails
+              appointment={selectedAppointment}
+              onClose={handleCloseRightPanel}
+              onStartConsultation={handleStartConsultation}
+            />
+          </div>
         );
-      case "medical-examination":
-        return (
-          <MedicalExaminationForm
-            appointment={selectedAppointment}
-            onSave={handleSaveMedicalExamination}
-            onCancel={handleCloseRightPanel}
-          />
-        );
-      case "prescription":
-        return (
-          <PrescriptionForm
-            appointment={selectedAppointment}
-            onSave={handleSavePrescription}
-            onCancel={handleCloseRightPanel}
-          />
-        );
-      case "schedule-manager":
-        return (
-          <ScheduleManager
-            appointment={selectedAppointment}
-            onSave={handleSaveSchedule}
-            onCancel={handleCloseRightPanel}
-          />
-        );
+
       default:
         return null;
     }
