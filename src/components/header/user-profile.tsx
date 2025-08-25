@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Pill } from "lucide-react";
 import { UserProfile as UserProfileType } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -83,6 +83,12 @@ const UserProfile = ({ user }: UserProfileProps) => {
           <Link href="/profile" className="flex w-full items-center">
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/prescriptions" className="flex w-full items-center">
+            <Pill className="mr-2 h-4 w-4" />
+            <span>My Prescriptions</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

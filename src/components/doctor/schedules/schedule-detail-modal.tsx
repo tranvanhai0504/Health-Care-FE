@@ -26,6 +26,7 @@ import {
   Stethoscope,
   Timer,
   CreditCard,
+  DoorOpen,
 } from "lucide-react";
 import { format, isFuture } from "date-fns";
 import {
@@ -33,9 +34,11 @@ import {
   ScheduleStatus,
   ConsultationService,
   ConsultationPackage,
+  Room,
 } from "@/types";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
+import { roomService } from "@/services/room.service";
 
 interface ScheduleDetailModalProps {
   schedule: ScheduleResponse | null;
@@ -132,6 +135,10 @@ const formatDuration = (minutes: number): string => {
   }
 };
 
+type ServiceWithRoom = Omit<ConsultationService, 'room'> & {
+  room: Room | undefined;
+};
+
 export default function ScheduleDetailModal({
   schedule,
   packageName,
@@ -140,14 +147,12 @@ export default function ScheduleDetailModal({
   onEdit,
   onCancel,
 }: ScheduleDetailModalProps) {
-  const [serviceDetails, setServiceDetails] = useState<ConsultationService[]>(
+  const [serviceDetails, setServiceDetails] = useState<ServiceWithRoom[]>(
     []
   );
   const [packageDetails, setPackageDetails] =
     useState<ConsultationPackage | null>(null);
   const [loading, setLoading] = useState(false);
-
-  console.log(serviceDetails, packageDetails);
 
   // Fetch service details when modal opens
   useEffect(() => {
@@ -168,7 +173,16 @@ export default function ScheduleDetailModal({
 
           // Fetch detailed service information
           const services = await consultationServiceApi.getByIds(serviceIds);
-          setServiceDetails(services);
+
+          const roomIds = services.map((s) => s.room).filter((r) => r !== undefined);
+          const rooms = await roomService.getByIds(roomIds);
+
+          const serviceWithRooms = services.map((s) => ({
+            ...s,
+            room: rooms.find((r) => r._id === s.room) || undefined,
+          }));
+          console.log(serviceWithRooms);
+          setServiceDetails(serviceWithRooms);
         } else if (schedule.type === "package" && schedule.packageId) {
           // Fetch package details
           const packageId =
@@ -206,17 +220,6 @@ export default function ScheduleDetailModal({
   const totalPaid = schedule.payment?.totalPaid || 0;
   const remainingBalance = totalPrice - totalPaid;
   const isFullyPaid = remainingBalance <= 0;
-
-  // Debug payment data
-  console.log("Schedule payment data:", {
-    payment: schedule.payment,
-    totalPrice,
-    totalPaid,
-    remainingBalance,
-    type: schedule.type,
-    services: schedule.services,
-    packageId: schedule.packageId,
-  });
 
   // Calculate fallback total price if payment.totalPrice is not available
   const calculateFallbackPrice = () => {
@@ -535,7 +538,7 @@ export default function ScheduleDetailModal({
                                   <p className="text-xs text-gray-600 mb-2">
                                     {serviceDetail.description}
                                   </p>
-                                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                                  <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
                                     <div className="flex items-center gap-1">
                                       <Timer className="h-3 w-3" />
                                       <span>
@@ -552,6 +555,14 @@ export default function ScheduleDetailModal({
                                           </span>
                                         </div>
                                       )}
+                                    {serviceDetail.room && (
+                                      <div className="flex items-center gap-1">
+                                        <DoorOpen className="h-3 w-3" />
+                                        <span>
+                                          {serviceDetail.room.name} (F{serviceDetail.room.roomFloor} - R{serviceDetail.room.roomNumber})
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
                                 </>
                               )}

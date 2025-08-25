@@ -1,5 +1,5 @@
-import { ScheduleResponse } from './schedule';
-import { User } from './user';
+import { ScheduleResponse } from "./schedule";
+import { User } from "./user";
 
 export interface Appointment {
   id: string;
@@ -10,7 +10,7 @@ export interface Appointment {
   time: string;
   date: string;
   type: string;
-  status: "upcoming" | "completed" | "cancelled" | "in-progress";
+  status: "upcoming" | "completed" | "cancelled" | "in-progress" | "checked-in";
   notes?: string;
   duration?: string;
   symptoms?: string;
@@ -24,5 +24,14 @@ export interface Appointment {
   userId?: string | User; // Store the user ID or user object
 }
 
-export type AppointmentStatus = "upcoming" | "completed" | "cancelled" | "in-progress";
-export type AppointmentType = "Emergency" | "Follow-up" | "Consultation" | "Checkup";
+export type AppointmentStatus =
+  | "upcoming"
+  | "completed"
+  | "cancelled"
+  | "in-progress"
+  | "checked-in";
+export type AppointmentType =
+  | "Emergency"
+  | "Follow-up"
+  | "Consultation"
+  | "Checkup";

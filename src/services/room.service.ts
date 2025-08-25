@@ -1,15 +1,15 @@
-import BaseService from './base.service';
-import api from '@/lib/axios';
-import { 
+import BaseService from "./base.service";
+import api from "@/lib/axios";
+import {
   Room,
   CreateRoomData,
   ApiResponse,
-  PaginatedApiResponse
-} from '@/types';
+  PaginatedApiResponse,
+} from "@/types";
 
 export class RoomService extends BaseService<Room> {
   constructor() {
-    super('/api/v1/room');
+    super("/api/v1/room");
   }
 
   /**
@@ -17,7 +17,9 @@ export class RoomService extends BaseService<Room> {
    * @returns Promise with array of rooms
    */
   async getAll(): Promise<PaginatedApiResponse<Room>> {
-    const response = await api.get<ApiResponse<PaginatedApiResponse<Room>>>(this.basePath);
+    const response = await api.get<ApiResponse<PaginatedApiResponse<Room>>>(
+      this.basePath
+    );
     return response.data.data;
   }
 
@@ -48,7 +50,10 @@ export class RoomService extends BaseService<Room> {
    * @returns Promise with the updated room
    */
   async update(id: string, data: Partial<CreateRoomData>): Promise<Room> {
-    const response = await api.put<ApiResponse<Room>>(`${this.basePath}/${id}`, data);
+    const response = await api.put<ApiResponse<Room>>(
+      `${this.basePath}/${id}`,
+      data
+    );
     return response.data.data;
   }
 
@@ -58,9 +63,32 @@ export class RoomService extends BaseService<Room> {
    * @returns Promise with the deleted room
    */
   async delete(id: string): Promise<Room> {
-    const response = await api.delete<ApiResponse<Room>>(`${this.basePath}/${id}`);
+    const response = await api.delete<ApiResponse<Room>>(
+      `${this.basePath}/${id}`
+    );
     return response.data.data;
+  }
+
+  async getByIds(ids: string[]): Promise<Room[]> {
+    // Use Promise.allSettled to handle individual failures
+    const promises = ids.map((id) => this.getById(id));
+    try {
+      const results = await Promise.allSettled(promises);
+
+      // Filter out rejected promises and null values from fulfilled promises
+      return results
+        .filter(
+          (result) => result.status === "fulfilled" && result.value !== null
+        )
+        .map(
+          (result) =>
+            (result as PromiseFulfilledResult<Room>).value
+        );
+    } catch (error) {
+      console.error("Error fetching multiple rooms:", error);
+      return [];
+    }
   }
 }
 
-export const roomService = new RoomService(); 
+export const roomService = new RoomService();

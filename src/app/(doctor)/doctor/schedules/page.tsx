@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import {
   ScheduleHeader,
@@ -23,6 +24,7 @@ import { AppointmentStatus } from "@/types/appointment";
 import { User } from "@/types/user";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { ConsultationService } from "@/types/consultation";
+import { toast } from "sonner";
 
 type ViewMode = "list" | "details";
 
@@ -33,6 +35,8 @@ function mapScheduleStatusToAppointmentStatus(
   switch (scheduleStatus) {
     case ScheduleStatus.CONFIRMED:
       return "upcoming";
+    case ScheduleStatus.CHECKEDIN:
+      return "checked-in";
     case ScheduleStatus.SERVING:
       return "in-progress";
     case ScheduleStatus.COMPLETED:
@@ -47,6 +51,7 @@ function mapScheduleStatusToAppointmentStatus(
 }
 
 export default function DoctorSchedules() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("today");
@@ -62,7 +67,7 @@ export default function DoctorSchedules() {
   const [loadingPatients, setLoadingPatients] = useState<
     Record<string, boolean>
   >({});
-
+  const [rightPanelSize, setRightPanelSize] = useState(50);
   // Use the custom hook to fetch doctor's schedules
   const { schedules, loading, error, refetch, fetchSchedules } =
     useDoctorSchedules();
@@ -124,7 +129,13 @@ export default function DoctorSchedules() {
       patientEmail: user?.email || "N/A",
       patientAddress: user?.address || "N/A",
       time: schedule.timeOffset === 0 ? "09:00 AM" : "02:00 PM", // Convert timeOffset to time format
-      date: new Date(new Date(schedule.weekPeriod.from).getTime() + schedule.dayOffset * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000).toISOString().split("T")[0],
+      date: new Date(
+        new Date(schedule.weekPeriod.from).getTime() +
+          schedule.dayOffset * 24 * 60 * 60 * 1000 +
+          7 * 60 * 60 * 1000
+      )
+        .toISOString()
+        .split("T")[0],
       type: schedule.type === "services" ? "Services" : "Package",
       status: mapScheduleStatusToAppointmentStatus(schedule.status),
       notes: schedule.packageId
@@ -345,7 +356,9 @@ export default function DoctorSchedules() {
       console.error(
         "Cannot create medical examination: missing patient ID or original schedule."
       );
-      // TODO: Show error message to user
+      toast.error(
+        "Cannot create medical examination: missing patient ID or original schedule."
+      );
       return;
     }
 
@@ -364,25 +377,30 @@ export default function DoctorSchedules() {
       );
       console.log("Successfully created medical examination:", newExamination);
 
-      // TODO: Show success message and navigate or update UI
+      toast.success("Medical examination created successfully!");
+      refetch();
+      handleCloseRightPanel();
+      setViewMode("details");
+      setSelectedAppointment(appointment);
     } catch (error) {
       console.error("Error creating medical examination:", error);
-      // TODO: Show error message to user
+      toast.error("Failed to create medical examination. Please try again.");
     }
   };
 
   const handleCloseRightPanel = () => {
     setSelectedAppointment(null);
     setViewMode("list");
+    setRightPanelSize(50);
   };
 
   const handleAddAppointment = () => {
-    // TODO: Implement add appointment logic
-    console.log("Add new appointment");
+    router.push("/doctor/schedules/new");
   };
 
   // Determine if right panel should be shown
   const showRightPanel = viewMode !== "list" && selectedAppointment;
+  const onlyShowRightPanel = showRightPanel && rightPanelSize === 100;
 
   // Render right panel content based on view mode
   const renderRightPanel = () => {
@@ -410,6 +428,9 @@ export default function DoctorSchedules() {
               appointment={selectedAppointment}
               onClose={handleCloseRightPanel}
               onStartConsultation={handleStartConsultation}
+              handleExpandRightPanel={handleExpandRightPanel}
+              handleCollapseRightPanel={handleCollapseRightPanel}
+              rightPanelSize={rightPanelSize}
             />
           </div>
         );
@@ -419,11 +440,22 @@ export default function DoctorSchedules() {
     }
   };
 
+  const handleExpandRightPanel = () => {
+    setRightPanelSize(100);
+  };
+
+  const handleCollapseRightPanel = () => {
+    setRightPanelSize(50);
+  };
+
   return (
     <div className="h-[calc(100vh-64px)]">
       <PanelGroup direction="horizontal" className="h-full">
         {/* Left Panel - Schedules List */}
-        <Panel defaultSize={showRightPanel ? 50 : 100} minSize={40}>
+        <Panel
+          defaultSize={showRightPanel ? (onlyShowRightPanel ? 0 : 60) : 100}
+          minSize={showRightPanel ? (onlyShowRightPanel ? 0 : 55) : 100}
+        >
           <div className="h-full space-y-6 overflow-auto p-6">
             {/* Header */}
             <ScheduleHeader onAddAppointment={handleAddAppointment} />
@@ -470,7 +502,11 @@ export default function DoctorSchedules() {
         {showRightPanel && (
           <>
             <PanelResizeHandle className="w-1 bg-gray-200 hover:bg-gray-300 transition-colors" />
-            <Panel defaultSize={50} minSize={35}>
+            <Panel
+              defaultSize={rightPanelSize}
+              minSize={onlyShowRightPanel ? 100 : 35}
+              maxSize={onlyShowRightPanel ? 100 : 45}
+            >
               <div className="h-full pl-3 overflow-auto">
                 {renderRightPanel()}
               </div>

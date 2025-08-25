@@ -126,20 +126,16 @@ export default function AdminSchedulesPage() {
   const filteredSchedules = schedules.filter((schedule) => {
     const matchesSearch =
       searchQuery === "" ||
-      (schedule.userId?.name && schedule.userId.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (schedule._id && schedule._id.toLowerCase().includes(searchQuery.toLowerCase()));
+      (schedule.userId?.name &&
+        schedule.userId.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())) ||
+      (schedule._id &&
+        schedule._id.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesStatus =
       statusFilter === "all" || schedule.status === statusFilter;
     const matchesType = typeFilter === "all" || schedule.type === typeFilter;
-
-    // Temporary debugging to check actual values
-    if (statusFilter !== "all" && !matchesStatus) {
-      console.log(`Filter debug: schedule.status="${schedule.status}", statusFilter="${statusFilter}", type: ${typeof schedule.status}`);
-    }
-    if (typeFilter !== "all" && !matchesType) {
-      console.log(`Filter debug: schedule.type="${schedule.type}", typeFilter="${typeFilter}", type: ${typeof schedule.type}`);
-    }
 
     return matchesSearch && matchesStatus && matchesType;
   });
@@ -270,7 +266,7 @@ export default function AdminSchedulesPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   {/* Search and Filters */}
-                  <div className="mb-6 flex flex-col lg:flex-row gap-4 items-center justify-between">
+                  <div className="mb-6 flex flex-col lg:flex-row gap-4 items-center justify-between w-full overflow-x-auto">
                     <div className="relative w-full lg:max-w-xs">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                       <Input
@@ -323,7 +319,9 @@ export default function AdminSchedulesPage() {
                       <Button
                         size="default"
                         className="w-full sm:w-auto gap-2"
-                        onClick={() => (window.location.href = "/admin/schedules/create")}
+                        onClick={() =>
+                          (window.location.href = "/admin/schedules/create")
+                        }
                       >
                         <Plus className="h-4 w-4" />
                         New Schedule
@@ -617,6 +615,7 @@ export default function AdminSchedulesPage() {
               <ScheduleDetails
                 scheduleId={selectedScheduleId}
                 onClose={handleCloseDetails}
+                refetch={fetchSchedules}
               />
             </Panel>
           </>

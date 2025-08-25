@@ -2,22 +2,22 @@
  * Payment method enum
  */
 export enum PaymentMethod {
-  CASH = 'cash',
-  CREDIT_CARD = 'credit_card',
-  DEBIT_CARD = 'debit_card',
-  BANK_TRANSFER = 'bank_transfer',
-  DIGITAL_WALLET = 'digital_wallet'
+  CASH = "cash",
+  CREDIT_CARD = "credit_card",
+  DEBIT_CARD = "debit_card",
+  BANK_TRANSFER = "bank_transfer",
+  DIGITAL_WALLET = "digital_wallet",
 }
 
 /**
  * Payment status enum
  */
 export enum PaymentStatus {
-  PENDING = 'pending',
-  PAID = 'paid',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-  REFUNDED = 'refunded'
+  PENDING = "pending",
+  PAID = "paid",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
+  REFUNDED = "refunded",
 }
 
 /**
@@ -88,22 +88,55 @@ export interface PaymentQueryParams {
 /**
  * Payment response with populated data
  */
-export interface PaymentResponse extends Omit<Payment, 'user' | 'schedule' | 'service'> {
-  user?: {
-    _id: string;
-    name?: string;
-    email?: string;
-    phoneNumber?: string;
-  } | string;
-  schedule?: {
-    _id: string;
-    date: string;
-    time: string;
-    status: string;
-  } | string;
-  service?: {
-    _id: string;
-    name: string;
-    price: number;
-  } | string;
+export interface PaymentResponse
+  extends Omit<Payment, "user" | "schedule" | "service"> {
+  user?:
+    | {
+        _id: string;
+        name?: string;
+        email?: string;
+        phoneNumber?: string;
+      }
+    | string;
+  schedule?:
+    | {
+        _id: string;
+        date: string;
+        time: string;
+        status: string;
+      }
+    | string;
+  service?:
+    | {
+        _id: string;
+        name: string;
+        price: number;
+      }
+    | string;
+}
+
+/**
+ * VNPay create payment data interface
+ */
+export interface VNPayCreatePaymentData {
+  orderId: string;
+  orderInfo: string;
+  amount: number;
+  paymentIds: string[];
+}
+
+/**
+ * VNPay create payment response interface
+ */
+export interface VNPayCreatePaymentResponse {
+  paymentUrl: string;
+  txnRef: string;
+}
+
+/**
+ * Update payment method by IDs data interface
+ */
+export interface UpdatePaymentMethodByIdsData {
+  paymentIds: string[];
+  method: PaymentMethod | string;
 }

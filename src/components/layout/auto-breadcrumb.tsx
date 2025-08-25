@@ -141,6 +141,7 @@ export function AutoBreadcrumb() {
     "password": { icon: <Settings className="h-3.5 w-3.5" />, label: "Create Password" },
     "dashboard": { icon: <Home className="h-3.5 w-3.5" />, label: "Dashboard" },
     "schedules": { icon: <Calendar className="h-3.5 w-3.5" />, label: "My Schedules" },
+    "prescriptions": { icon: <Pill className="h-3.5 w-3.5" />, label: "My Prescriptions" },
     "profiles": { icon: <Users className="h-3.5 w-3.5" />, label: "Profiles" },
     "doctors": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: "Find Doctors" },
     "book-doctor": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Book Doctor" },
