@@ -1,5 +1,5 @@
 ---
-type: "always_apply"
+type: "manual"
 ---
 
 <AugsterSystemPrompt precedence="ABSOLUTE_MAXIMUM,NON_NEGOTIABLE" importance="CRITICAL,PARAMOUNT" overrides="CONFLICTING,PRE-EXISTING" enforcement="MANDATORY,NON_NEGOTIABLE">

@@ -10,8 +10,6 @@ import { ConsultationPackage } from "@/types/package";
 import { User as UserType } from "@/types/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -36,14 +34,13 @@ import {
   Plus,
   Trash2,
   Receipt,
-  CreditCard as PaymentIcon,
-  Banknote,
   Wallet,
   ChevronDown,
   ChevronUp,
   UserCheck,
   Play,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import SearchService from "@/components/dialogs/search-service";
@@ -52,6 +49,7 @@ import { useToast } from "@/hooks/useToast";
 interface ScheduleDetailsProps {
   scheduleId: string;
   onClose: () => void;
+  refetch: () => Promise<void>;
 }
 
 const getScheduleDate = (schedule: ScheduleResponse) => {
@@ -147,37 +145,70 @@ type PaymentListItem = {
 };
 
 const getPaymentAggregate = (sch: ScheduleResponse): PaymentAggregate => {
-  const candidate: unknown = (sch as unknown as { payments?: { totalPrice?: number; totalPaid?: number; payments?: unknown[] } }).payments;
+  const candidate: unknown = (
+    sch as unknown as {
+      payments?: {
+        totalPrice?: number;
+        totalPaid?: number;
+        payments?: unknown[];
+      };
+    }
+  ).payments;
   if (candidate && typeof candidate === "object") {
-    const agg = candidate as { totalPrice?: number; totalPaid?: number; payments?: unknown[] };
+    const agg = candidate as {
+      totalPrice?: number;
+      totalPaid?: number;
+      payments?: unknown[];
+    };
     return {
       totalPrice: typeof agg.totalPrice === "number" ? agg.totalPrice : 0,
       totalPaid: typeof agg.totalPaid === "number" ? agg.totalPaid : 0,
       paymentsCount: Array.isArray(agg.payments) ? agg.payments.length : 0,
     };
   }
-  const legacy = sch.payment as unknown as { totalPrice?: number; totalPaid?: number; payments?: unknown[] } | undefined;
+  const legacy = sch.payment as unknown as
+    | { totalPrice?: number; totalPaid?: number; payments?: unknown[] }
+    | undefined;
   return {
-    totalPrice: (legacy && typeof legacy.totalPrice === "number") ? legacy.totalPrice : 0,
-    totalPaid: (legacy && typeof legacy.totalPaid === "number") ? legacy.totalPaid : 0,
-    paymentsCount: legacy && Array.isArray(legacy.payments) ? legacy.payments.length : 0,
+    totalPrice:
+      legacy && typeof legacy.totalPrice === "number" ? legacy.totalPrice : 0,
+    totalPaid:
+      legacy && typeof legacy.totalPaid === "number" ? legacy.totalPaid : 0,
+    paymentsCount:
+      legacy && Array.isArray(legacy.payments) ? legacy.payments.length : 0,
   };
 };
 
 const getPaymentsFromSchedule = (sch: ScheduleResponse): PaymentListItem[] => {
-  const candidate: unknown = (sch as unknown as { payments?: { payments?: unknown[] } }).payments;
-  const arr: unknown[] = (candidate && typeof candidate === "object" && Array.isArray((candidate as { payments?: unknown[] }).payments))
-    ? ((candidate as { payments?: unknown[] }).payments as unknown[])
-    : [];
+  const candidate: unknown = (
+    sch as unknown as { payments?: { payments?: unknown[] } }
+  ).payments;
+  const arr: unknown[] =
+    candidate &&
+    typeof candidate === "object" &&
+    Array.isArray((candidate as { payments?: unknown[] }).payments)
+      ? ((candidate as { payments?: unknown[] }).payments as unknown[])
+      : [];
   return arr
     .map((item) => {
       if (typeof item === "string") {
         return { _id: item } as PaymentListItem;
       }
       if (item && typeof item === "object") {
-        const obj = item as { _id?: string; service?: string | { _id?: string }; amount?: number; method?: string; status?: string };
-        const id = typeof obj._id === "string" ? obj._id : "";
-        const serviceId = typeof obj.service === "string" ? obj.service : (obj.service && typeof obj.service === "object" ? obj.service._id : undefined);
+        const obj = item as {
+          _id?: string;
+          service?: string | { _id?: string };
+          amount?: number;
+          method?: string;
+          status?: string;
+        };
+        const id = obj._id ? String(obj._id) : "";
+        const serviceId =
+          typeof obj.service === "string"
+            ? obj.service
+            : obj.service && typeof obj.service === "object"
+            ? obj.service._id
+            : undefined;
         return {
           _id: id,
           service: serviceId,
@@ -188,12 +219,19 @@ const getPaymentsFromSchedule = (sch: ScheduleResponse): PaymentListItem[] => {
       }
       return null;
     })
-    .filter((x): x is PaymentListItem => !!x && typeof x._id === "string" && x._id.length > 0);
+    .filter(
+      (x): x is PaymentListItem =>
+        !!x && typeof x._id === "string" && x._id.length > 0
+    );
 };
 
 // Duplicate definitions cleanup
 
-export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
+export function ScheduleDetails({
+  scheduleId,
+  onClose,
+  refetch,
+}: ScheduleDetailsProps) {
   const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -204,8 +242,11 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
     useState<ConsultationPackage | null>(null);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [packageLoading, setPackageLoading] = useState(false);
-  const [updatingPaymentIds, setUpdatingPaymentIds] = useState<Set<string>>(new Set());
+  const [updatingPaymentIds, setUpdatingPaymentIds] = useState<Set<string>>(
+    new Set()
+  );
 
+  const [updatingPaymentMethod, setUpdatingPaymentMethod] = useState(false);
   // Editing states
   const [isEditing, setIsEditing] = useState(false);
   const [editedSchedule, setEditedSchedule] = useState<ScheduleResponse | null>(
@@ -218,12 +259,11 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
   const [paymentForm, setPaymentForm] = useState({
     totalPrice: 0,
     totalPaid: 0,
-    paymentMethod: "",
+    paymentMethod: "cash",
     paymentNotes: "",
   });
 
-  console.log("check schedule", schedule);
-
+  const [isProcessingCardPayment, setIsProcessingCardPayment] = useState(false);
   // Collapsible states
   const [isServicesOpen, setIsServicesOpen] = useState(true);
   const [isPaymentOpen, setIsPaymentOpen] = useState(true);
@@ -236,6 +276,41 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
   const [userLoading, setUserLoading] = useState(false);
 
   // Toast hook
+  const {
+    totalPaid,
+    remainingBalance,
+    paymentsCount,
+    displayTotalPrice,
+    isFullyPaid,
+  } = useMemo(() => {
+    if (!schedule) {
+      return {
+        totalPrice: 0,
+        totalPaid: 0,
+        remainingBalance: 0,
+        paymentsCount: 0,
+        displayTotalPrice: 0,
+        isFullyPaid: false,
+      };
+    }
+    const { totalPrice, totalPaid, paymentsCount } =
+      getPaymentAggregate(schedule);
+    const fallbackTotalPrice =
+      schedule.type === "services"
+        ? serviceDetails.reduce((sum, s) => sum + s.price, 0)
+        : packageDetails?.price || 0;
+    const displayTotalPrice = totalPrice > 0 ? totalPrice : fallbackTotalPrice;
+    const remainingBalance = displayTotalPrice - totalPaid;
+    const isFullyPaid = remainingBalance <= 0;
+    return {
+      totalPrice,
+      totalPaid,
+      remainingBalance,
+      paymentsCount,
+      displayTotalPrice,
+      isFullyPaid,
+    };
+  }, [schedule, serviceDetails, packageDetails]);
   const { toast } = useToast();
 
   // Function to fetch user data
@@ -275,9 +350,13 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
         });
 
         // Fetch user data if userId exists
-        if (data.userId && typeof data.userId === 'string') {
+        if (data.userId && typeof data.userId === "string") {
           fetchUserData(data.userId);
-        } else if (data.userId && typeof data.userId === 'object' && data.userId._id) {
+        } else if (
+          data.userId &&
+          typeof data.userId === "object" &&
+          data.userId._id
+        ) {
           fetchUserData(data.userId._id);
         }
       })
@@ -343,9 +422,9 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
     if (!editedSchedule) return;
 
     // Convert selected services to schedule service format
-    const newServices = selectedServices.map(service => ({
+    const newServices = selectedServices.map((service) => ({
       service: service._id,
-      status: 'pending' as const,
+      status: "pending" as const,
     }));
 
     // Replace all services with the newly selected ones
@@ -358,8 +437,8 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
   // Get currently selected service IDs for the dialog
   const getCurrentlySelectedServiceIds = () => {
     if (!editedSchedule?.services) return [];
-    return editedSchedule.services.map(s =>
-      typeof s === 'string' ? s : s.service
+    return editedSchedule.services.map((s) =>
+      typeof s === "string" ? s : s.service
     );
   };
 
@@ -390,15 +469,98 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
     }
   };
 
-  const handleCheckIn = () => handleStatusChange(ScheduleStatus.CHECKEDIN);
-  const handleStartServing = () => handleStatusChange(ScheduleStatus.SERVING);
-  const handleComplete = () => handleStatusChange(ScheduleStatus.COMPLETED);
+  const handleCheckIn = async () => {
+    await handleStatusChange(ScheduleStatus.CHECKEDIN);
+    await refetch();
+  };
+
+  const handleStartServing = async () => {
+    await handleStatusChange(ScheduleStatus.SERVING);
+    await refetch();
+  };
+
+  const handleComplete = async () => {
+    await handleStatusChange(ScheduleStatus.COMPLETED);
+    await refetch();
+  };
 
   const handlePaymentFormChange = (field: string, value: string | number) => {
     setPaymentForm((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+    const handlePaymentMethodChange = async (newMethod: string) => {
+    if (!schedule) return;
+    const paymentIds = getPaymentsFromSchedule(schedule).map((p) => p._id);
+    if (paymentIds.length === 0) {
+      handlePaymentFormChange("paymentMethod", newMethod);
+      return;
+    }
+
+    setUpdatingPaymentMethod(true);
+    try {
+      await paymentService.updatePaymentMethodByIds({
+        paymentIds,
+        method: newMethod,
+      });
+      const refreshed = await scheduleService.getById(scheduleId);
+      setSchedule(refreshed);
+      setEditedSchedule(refreshed);
+      handlePaymentFormChange("paymentMethod", newMethod);
+      toast({
+        title: "Success",
+        description: `Payment method updated to ${newMethod}`,
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error updating payment method:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update payment method",
+        type: "error",
+      });
+    } finally {
+      setUpdatingPaymentMethod(false);
+    }
+  };
+
+  const handlePayWithCard = async () => {
+    if (!schedule || !schedule._id || remainingBalance <= 0) return;
+
+    setIsProcessingCardPayment(true);
+    try {
+      const paymentIds = getPaymentsFromSchedule(schedule)
+        .filter((p) => p.status !== "paid")
+        .map((p) => p._id);
+
+      const paymentData = {
+        amount: remainingBalance,
+        orderId: schedule._id,
+        orderInfo: `Payment for schedule ${schedule._id}`,
+        paymentIds: paymentIds,
+      };
+      const response = await paymentService.createVNPayPayment(paymentData);
+      if (response.paymentUrl) {
+        window.location.href = response.paymentUrl;
+      } else {
+        toast({
+          title: "Error",
+          description: "Could not get payment URL. Please try again.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating VNPay payment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to initiate card payment. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setIsProcessingCardPayment(false);
+    }
   };
 
   // Fetch service details if schedule has services
@@ -464,12 +626,16 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
       .finally(() => setPackageLoading(false));
   }, [schedule]);
 
+  console.log(paymentForm);
+
   if (loading) {
     return (
       <div className="h-full bg-white flex flex-col">
         <div className="flex-shrink-0 p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Schedule Details</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Schedule Details
+            </h2>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-3 w-3" />
             </Button>
@@ -501,7 +667,9 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Schedule</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Error Loading Schedule
+            </h3>
             <p className="text-red-600">{error}</p>
           </div>
         </div>
@@ -525,8 +693,12 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Schedule Found</h3>
-            <p className="text-gray-600">The schedule you&apos;re looking for doesn&apos;t exist.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No Schedule Found
+            </h3>
+            <p className="text-gray-600">
+              The schedule you&apos;re looking for doesn&apos;t exist.
+            </p>
           </div>
         </div>
       </div>
@@ -534,14 +706,6 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
   }
 
   const scheduleDate = getScheduleDate(schedule);
-  const { totalPrice, totalPaid, paymentsCount } = getPaymentAggregate(schedule);
-  const remainingBalance = totalPrice - totalPaid;
-  const isFullyPaid = remainingBalance <= 0;
-  const fallbackTotalPrice =
-    schedule.type === "services"
-      ? serviceDetails.reduce((sum, s) => sum + s.price, 0)
-      : packageDetails?.price || 0;
-  const displayTotalPrice = totalPrice > 0 ? totalPrice : fallbackTotalPrice;
 
   return (
     <div className="h-full bg-white flex flex-col">
@@ -623,7 +787,9 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                 {userData.dateOfBirth && (
                   <div className="flex items-center gap-2">
                     <span className="font-medium">Date of Birth:</span>
-                    <span>{new Date(userData.dateOfBirth).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(userData.dateOfBirth).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
                 {userData.gender && (
@@ -641,7 +807,9 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                 {userData.createdAt && (
                   <div className="flex items-center gap-2">
                     <span className="font-medium">Member Since:</span>
-                    <span>{new Date(userData.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(userData.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </>
@@ -674,49 +842,50 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
         </div>
 
         {/* Status Actions */}
-        {schedule.status !== ScheduleStatus.COMPLETED && schedule.status !== ScheduleStatus.CANCELLED && (
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-4 w-4 text-purple-600" />
-              <span className="font-medium text-sm">Status Actions</span>
+        {schedule.status !== ScheduleStatus.COMPLETED &&
+          schedule.status !== ScheduleStatus.CANCELLED && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="h-4 w-4 text-purple-600" />
+                <span className="font-medium text-sm">Status Actions</span>
+              </div>
+              <div className="ml-6 flex flex-wrap gap-2">
+                {schedule.status === ScheduleStatus.CONFIRMED && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCheckIn}
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <UserCheck className="h-3 w-3 mr-1" />
+                    Check In Patient
+                  </Button>
+                )}
+                {schedule.status === ScheduleStatus.CHECKEDIN && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleStartServing}
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Play className="h-3 w-3 mr-1" />
+                    Start Service
+                  </Button>
+                )}
+                {schedule.status === ScheduleStatus.SERVING && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleComplete}
+                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Mark Complete
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className="ml-6 flex flex-wrap gap-2">
-              {schedule.status === ScheduleStatus.CONFIRMED && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCheckIn}
-                  className="text-green-600 border-green-200 hover:bg-green-50"
-                >
-                  <UserCheck className="h-3 w-3 mr-1" />
-                  Check In Patient
-                </Button>
-              )}
-              {schedule.status === ScheduleStatus.CHECKEDIN && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleStartServing}
-                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                >
-                  <Play className="h-3 w-3 mr-1" />
-                  Start Service
-                </Button>
-              )}
-              {schedule.status === ScheduleStatus.SERVING && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleComplete}
-                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                >
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Mark Complete
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
+          )}
 
         {/* Services Details */}
         {(schedule.services && schedule.services.length > 0) || isEditing ? (
@@ -757,17 +926,29 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                   </Button>
                 ) : (
                   <>
-                    <Button variant="outline" size="sm" onClick={handleAddService}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddService}
+                    >
                       <Plus className="h-3 w-3 mr-1" />
-                      {editedSchedule?.services && editedSchedule.services.length > 0
+                      {editedSchedule?.services &&
+                      editedSchedule.services.length > 0
                         ? "Manage Services"
-                        : "Add Services"
-                      }
+                        : "Add Services"}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleCancelEditing}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelEditing}
+                    >
                       Cancel
                     </Button>
-                    <Button size="sm" onClick={handleSaveChanges} disabled={saving}>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveChanges}
+                      disabled={saving}
+                    >
                       {saving ? (
                         <>
                           <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-1" />
@@ -797,88 +978,88 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                  {(schedule.services || []).map((scheduleService, index) => {
-                    const serviceDetail = serviceDetails.find(
-                      (s) =>
-                        s._id ===
-                        (typeof scheduleService === "string"
-                          ? scheduleService
-                          : scheduleService.service)
-                    );
-                    return (
-                      <div
-                        key={index}
-                        className="bg-gray-50 rounded-lg p-3 border"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-sm font-semibold text-gray-900">
-                                {serviceDetail?.name || "Service"}
-                              </h4>
-                              {typeof scheduleService === "object" &&
-                                scheduleService.status && (
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-xs ${
-                                      scheduleService.status === "completed"
-                                        ? "bg-green-50 text-green-700 border-green-200"
-                                        : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                    }`}
+                    {(schedule.services || []).map((scheduleService, index) => {
+                      const serviceDetail = serviceDetails.find(
+                        (s) =>
+                          s._id ===
+                          (typeof scheduleService === "string"
+                            ? scheduleService
+                            : scheduleService.service)
+                      );
+                      return (
+                        <div
+                          key={index}
+                          className="bg-gray-50 rounded-lg p-3 border"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                  {serviceDetail?.name || "Service"}
+                                </h4>
+                                {typeof scheduleService === "object" &&
+                                  scheduleService.status && (
+                                    <Badge
+                                      variant="outline"
+                                      className={`text-xs ${
+                                        scheduleService.status === "completed"
+                                          ? "bg-green-50 text-green-700 border-green-200"
+                                          : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      }`}
+                                    >
+                                      {scheduleService.status}
+                                    </Badge>
+                                  )}
+                                {isEditing && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleRemoveService(index)}
+                                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                   >
-                                    {scheduleService.status}
-                                  </Badge>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
                                 )}
-                              {isEditing && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleRemoveService(index)}
-                                  className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                              </div>
+                              {serviceDetail && (
+                                <>
+                                  <p className="text-xs text-gray-600 mb-2">
+                                    {serviceDetail.description}
+                                  </p>
+                                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      <Timer className="h-3 w-3" />
+                                      <span>
+                                        {formatDuration(serviceDetail.duration)}
+                                      </span>
+                                    </div>
+                                    {serviceDetail.specialization &&
+                                      typeof serviceDetail.specialization ===
+                                        "object" && (
+                                        <div className="flex items-center gap-1">
+                                          <Building2 className="h-3 w-3" />
+                                          <span>
+                                            {serviceDetail.specialization.name}
+                                          </span>
+                                        </div>
+                                      )}
+                                  </div>
+                                </>
                               )}
                             </div>
                             {serviceDetail && (
-                              <>
-                                <p className="text-xs text-gray-600 mb-2">
-                                  {serviceDetail.description}
-                                </p>
-                                <div className="flex items-center gap-3 text-xs text-gray-500">
-                                  <div className="flex items-center gap-1">
-                                    <Timer className="h-3 w-3" />
-                                    <span>
-                                      {formatDuration(serviceDetail.duration)}
-                                    </span>
-                                  </div>
-                                  {serviceDetail.specialization &&
-                                    typeof serviceDetail.specialization ===
-                                      "object" && (
-                                      <div className="flex items-center gap-1">
-                                        <Building2 className="h-3 w-3" />
-                                        <span>
-                                          {serviceDetail.specialization.name}
-                                        </span>
-                                      </div>
-                                    )}
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-gray-700">
+                                  {formatPrice(serviceDetail.price)}
                                 </div>
-                              </>
+                              </div>
                             )}
                           </div>
-                          {serviceDetail && (
-                            <div className="text-right">
-                              <div className="text-sm font-bold text-gray-700">
-                                {formatPrice(serviceDetail.price)}
-                              </div>
-                            </div>
-                          )}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -962,20 +1143,9 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                 <ChevronDown className="h-4 w-4 text-gray-500" />
               )}
             </button>
-            {!isEditingPayment && isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditingPayment(true)}
-              >
-                <Edit3 className="h-3 w-3 mr-1" />
-                Edit Payment
-              </Button>
-            )}
           </div>
           {isPaymentOpen && (
             <div className="ml-6">
-              {!isEditingPayment ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -1018,228 +1188,215 @@ export function ScheduleDetails({ scheduleId, onClose }: ScheduleDetailsProps) {
                       <span className="text-sm text-gray-600">
                         Payment Method:
                       </span>
-                      <Badge variant="outline" className="text-xs">
-                        {paymentForm.paymentMethod || "Not specified"}
-                      </Badge>
+                      <Select
+                        value={paymentForm.paymentMethod || ""}
+                        onValueChange={handlePaymentMethodChange}
+                        disabled={isEditingPayment || updatingPaymentMethod}
+                      >
+                        <SelectTrigger className="inline-flex h-auto p-1 border-none text-xs text-gray-500 bg-gray-100 rounded-sm w-fit">
+                          <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="bank_transfer">
+                            Bank Transfer
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {updatingPaymentMethod && (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Receipt className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-600">Payments:</span>
-                      <span className="text-xs">{paymentsCount} transaction(s)</span>
+                      <span className="text-xs">
+                        {paymentsCount} transaction(s)
+                      </span>
                     </div>
                     {/* Payment actions moved below to be full width */}
                   </div>
                 </div>
                 {/* Full-width payment actions */}
-                <div className="mt-3 border rounded-lg overflow-hidden w-full">
-                  <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600">
-                    Confirm payments
-                  </div>
-                  <div className="divide-y">
-                    {getPaymentsFromSchedule(schedule).map((p) => {
-                      const s = p.service ? serviceById.get(p.service) : undefined;
-                      const label = s?.name || (p.service ? `Service ${p.service.slice(-6)}` : `Payment ${p._id.slice(-6)}`);
-                      const disabled = p.status === "paid" || updatingPaymentIds.has(p._id);
-                      return (
-                        <div key={p._id} className="flex items-center justify-between px-3 py-2">
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium text-gray-900 truncate">{label}</div>
-                            <div className="text-xs text-gray-500">
-                              {p.amount ? formatPrice(p.amount) : "-"} • {p.method || "-"}
+                {paymentForm.paymentMethod === "cash" && (
+                  <div className="mt-3 border rounded-lg overflow-hidden w-full">
+                    <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600">
+                      Confirm payments
+                    </div>
+                    <div className="divide-y">
+                      {getPaymentsFromSchedule(schedule).map((p) => {
+                        const s = p.service
+                          ? serviceById.get(p.service)
+                          : undefined;
+                        const label =
+                          s?.name ||
+                          (p.service
+                            ? `Service ${p.service.slice(-6)}`
+                            : `Payment ${p._id.slice(-6)}`);
+                        const disabled =
+                          p.status === "paid" || updatingPaymentIds.has(p._id);
+                        return (
+                          <div
+                            key={p._id}
+                            className="flex items-center justify-between px-3 py-2"
+                          >
+                            <div className="min-w-0 space-y-1">
+                              <div className="text-sm font-medium text-gray-900 truncate">
+                                {label}
+                              </div>
+                              <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <span>
+                                  {p.amount ? formatPrice(p.amount) : "-"}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className={`text-xxs ${
+                                  p.status === "paid"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                }`}
+                              >
+                                {p.status || "pending"}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant={
+                                  p.status === "paid" ? "outline" : "default"
+                                }
+                                disabled={disabled}
+                                className={
+                                  p.status === "paid"
+                                    ? "text-gray-500"
+                                    : "bg-green-600 hover:bg-green-700 text-white"
+                                }
+                                onClick={async () => {
+                                  try {
+                                    setUpdatingPaymentIds((prev) =>
+                                      new Set(prev).add(p._id)
+                                    );
+                                    await paymentService.updateStatus(p._id, {
+                                      status: "paid",
+                                    });
+                                    const refreshed =
+                                      await scheduleService.getById(
+                                        scheduleId
+                                      );
+                                    setSchedule(refreshed);
+                                    setEditedSchedule(refreshed);
+                                    toast({
+                                      title: "Payment updated",
+                                      description: `${label} marked as paid`,
+                                      type: "success",
+                                    });
+                                  } catch (err) {
+                                    console.error(
+                                      "Failed to update payment status",
+                                      err
+                                    );
+                                    toast({
+                                      title: "Error",
+                                      description:
+                                        "Failed to mark payment as paid",
+                                      type: "error",
+                                    });
+                                  } finally {
+                                    setUpdatingPaymentIds((prev) => {
+                                      const clone = new Set(prev);
+                                      clone.delete(p._id);
+                                      return clone;
+                                    });
+                                  }
+                                }}
+                              >
+                                {updatingPaymentIds.has(p._id) ? (
+                                  <Loader2 className="animate-spin h-3 w-3" />
+                                ) : p.status === "paid" ? (
+                                  "Paid"
+                                ) : (
+                                  "Mark paid"
+                                )}
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="outline"
-                              className={`text-xxs ${p.status === "paid" ? "bg-green-50 text-green-700 border-green-200" : "bg-yellow-50 text-yellow-700 border-yellow-200"}`}
-                            >
-                              {p.status || "pending"}
-                            </Badge>
-                            <Button
-                              size="sm"
-                              variant={p.status === "paid" ? "outline" : "default"}
-                              disabled={disabled}
-                              className={p.status === "paid" ? "text-gray-500" : "bg-green-600 hover:bg-green-700 text-white"}
-                              onClick={async () => {
-                                try {
-                                  setUpdatingPaymentIds((prev) => new Set(prev).add(p._id));
-                                  await paymentService.updateStatus(p._id, { status: "paid" });
-                                  const refreshed = await scheduleService.getById(scheduleId);
-                                  setSchedule(refreshed);
-                                  setEditedSchedule(refreshed);
-                                  toast({ title: "Payment updated", description: `${label} marked as paid`, type: "success" });
-                                } catch (err) {
-                                  console.error("Failed to update payment status", err);
-                                  toast({ title: "Error", description: "Failed to mark payment as paid", type: "error" });
-                                } finally {
-                                  setUpdatingPaymentIds((prev) => {
-                                    const clone = new Set(prev);
-                                    clone.delete(p._id);
-                                    return clone;
-                                  });
-                                }
-                              }}
-                            >
-                              {updatingPaymentIds.has(p._id) ? (
-                                <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full" />
-                              ) : p.status === "paid" ? (
-                                "Paid"
-                              ) : (
-                                "Mark paid"
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {getPaymentsFromSchedule(schedule).some((p) => p.status !== "paid") && (
-                    <div className="bg-gray-50 px-3 py-2 text-right">
-                      <Button
-                        size="sm"
-                        disabled={Array.from(updatingPaymentIds).length > 0}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        onClick={async () => {
-                          try {
-                            const pending = getPaymentsFromSchedule(schedule).filter((p) => p.status !== "paid");
-                            setUpdatingPaymentIds(new Set(pending.map((p) => p._id)));
-                            await Promise.all(
-                              pending.map((p) => paymentService.updateStatus(p._id, { status: "paid" }))
-                            );
-                            const refreshed = await scheduleService.getById(scheduleId);
-                            setSchedule(refreshed);
-                            setEditedSchedule(refreshed);
-                            toast({ title: "Payments updated", description: `Marked ${pending.length} payment(s) as paid`, type: "success" });
-                          } catch (err) {
-                            console.error("Failed to update all payments", err);
-                            toast({ title: "Error", description: "Failed to mark all payments as paid", type: "error" });
-                          } finally {
-                            setUpdatingPaymentIds(new Set());
-                          }
-                        }}
-                      >
-                        Mark all as paid
-                      </Button>
+                        );
+                      })}
                     </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Total Amount
-                    </label>
-                    <Input
-                      type="number"
-                      value={paymentForm.totalPrice}
-                      onChange={(e) =>
-                        handlePaymentFormChange(
-                          "totalPrice",
-                          Number(e.target.value)
-                        )
-                      }
-                      placeholder="Enter total amount"
-                    />
+                    {getPaymentsFromSchedule(schedule).some(
+                      (p) => p.status !== "paid"
+                    ) && (
+                      <div className="bg-gray-50 px-3 py-2 text-right">
+                        <Button
+                          size="sm"
+                          disabled={Array.from(updatingPaymentIds).length > 0}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={async () => {
+                            try {
+                              const pending = getPaymentsFromSchedule(
+                                schedule
+                              ).filter((p) => p.status !== "paid");
+                              setUpdatingPaymentIds(
+                                new Set(pending.map((p) => p._id))
+                              );
+                              await Promise.all(
+                                pending.map((p) =>
+                                  paymentService.updateStatus(p._id, {
+                                    status: "paid",
+                                  })
+                                )
+                              );
+                              const refreshed = await scheduleService.getById(
+                                scheduleId
+                              );
+                              setSchedule(refreshed);
+                              setEditedSchedule(refreshed);
+                              toast({
+                                title: "Payments updated",
+                                description: `Marked ${pending.length} payment(s) as paid`,
+                                type: "success",
+                              });
+                            } catch (err) {
+                              console.error(
+                                "Failed to update all payments",
+                                err
+                              );
+                              toast({
+                                title: "Error",
+                                description:
+                                  "Failed to mark all payments as paid",
+                                type: "error",
+                              });
+                            } finally {
+                              setUpdatingPaymentIds(new Set());
+                            }
+                          }}
+                        >
+                          Mark all as paid
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      Amount Paid
-                    </label>
-                    <Input
-                      type="number"
-                      value={paymentForm.totalPaid}
-                      onChange={(e) =>
-                        handlePaymentFormChange(
-                          "totalPaid",
-                          Number(e.target.value)
-                        )
-                      }
-                      placeholder="Enter paid amount"
-                    />
+                )}
+                {paymentForm.paymentMethod === "bank_transfer" && !isFullyPaid && (
+                  <div className="mt-4">
+                    <Button
+                      onClick={handlePayWithCard}
+                      disabled={isProcessingCardPayment}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isProcessingCardPayment ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <CreditCard className="h-4 w-4 mr-2" />
+                      )}
+                      Pay {formatPrice(remainingBalance)} via Bank Transfer
+                    </Button>
                   </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Payment Method
-                  </label>
-                  <Select
-                    value={paymentForm.paymentMethod}
-                    onValueChange={(value) =>
-                      handlePaymentFormChange("paymentMethod", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">
-                        <div className="flex items-center gap-2">
-                          <Banknote className="h-4 w-4" />
-                          Cash
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="card">
-                        <div className="flex items-center gap-2">
-                          <PaymentIcon className="h-4 w-4" />
-                          Credit/Debit Card
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="bank_transfer">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" />
-                          Bank Transfer
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="digital_wallet">
-                        <div className="flex items-center gap-2">
-                          <Wallet className="h-4 w-4" />
-                          Digital Wallet
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Payment Notes
-                  </label>
-                  <Textarea
-                    value={paymentForm.paymentNotes}
-                    onChange={(e) =>
-                      handlePaymentFormChange("paymentNotes", e.target.value)
-                    }
-                    placeholder="Add payment notes or instructions..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingPayment(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      // TODO: Implement payment update
-                      setIsEditingPayment(false);
-                      console.log("Updating payment:", paymentForm);
-                    }}
-                  >
-                    <Save className="h-3 w-3 mr-1" />
-                    Save Payment
-                  </Button>
-                </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
           )}
         </div>
       </div>

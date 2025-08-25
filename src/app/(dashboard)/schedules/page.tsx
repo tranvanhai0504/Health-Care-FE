@@ -111,11 +111,10 @@ const SchedulesPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleWithDetails | null>(null);
+  const [selectedSchedule, setSelectedSchedule] =
+    useState<ScheduleWithDetails | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
-
-  console.log("check", selectedSchedule);
 
   // Fetch schedules
   useEffect(() => {
@@ -336,13 +335,19 @@ const SchedulesPage = () => {
                 {format(selectedDate, "MMM d, yyyy")}
               </span>
               {selectedDateSchedules.length > 0 && (
-                <div className={cn(
-                  "px-2 py-1 rounded-full text-xs font-medium",
-                  selectedDateSchedules.length >= 3
-                    ? "bg-orange-100 text-orange-700"
-                    : "bg-blue-100 text-blue-700"
-                )}>
-                  {selectedDateSchedules.length >= 5 ? "High" : selectedDateSchedules.length >= 3 ? "Busy" : "Normal"}
+                <div
+                  className={cn(
+                    "px-2 py-1 rounded-full text-xs font-medium",
+                    selectedDateSchedules.length >= 3
+                      ? "bg-orange-100 text-orange-700"
+                      : "bg-blue-100 text-blue-700"
+                  )}
+                >
+                  {selectedDateSchedules.length >= 5
+                    ? "High"
+                    : selectedDateSchedules.length >= 3
+                    ? "Busy"
+                    : "Normal"}
                 </div>
               )}
             </div>
@@ -380,9 +385,16 @@ const SchedulesPage = () => {
                       "min-h-[100px] p-2 border border-gray-100 text-left transition-all duration-200 relative group",
                       isSelected && "bg-blue-50 border-blue-200 shadow-sm",
                       !isCurrentMonth && "text-gray-300 bg-gray-50/50",
-                      isToday && "bg-green-50 border-green-200 ring-1 ring-green-200",
-                      daySchedules.length > 0 && isCurrentMonth && !isSelected && !isToday && "hover:bg-blue-25 hover:border-blue-150 hover:shadow-sm",
-                      daySchedules.length === 0 && isCurrentMonth && "hover:bg-gray-50"
+                      isToday &&
+                        "bg-green-50 border-green-200 ring-1 ring-green-200",
+                      daySchedules.length > 0 &&
+                        isCurrentMonth &&
+                        !isSelected &&
+                        !isToday &&
+                        "hover:bg-blue-25 hover:border-blue-150 hover:shadow-sm",
+                      daySchedules.length === 0 &&
+                        isCurrentMonth &&
+                        "hover:bg-gray-50"
                     )}
                   >
                     <div
@@ -390,8 +402,16 @@ const SchedulesPage = () => {
                         "text-sm font-semibold mb-1 transition-colors duration-200",
                         isToday && "text-green-700",
                         isSelected && "text-blue-700",
-                        !isToday && !isSelected && daySchedules.length > 0 && isCurrentMonth && "text-gray-900",
-                        !isToday && !isSelected && daySchedules.length === 0 && isCurrentMonth && "text-gray-600"
+                        !isToday &&
+                          !isSelected &&
+                          daySchedules.length > 0 &&
+                          isCurrentMonth &&
+                          "text-gray-900",
+                        !isToday &&
+                          !isSelected &&
+                          daySchedules.length === 0 &&
+                          isCurrentMonth &&
+                          "text-gray-600"
                       )}
                     >
                       {format(day, "d")}
@@ -400,16 +420,18 @@ const SchedulesPage = () => {
                     {/* Schedule indicator badge */}
                     {daySchedules.length > 0 && (
                       <div className="flex justify-center mt-1">
-                        <div className={cn(
-                          "relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border-2 transition-all duration-200 hover:scale-110",
-                          isSelected 
-                            ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white border-blue-400 shadow-blue-200" 
-                            : isToday 
-                            ? "bg-gradient-to-br from-green-500 to-green-700 text-white border-green-400 shadow-green-200"
-                            : daySchedules.length >= 3
-                            ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-300 shadow-orange-200"
-                            : "bg-gradient-to-br from-blue-400 to-blue-500 text-white border-blue-300 shadow-blue-100"
-                        )}>
+                        <div
+                          className={cn(
+                            "relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border-2 transition-all duration-200 hover:scale-110",
+                            isSelected
+                              ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white border-blue-400 shadow-blue-200"
+                              : isToday
+                              ? "bg-gradient-to-br from-green-500 to-green-700 text-white border-green-400 shadow-green-200"
+                              : daySchedules.length >= 3
+                              ? "bg-gradient-to-br from-orange-400 to-orange-600 text-white border-orange-300 shadow-orange-200"
+                              : "bg-gradient-to-br from-blue-400 to-blue-500 text-white border-blue-300 shadow-blue-100"
+                          )}
+                        >
                           <span className="relative z-10">
                             {daySchedules.length}
                           </span>
@@ -458,11 +480,21 @@ const SchedulesPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value={ScheduleStatus.CONFIRMED}>Confirmed</SelectItem>
-                <SelectItem value={ScheduleStatus.CHECKEDIN}>Checked In</SelectItem>
-                <SelectItem value={ScheduleStatus.SERVING}>In Progress</SelectItem>
-                <SelectItem value={ScheduleStatus.CANCELLED}>Cancelled</SelectItem>
-                <SelectItem value={ScheduleStatus.COMPLETED}>Completed</SelectItem>
+                <SelectItem value={ScheduleStatus.CONFIRMED}>
+                  Confirmed
+                </SelectItem>
+                <SelectItem value={ScheduleStatus.CHECKEDIN}>
+                  Checked In
+                </SelectItem>
+                <SelectItem value={ScheduleStatus.SERVING}>
+                  In Progress
+                </SelectItem>
+                <SelectItem value={ScheduleStatus.CANCELLED}>
+                  Cancelled
+                </SelectItem>
+                <SelectItem value={ScheduleStatus.COMPLETED}>
+                  Completed
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -530,17 +562,19 @@ const SchedulesPage = () => {
                           >
                             View
                           </Button>
-                                                     {(schedule.status === ScheduleStatus.CONFIRMED ||
-                             schedule.status === ScheduleStatus.CHECKEDIN) &&
-                             isFuture(getScheduleDate(schedule)) && (
-                               <Button
-                                 size="sm"
-                                 className="h-7 text-xs"
-                                 onClick={() => handleEditSchedule(schedule._id!)}
-                               >
-                                 Reschedule
-                               </Button>
-                             )}
+                          {(schedule.status === ScheduleStatus.CONFIRMED ||
+                            schedule.status === ScheduleStatus.CHECKEDIN) &&
+                            isFuture(getScheduleDate(schedule)) && (
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() =>
+                                  handleEditSchedule(schedule._id!)
+                                }
+                              >
+                                Reschedule
+                              </Button>
+                            )}
                         </div>
                       </div>
                     </CardContent>

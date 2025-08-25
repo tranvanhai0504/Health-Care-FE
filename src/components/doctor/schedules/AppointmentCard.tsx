@@ -25,7 +25,7 @@ export function AppointmentCard({
         return "bg-green-100 text-green-800";
       case "cancelled":
         return "bg-red-100 text-red-800";
-      case "in-progress":
+      case "checkedIn":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -38,7 +38,7 @@ export function AppointmentCard({
         return "bg-red-100 text-red-800";
       case "Follow-up":
         return "bg-orange-100 text-orange-800";
-      case "Consultation":
+      case "checkIn":
         return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -119,7 +119,7 @@ export function AppointmentCard({
                 <span className="hidden sm:inline">View Details</span>
                 <span className="sm:hidden">View</span>
               </Button>
-              {appointment.status === "upcoming" && onStartConsultation && (
+              {appointment.status === "in-progress" && onStartConsultation && (
                 <Button
                   size="sm"
                   className="h-7 px-2 text-xs"

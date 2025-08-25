@@ -6,6 +6,7 @@ export interface Room {
   name: string;
   roomNumber: number;
   roomFloor: number;
+  relatedSpecialties: string[];
   createdAt: string;
   updatedAt: string;
   __v?: number;

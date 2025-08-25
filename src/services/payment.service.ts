@@ -9,6 +9,9 @@ import {
   PaymentStatus,
   ApiResponse,
   PaginatedApiResponse,
+  VNPayCreatePaymentData,
+  VNPayCreatePaymentResponse,
+  UpdatePaymentMethodByIdsData,
 } from "@/types";
 
 export class PaymentService extends BaseService<Payment> {
@@ -21,7 +24,9 @@ export class PaymentService extends BaseService<Payment> {
    * @param params - Query parameters for filtering and pagination
    * @returns Promise with paginated response containing payments
    */
-  async getAll(params?: PaymentQueryParams): Promise<PaginatedApiResponse<Payment>> {
+  async getAll(
+    params?: PaymentQueryParams
+  ): Promise<PaginatedApiResponse<Payment>> {
     const response = await api.get<ApiResponse<PaginatedApiResponse<Payment>>>(
       this.basePath,
       {
@@ -102,7 +107,10 @@ export class PaymentService extends BaseService<Payment> {
    * @param data - The status update data
    * @returns Promise with the updated payment
    */
-  async updateStatus(id: string, data: UpdatePaymentStatusData): Promise<Payment> {
+  async updateStatus(
+    id: string,
+    data: UpdatePaymentStatusData
+  ): Promise<Payment> {
     const response = await api.put<ApiResponse<Payment>>(
       `${this.basePath}/${id}/status`,
       data
@@ -127,6 +135,46 @@ export class PaymentService extends BaseService<Payment> {
       }
     );
     return response.data.data;
+  }
+
+  /**
+   * Create a VNPay payment
+   * @param data - The VNPay payment data to create
+   * @returns Promise with the VNPay payment response
+   */
+  async createVNPayPayment(
+    data: VNPayCreatePaymentData
+  ): Promise<VNPayCreatePaymentResponse> {
+    const response = await api.post<ApiResponse<VNPayCreatePaymentResponse>>(
+      `${this.basePath}/vnpay/create`,
+      data
+    );
+    return response.data.data;
+  }
+
+  /**
+   * Update payment method for multiple payments
+   * @param data - The data containing payment IDs and the new method
+   * @returns Promise with a success response
+   */
+  async updatePaymentMethodByIds(
+    data: UpdatePaymentMethodByIdsData
+  ): Promise<unknown> {
+    // Use Promise.allSettled to handle individual failures
+    const promises = data.paymentIds.map((id) => this.update(id, { method: data.method }));
+    try {
+      const results = await Promise.allSettled(promises);
+
+      // Filter out rejected promises and null values from fulfilled promises
+      return results
+        .filter(
+          (result) => result.status === "fulfilled" && result.value !== null
+        )
+        .map((result) => (result as PromiseFulfilledResult<Payment>).value);
+    } catch (error) {
+      console.error("Error updating multiple payments:", error);
+      return [];
+    }
   }
 }
 

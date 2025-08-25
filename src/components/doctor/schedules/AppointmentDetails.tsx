@@ -20,6 +20,8 @@ import {
   FileText,
   Users,
   Briefcase,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { Appointment } from "@/types/appointment";
 import { medicalExaminationService } from "@/services/medicalExamination.service";
@@ -34,6 +36,7 @@ import { consultationServiceApi } from "@/services/consultationService.service";
 import { scheduleService } from "@/services/schedule.service";
 import { ConsultationService } from "@/types";
 import SearchService from "@/components/dialogs/search-service";
+
 interface AppointmentDetailsProps {
   appointment: Appointment;
   onClose: () => void;
@@ -42,6 +45,9 @@ interface AppointmentDetailsProps {
   onCreatePrescription?: (
     medicalExamination: PopulatedMedicalExamination
   ) => void;
+  handleExpandRightPanel?: () => void;
+  handleCollapseRightPanel?: () => void;
+  rightPanelSize?: number;
 }
 
 export function AppointmentDetails({
@@ -50,6 +56,9 @@ export function AppointmentDetails({
   onStartConsultation,
   onViewHistory,
   onCreatePrescription,
+  handleExpandRightPanel,
+  handleCollapseRightPanel,
+  rightPanelSize,
 }: AppointmentDetailsProps) {
   const { toast } = useToast();
   const [services, setServices] = useState<ConsultationService[]>([]);
@@ -62,8 +71,6 @@ export function AppointmentDetails({
   const [medicalExamination, setMedicalExamination] =
     useState<PopulatedMedicalExamination | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  console.log(medicalExamination);
 
   useEffect(() => {
     const fetchMedicalExamination = async () => {
@@ -126,7 +133,6 @@ export function AppointmentDetails({
     fetchInitialServices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointment.originalSchedule?.services]);
-  console.log(appointment);
 
   const handleStartConsultation = async () => {
     try {
@@ -248,9 +254,21 @@ export function AppointmentDetails({
             <User className="h-4 w-4" />
             Appointment Details
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-3 w-3" />
-          </Button>
+          <div>
+            {rightPanelSize !== 100 && (
+              <Button variant="ghost" size="sm" onClick={handleExpandRightPanel}>
+                <Maximize2 className="h-3 w-3" />
+              </Button>
+            )}
+            {rightPanelSize === 100 && (
+              <Button variant="ghost" size="sm" onClick={handleCollapseRightPanel}>
+                <Minimize2 className="h-3 w-3" />
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </div>
 

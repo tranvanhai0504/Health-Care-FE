@@ -21,6 +21,7 @@ export type AuthData = {
   email?: string | null;
   role?: string;
   phoneNumber?: string;
+  avatar?: string | null;
   occupation?: string | null;
   address?: string | null;
   dateOfBirth?: string | null;
