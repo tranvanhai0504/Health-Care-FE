@@ -37,6 +37,7 @@ export default function PrescriptionsPage() {
     if (isAuthenticated && user) {
       fetchPrescriptions();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user]);
 
   // Filter prescriptions based on search term
