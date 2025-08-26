@@ -19,6 +19,7 @@ export interface ConsultationService {
   description: string;
   duration: number;
   room?: string;
+  roomDetail?: any;
   doctor?: string;
   price: number;
   specialization?: string | Specialty; // Can be either a string ID or populated object
@@ -46,4 +47,4 @@ export interface ConsultationServiceGetManyParams extends GetManyParams {
   duration?: number;
   minPrice?: number;
   maxPrice?: number;
-} 
+}
