@@ -48,6 +48,22 @@ export interface Schedule {
   __v?: number;
 }
 
+export interface ScheduleServiceGetByDoctor extends ScheduleService{
+  service: string;
+}
+
+export interface ScheduleServiceGetSingle extends ScheduleService{
+  service: ConsultationService;
+}
+
+export interface ScheduleResponseGetByDoctor extends ScheduleResponse{
+  services?: ScheduleServiceGetByDoctor[];
+}
+
+export interface ScheduleResponseGetSingle extends ScheduleResponse{
+  services?: ScheduleServiceGetSingle[];
+}
+
 export interface ScheduleResponse extends Schedule {
   userId: User;
   payment: {
@@ -67,7 +83,7 @@ export interface ScheduleResponse extends Schedule {
 
 export interface ScheduleService {
   _id?: string;
-  service: ConsultationService;
+  service: ConsultationService | string;
   status: string;
   room?: string;
 }

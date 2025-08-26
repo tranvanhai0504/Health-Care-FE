@@ -211,6 +211,7 @@ export default function AdminSchedulesPage() {
   };
 
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatTimeSlot = (weekPeriod: any, dayOffset: number, timeOffset: 0 | 1) => {
     if (!weekPeriod || !weekPeriod.from) return "Unknown";
     const date = new Date(weekPeriod.from);

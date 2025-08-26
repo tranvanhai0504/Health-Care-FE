@@ -11,6 +11,8 @@ import {
   Schedule,
   ScheduleResponse,
   ScheduleStatus,
+  ScheduleResponseGetByDoctor,
+  ScheduleResponseGetSingle,
 } from "@/types/schedule";
 
 export class ScheduleService extends BaseService<Schedule> {
@@ -115,8 +117,8 @@ export class ScheduleService extends BaseService<Schedule> {
    * @param id - The ID of the schedule to get
    * @returns Promise with the schedule
    */
-  async getById(id: string): Promise<ScheduleResponse> {
-    const response = await api.get<ApiResponse<ScheduleResponse>>(
+  async getById(id: string): Promise<ScheduleResponseGetSingle> {
+    const response = await api.get<ApiResponse<ScheduleResponseGetSingle>>(
       `${this.basePath}/${id}`
     );
     return response.data.data;
@@ -211,7 +213,7 @@ export class ScheduleService extends BaseService<Schedule> {
     to: string,
     dayOffset: number | undefined,
     fullWeek: boolean
-  ): Promise<ScheduleResponse[]> {
+  ): Promise<ScheduleResponseGetByDoctor[]> {
     const params: {
       from: string;
       to: string;
@@ -228,7 +230,7 @@ export class ScheduleService extends BaseService<Schedule> {
       params.dayOffset = dayOffset;
     }
 
-    const response = await api.get<ApiResponse<ScheduleResponse[]>>(
+    const response = await api.get<ApiResponse<ScheduleResponseGetByDoctor[]>>(
       `${this.basePath}/doctor/${doctorId}`,
       {
         params: {

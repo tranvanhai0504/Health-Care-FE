@@ -22,6 +22,7 @@ import {
   Briefcase,
   Maximize2,
   Minimize2,
+  Building2,
 } from "lucide-react";
 import { Appointment } from "@/types/appointment";
 import { medicalExaminationService } from "@/services/medicalExamination.service";
@@ -34,8 +35,10 @@ import { useToast } from "@/hooks/useToast";
 import { MedicalExaminationDetails } from "./MedicalExaminationDetails";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { scheduleService } from "@/services/schedule.service";
-import { ConsultationService } from "@/types";
+import { ConsultationService, DoctorWithPopulatedData } from "@/types";
 import SearchService from "@/components/dialogs/search-service";
+import { useAuthStore } from "@/stores/auth";
+import { doctorService, roomService } from "@/services";
 
 interface AppointmentDetailsProps {
   appointment: Appointment;
@@ -71,6 +74,30 @@ export function AppointmentDetails({
   const [medicalExamination, setMedicalExamination] =
     useState<PopulatedMedicalExamination | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { user } = useAuthStore();
+  const [doctorProfile, setDoctorProfile] =
+    useState<DoctorWithPopulatedData | null>(null);
+
+  useEffect(() => {
+    const fetchDoctorProfile = async () => {
+      if (user?._id) {
+        try {
+          const profile = await doctorService.findOneByUserId(user._id);
+          setDoctorProfile(profile);
+        } catch (error) {
+          alert(error);
+          console.error("Failed to fetch doctor profile:", error);
+          toast({
+            title: "Error",
+            description: "Could not load doctor profile.",
+          });
+        }
+      }
+    };
+
+    fetchDoctorProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     const fetchMedicalExamination = async () => {
@@ -103,6 +130,8 @@ export function AppointmentDetails({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointment]);
 
+  console.log(appointment);
+
   useEffect(() => {
     const fetchInitialServices = async () => {
       if (
@@ -117,6 +146,19 @@ export function AppointmentDetails({
             const fullServices = await consultationServiceApi.getByIds(
               serviceIds
             );
+
+            //fetch room details
+            const roomIDs = fullServices
+              .map((s) => s.room)
+              .filter((s) => s !== undefined);
+            const room = await roomService.getByIds(roomIDs as string[]);
+
+            fullServices.forEach((s) => {
+              if (s.room) {
+                s.roomDetail = room.find((r) => r._id === s.room);
+              }
+            });
+
             setServices(fullServices);
           }
         } catch (error) {
@@ -256,12 +298,20 @@ export function AppointmentDetails({
           </h2>
           <div>
             {rightPanelSize !== 100 && (
-              <Button variant="ghost" size="sm" onClick={handleExpandRightPanel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExpandRightPanel}
+              >
                 <Maximize2 className="h-3 w-3" />
               </Button>
             )}
             {rightPanelSize === 100 && (
-              <Button variant="ghost" size="sm" onClick={handleCollapseRightPanel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCollapseRightPanel}
+              >
                 <Minimize2 className="h-3 w-3" />
               </Button>
             )}
@@ -436,26 +486,91 @@ export function AppointmentDetails({
                 ) : (
                   <>
                     {services.map((service) => (
+                      // <div
+                      //   key={service._id}
+                      //   className="p-2 border rounded-md flex justify-between items-center"
+                      // >
+                      //   <div>
+                      //     <p className="font-semibold">{service.name}</p>
+                      //     <p className="text-sm text-gray-500">
+                      //       {service.description}
+                      //     </p>
+                      //   </div>
+                      //   {newlyAddedServiceIds.has(service._id) && (
+                      //     <Button
+                      //       type="button"
+                      //       variant="outline"
+                      //       size="sm"
+                      //       onClick={() => handleRemoveService(service._id)}
+                      //     >
+                      //       Remove
+                      //     </Button>
+                      //   )}
+                      // </div>
                       <div
                         key={service._id}
-                        className="p-2 border rounded-md flex justify-between items-center"
+                        className="bg-gray-50 rounded-lg p-3 border"
                       >
-                        <div>
-                          <p className="font-semibold">{service.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {service.description}
-                          </p>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-sm font-semibold text-gray-900">
+                                {service.name || "Service"}
+                              </h4>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                  appointment.originalSchedule?.services?.find(
+                                    (s) => s.service === service._id
+                                  )?.status === "completed"
+                                    ? "bg-green-50 text-green-700 border-green-200"
+                                    : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                }`}
+                              >
+                                {
+                                  appointment.originalSchedule?.services?.find(
+                                    (s) => s.service === service._id
+                                  )?.status
+                                }
+                              </Badge>
+                            </div>
+                            {service && (
+                              <>
+                                <p className="text-xs text-gray-600 mb-2">
+                                  {service.description}
+                                </p>
+                                <div className="flex items-center gap-3 text-xs text-gray-500">
+                                  {service.room && (
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="h-3 w-3" />
+                                      <span>{service.roomDetail?.name}</span>
+                                    </div>
+                                  )}
+                                  {service.specialization &&
+                                    typeof service.specialization ===
+                                      "object" && (
+                                      <div className="flex items-center gap-1">
+                                        <Building2 className="h-3 w-3" />
+                                        <span>
+                                          {service.specialization.name}
+                                        </span>
+                                      </div>
+                                    )}
+                                </div>
+                              </>
+                            )}
+                            {newlyAddedServiceIds.has(service._id) && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveService(service._id)}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        {newlyAddedServiceIds.has(service._id) && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveService(service._id)}
-                          >
-                            Remove
-                          </Button>
-                        )}
                       </div>
                     ))}
                   </>
@@ -494,10 +609,11 @@ export function AppointmentDetails({
             </AccordionTrigger>
             <AccordionContent>
               <div className="p-2">
-                {medicalExamination ? (
+                {medicalExamination && doctorProfile ? (
                   <MedicalExaminationDetails
                     examination={medicalExamination}
                     onUpdate={(updated) => setMedicalExamination(updated)}
+                    doctorProfile={doctorProfile}
                   />
                 ) : (
                   <div>

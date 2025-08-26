@@ -34,6 +34,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { doctorService } from "@/services/doctor.service";
 import { DoctorWithPopulatedData } from "@/types/doctor";
 import { formatCurrency, formatDate } from "@/utils/formatters";
+import { roomService } from "@/services/room.service";
+import { Room } from "@/types";
 
 export default function DoctorProfilePage() {
   const { user, isAuthenticated } = useAuth();
@@ -44,6 +46,7 @@ export default function DoctorProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [room, setRoom] = useState<Room | null>(null);
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -84,6 +87,16 @@ export default function DoctorProfilePage() {
 
     fetchDoctorProfile();
   }, [isAuthenticated, user?._id]);
+
+  useEffect(() => {
+    if (!doctorData?.room) return;
+
+    const fetchRoom = async () => {
+      const room = await roomService.getById(doctorData?.room);
+      setRoom(room);
+    };
+    fetchRoom();
+  }, [doctorData?.room]);
 
   const handleEditToggle = () => {
     if (isEditing && doctorData) {
@@ -561,6 +574,15 @@ export default function DoctorProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="bio"
+                    className="text-sm font-medium text-gray-600 mb-2 block"
+                  >
+                    Room
+                  </Label>
+                  <Badge variant="secondary">{room?.name} - {room?.roomNumber} - floor {room?.roomFloor}</Badge>
+                </div>
                 <div>
                   <Label
                     htmlFor="bio"

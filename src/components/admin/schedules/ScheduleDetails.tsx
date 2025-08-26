@@ -10,7 +10,7 @@ import {
 } from "@/services";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
-import { ScheduleResponse, ScheduleStatus } from "@/types/schedule";
+import { ScheduleResponse, ScheduleResponseGetSingle, ScheduleStatus } from "@/types/schedule";
 import { ConsultationService } from "@/types/consultation";
 import { ConsultationPackage } from "@/types/package";
 import { User as UserType } from "@/types/user";
@@ -269,7 +269,7 @@ export function ScheduleDetails({
   const [updatingPaymentMethod, setUpdatingPaymentMethod] = useState(false);
   // Editing states
   const [isEditing, setIsEditing] = useState(false);
-  const [editedSchedule, setEditedSchedule] = useState<ScheduleResponse | null>(
+  const [editedSchedule, setEditedSchedule] = useState<ScheduleResponseGetSingle | null>(
     null
   );
   const [saving, setSaving] = useState(false);
@@ -483,10 +483,10 @@ export function ScheduleDetails({
 
       // Optimistic update
       mutateSchedule(
-        { ...schedule, status: newStatus } as ScheduleResponse,
+        { ...schedule, status: newStatus } as ScheduleResponseGetSingle,
         false
       );
-      setEditedSchedule({ ...schedule, status: newStatus } as ScheduleResponse);
+      setEditedSchedule({ ...schedule, status: newStatus } as ScheduleResponseGetSingle);
 
       toast({
         title: "Success",
