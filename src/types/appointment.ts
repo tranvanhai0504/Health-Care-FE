@@ -1,4 +1,4 @@
-import { ScheduleResponse } from "./schedule";
+import { ScheduleResponseGetByDoctor } from "./schedule";
 import { User } from "./user";
 
 export interface Appointment {
@@ -20,7 +20,7 @@ export interface Appointment {
   patientDateOfBirth?: string;
   patientOccupation?: string;
   // Additional fields for enhanced functionality
-  originalSchedule?: ScheduleResponse; // Store the original schedule data
+  originalSchedule?: ScheduleResponseGetByDoctor; // Store the original schedule data
   userId?: string | User; // Store the user ID or user object
 }
 

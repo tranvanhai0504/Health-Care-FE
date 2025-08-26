@@ -60,7 +60,7 @@ export class MedicalExaminationService extends BaseService<MedicalExamination> {
     }
 
     const response = await api.get<ApiResponse<PaginatedApiResponse<PopulatedMedicalExamination>>>(
-      this.basePath, 
+      this.basePath,
       { params: queryParams }
     );
     return response.data.data;

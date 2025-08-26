@@ -40,8 +40,6 @@ import {
   RefreshCw,
   Users,
   CheckCircle,
-  XCircle,
-  AlertCircle,
   UserCheck,
   Plus,
 } from "lucide-react";
@@ -73,6 +71,7 @@ export default function AdminSchedulesPage() {
     null
   );
   const [showRightPanel, setShowRightPanel] = useState(false);
+  const [rightPanelSize, setRightPanelSize] = useState(40);
   const { toast } = useToast();
 
   const fetchSchedules = useCallback(async () => {
@@ -148,6 +147,17 @@ export default function AdminSchedulesPage() {
   const handleCloseDetails = () => {
     setSelectedScheduleId(null);
     setShowRightPanel(false);
+    setRightPanelSize(40);
+  };
+
+  const handleExpandRightPanel = () => {
+    console.log('Expanding panel to 100');
+    setRightPanelSize(100);
+  };
+
+  const handleCollapseRightPanel = () => {
+    console.log('Collapsing panel to 40');
+    setRightPanelSize(40);
   };
 
   const handleCheckIn = async (scheduleId: string, e: React.MouseEvent) => {
@@ -209,10 +219,12 @@ export default function AdminSchedulesPage() {
       day: "numeric",
     });
   };
-
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const formatTimeSlot = (weekPeriod: any, dayOffset: number, timeOffset: 0 | 1) => {
+  const formatTimeSlot = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    weekPeriod: any,
+    dayOffset: number,
+    timeOffset: 0 | 1
+  ) => {
     if (!weekPeriod || !weekPeriod.from) return "Unknown";
     const date = new Date(weekPeriod.from);
     date.setDate(date.getDate() + dayOffset);
@@ -241,9 +253,12 @@ export default function AdminSchedulesPage() {
 
   return (
     <div className="h-[calc(100vh-64px)]">
-      <PanelGroup direction="horizontal" className="h-full">
+      <PanelGroup direction="horizontal" className="h-full" key={`panel-${rightPanelSize}`}>
         {/* Left Panel - Schedules List */}
-        <Panel defaultSize={showRightPanel ? 60 : 100} minSize={40}>
+        <Panel
+          defaultSize={showRightPanel ? (rightPanelSize === 100 ? 0 : 60) : 100}
+          minSize={showRightPanel ? (rightPanelSize === 100 ? 0 : 40) : 100}
+        >
           <div className="h-full overflow-auto">
             <div className="container mx-auto py-8 px-4">
               <Card className="border-none shadow-sm">
@@ -509,66 +524,6 @@ export default function AdminSchedulesPage() {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
-                {[
-                  {
-                    label: "Total Schedules",
-                    count: schedules.length,
-                    color: "text-blue-600",
-                    icon: <Calendar className="h-4 w-4" />,
-                  },
-                  {
-                    label: "Confirmed",
-                    count: schedules.filter(
-                      (s) => s.status === ScheduleStatus.CONFIRMED
-                    ).length,
-                    color: "text-blue-600",
-                    icon: <Clock className="h-4 w-4" />,
-                  },
-                  {
-                    label: "In Progress",
-                    count: schedules.filter(
-                      (s) => s.status === ScheduleStatus.SERVING
-                    ).length,
-                    color: "text-yellow-600",
-                    icon: <AlertCircle className="h-4 w-4" />,
-                  },
-                  {
-                    label: "Completed",
-                    count: schedules.filter(
-                      (s) => s.status === ScheduleStatus.COMPLETED
-                    ).length,
-                    color: "text-green-600",
-                    icon: <CheckCircle className="h-4 w-4" />,
-                  },
-                  {
-                    label: "Cancelled",
-                    count: schedules.filter(
-                      (s) => s.status === ScheduleStatus.CANCELLED
-                    ).length,
-                    color: "text-red-600",
-                    icon: <XCircle className="h-4 w-4" />,
-                  },
-                ].map((stat) => (
-                  <Card key={stat.label}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className={`text-2xl font-bold ${stat.color}`}>
-                            {stat.count}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {stat.label}
-                          </div>
-                        </div>
-                        <div className={stat.color}>{stat.icon}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
             </div>
           </div>
         </Panel>
@@ -577,11 +532,18 @@ export default function AdminSchedulesPage() {
         {showRightPanel && selectedScheduleId && (
           <>
             <PanelResizeHandle className="w-1 bg-gray-200 hover:bg-gray-300 transition-colors" />
-            <Panel defaultSize={40} minSize={30}>
+            <Panel
+              defaultSize={rightPanelSize}
+              minSize={rightPanelSize === 100 ? 100 : 30}
+              maxSize={rightPanelSize === 100 ? 100 : 70}
+            >
               <ScheduleDetails
                 scheduleId={selectedScheduleId}
                 onClose={handleCloseDetails}
                 refetch={fetchSchedules}
+                handleExpandRightPanel={handleExpandRightPanel}
+                handleCollapseRightPanel={handleCollapseRightPanel}
+                rightPanelSize={rightPanelSize}
               />
             </Panel>
           </>

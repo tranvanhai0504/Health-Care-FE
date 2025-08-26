@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { scheduleService } from "@/services/schedule.service";
 import { doctorService } from "@/services/doctor.service";
-import { ScheduleResponse } from "@/types/schedule";
+import { ScheduleResponseGetByDoctor } from "@/types/schedule";
 import { useAuth } from "./useAuth";
 
 interface UseDoctorSchedulesParams {
@@ -14,7 +14,7 @@ interface UseDoctorSchedulesParams {
 }
 
 interface UseDoctorSchedulesReturn {
-  schedules: ScheduleResponse[];
+  schedules: ScheduleResponseGetByDoctor[];
   loading: boolean;
   error: string | null;
   doctorId: string | null;
@@ -30,7 +30,7 @@ interface UseDoctorSchedulesReturn {
 export function useDoctorSchedules(
   initialParams?: UseDoctorSchedulesParams
 ): UseDoctorSchedulesReturn {
-  const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
+  const [schedules, setSchedules] = useState<ScheduleResponseGetByDoctor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [doctorId, setDoctorId] = useState<string | null>(null);

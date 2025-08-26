@@ -10,7 +10,11 @@ import {
 } from "@/services";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
-import { ScheduleResponse, ScheduleResponseGetSingle, ScheduleStatus } from "@/types/schedule";
+import {
+  ScheduleResponse,
+  ScheduleResponseGetSingle,
+  ScheduleStatus,
+} from "@/types/schedule";
 import { ConsultationService } from "@/types/consultation";
 import { ConsultationPackage } from "@/types/package";
 import { User as UserType } from "@/types/user";
@@ -47,9 +51,10 @@ import {
   ChevronUp,
   UserCheck,
   Play,
-  CheckCircle2,
   Loader2,
   MapPin,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { format } from "date-fns";
 import SearchService from "@/components/dialogs/search-service";
@@ -60,6 +65,9 @@ interface ScheduleDetailsProps {
   scheduleId: string;
   onClose: () => void;
   refetch: () => Promise<void>;
+  handleExpandRightPanel?: () => void;
+  handleCollapseRightPanel?: () => void;
+  rightPanelSize?: number;
 }
 
 const getScheduleDate = (schedule: ScheduleResponse) => {
@@ -241,6 +249,9 @@ export function ScheduleDetails({
   scheduleId,
   onClose,
   refetch,
+  handleExpandRightPanel,
+  handleCollapseRightPanel,
+  rightPanelSize,
 }: ScheduleDetailsProps) {
   const {
     data: schedule,
@@ -269,9 +280,8 @@ export function ScheduleDetails({
   const [updatingPaymentMethod, setUpdatingPaymentMethod] = useState(false);
   // Editing states
   const [isEditing, setIsEditing] = useState(false);
-  const [editedSchedule, setEditedSchedule] = useState<ScheduleResponseGetSingle | null>(
-    null
-  );
+  const [editedSchedule, setEditedSchedule] =
+    useState<ScheduleResponseGetSingle | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Payment editing states
@@ -486,7 +496,10 @@ export function ScheduleDetails({
         { ...schedule, status: newStatus } as ScheduleResponseGetSingle,
         false
       );
-      setEditedSchedule({ ...schedule, status: newStatus } as ScheduleResponseGetSingle);
+      setEditedSchedule({
+        ...schedule,
+        status: newStatus,
+      } as ScheduleResponseGetSingle);
 
       toast({
         title: "Success",
@@ -510,11 +523,6 @@ export function ScheduleDetails({
 
   const handleStartServing = async () => {
     await handleStatusChange(ScheduleStatus.SERVING);
-    await refetch();
-  };
-
-  const handleComplete = async () => {
-    await handleStatusChange(ScheduleStatus.COMPLETED);
     await refetch();
   };
 
@@ -800,9 +808,29 @@ export function ScheduleDetails({
             <Package className="h-4 w-4" />
             Schedule Details
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-3 w-3" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {rightPanelSize !== 100 && handleExpandRightPanel && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExpandRightPanel}
+              >
+                <Maximize2 className="h-3 w-3" />
+              </Button>
+            )}
+            {rightPanelSize === 100 && handleCollapseRightPanel && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCollapseRightPanel}
+              >
+                <Minimize2 className="h-3 w-3" />
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
         <div className="mt-2 flex items-center gap-2 text-sm">
           <span className="capitalize">{schedule.type}</span>
@@ -928,6 +956,7 @@ export function ScheduleDetails({
 
         {/* Status Actions */}
         {schedule.status !== ScheduleStatus.COMPLETED &&
+          schedule.status !== ScheduleStatus.SERVING &&
           schedule.status !== ScheduleStatus.CANCELLED && (
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -955,17 +984,6 @@ export function ScheduleDetails({
                   >
                     <Play className="h-3 w-3 mr-1" />
                     Start Service
-                  </Button>
-                )}
-                {schedule.status === ScheduleStatus.SERVING && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleComplete}
-                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                  >
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Mark Complete
                   </Button>
                 )}
               </div>
@@ -1063,7 +1081,11 @@ export function ScheduleDetails({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {((isEditing ? editedSchedule?.services : schedule?.services) || []).map((scheduleService, index) => {
+                    {(
+                      (isEditing
+                        ? editedSchedule?.services
+                        : schedule?.services) || []
+                    ).map((scheduleService, index) => {
                       return (
                         <div
                           key={index}
@@ -1113,20 +1135,25 @@ export function ScheduleDetails({
                                         )}
                                       </span>
                                     </div>
-                                    {scheduleService.service.room && (
-                                      <div className="flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" />
-                                        <span>
-                                          {
-                                            roomDetails.find(
-                                              (r) =>
-                                                r._id ===
-                                                scheduleService.service.room
-                                            )?.name
-                                          }
-                                        </span>
-                                      </div>
-                                    )}
+                                    {scheduleService.service.room &&
+                                      (function () {
+                                        const room = roomDetails.find(
+                                          (r) =>
+                                            r._id ===
+                                            scheduleService.service.room
+                                        );
+
+                                        return (
+                                          <div className="flex items-center gap-1">
+                                            <MapPin className="h-3 w-3" />
+                                            <span>
+                                              {room?.name} - room{" "}
+                                              {room?.roomNumber} - floor{" "}
+                                              {room?.roomFloor}
+                                            </span>
+                                          </div>
+                                        );
+                                      })()}
                                     {scheduleService.service.specialization &&
                                       typeof scheduleService.service
                                         .specialization === "object" && (

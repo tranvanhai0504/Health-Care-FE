@@ -43,7 +43,6 @@ import { doctorService, roomService } from "@/services";
 interface AppointmentDetailsProps {
   appointment: Appointment;
   onClose: () => void;
-  onStartConsultation?: (appointment: Appointment) => void;
   onViewHistory?: (appointment: Appointment) => void;
   onCreatePrescription?: (
     medicalExamination: PopulatedMedicalExamination
@@ -56,7 +55,6 @@ interface AppointmentDetailsProps {
 export function AppointmentDetails({
   appointment,
   onClose,
-  onStartConsultation,
   onViewHistory,
   onCreatePrescription,
   handleExpandRightPanel,
@@ -183,6 +181,8 @@ export function AppointmentDetails({
         patient: appointment.userId as string, // Use the patient ID from appointment
         examinationDate: new Date().toISOString(),
         symptoms: appointment.symptoms ? [appointment.symptoms] : [],
+        services:
+          appointment.originalSchedule?.services?.map((s) => s.service) || [],
       };
 
       // Create the medical examination
@@ -193,11 +193,6 @@ export function AppointmentDetails({
         description:
           "A new medical examination has been created for this consultation.",
       });
-
-      // Call the original onStartConsultation if provided
-      if (onStartConsultation) {
-        onStartConsultation(appointment);
-      }
     } catch (error) {
       console.error("Error creating medical examination:", error);
       toast({
@@ -664,7 +659,7 @@ export function AppointmentDetails({
             </div>
           ) : (
             <div className="flex gap-2">
-              {appointment.status === "upcoming" && (
+              {appointment.status === "in-progress" ? (
                 <>
                   {medicalExamination ? (
                     <Button
@@ -684,6 +679,10 @@ export function AppointmentDetails({
                     </Button>
                   )}
                 </>
+              ) : (
+                <div className="w-fit text-xs p-2 border bg-yellow-50 text-yellow-700 border-yellow-200 rounded-md">
+                  <p>This patient is not checked or paid yet.</p>
+                </div>
               )}
               {onViewHistory && (
                 <Button
