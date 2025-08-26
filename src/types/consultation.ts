@@ -1,4 +1,5 @@
 import { GetManyParams } from './api';
+import { Room } from './room';
 import { Specialty } from './specialty';
 
 /**
@@ -19,6 +20,7 @@ export interface ConsultationService {
   description: string;
   duration: number;
   room?: string;
+  roomDetail?: Room;
   doctor?: string;
   price: number;
   specialization?: string | Specialty; // Can be either a string ID or populated object
@@ -46,4 +48,4 @@ export interface ConsultationServiceGetManyParams extends GetManyParams {
   duration?: number;
   minPrice?: number;
   maxPrice?: number;
-} 
+}

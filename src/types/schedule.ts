@@ -1,3 +1,4 @@
+import { ConsultationService } from './consultation';
 import { ConsultationPackage } from './package';
 import { Payment } from './payment';
 import { User } from './user';
@@ -41,9 +42,26 @@ export interface Schedule {
   type: 'package' | 'services';
   packageId?: string | ConsultationPackage;
   services?: ScheduleService[] | string[];
+  rooms?: string[];
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
+}
+
+export interface ScheduleServiceGetByDoctor extends ScheduleService{
+  service: string;
+}
+
+export interface ScheduleServiceGetSingle extends ScheduleService{
+  service: ConsultationService;
+}
+
+export interface ScheduleResponseGetByDoctor extends ScheduleResponse{
+  services?: ScheduleServiceGetByDoctor[];
+}
+
+export interface ScheduleResponseGetSingle extends ScheduleResponse{
+  services?: ScheduleServiceGetSingle[];
 }
 
 export interface ScheduleResponse extends Schedule {
@@ -60,12 +78,14 @@ export interface ScheduleResponse extends Schedule {
     payments: (string | Payment)[];
   },
   services?: ScheduleService[];
+  rooms?: string[];
 }
 
 export interface ScheduleService {
   _id?: string;
-  service: string;
-  status: string; 
+  service: ConsultationService | string;
+  status: string;
+  room?: string;
 }
 
 /**

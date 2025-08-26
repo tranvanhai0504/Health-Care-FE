@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -39,6 +39,20 @@ export function PaginationWrapper({
   itemsPerPageOptions = [6, 9, 12, 24, 48],
   className,
 }: PaginationWrapperProps) {
+  // Custom hook to get window width
+  const useWindowWidth = () => {
+    const [width, setWidth] = useState(0);
+    useEffect(() => {
+      const handleResize = () => setWidth(window.innerWidth);
+      window.addEventListener("resize", handleResize);
+      handleResize(); // Set initial width
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+    return width;
+  };
+
+  const width = useWindowWidth();
+
   // Scroll to top utility
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
@@ -46,32 +60,29 @@ export function PaginationWrapper({
     }
   };
 
-  // Calculate visible pages (max 5 pages shown at once)
+  // Calculate visible pages based on screen width
   const getVisiblePages = () => {
-    const maxVisible = 5;
+    const maxVisible = width < 640 ? 3 : 5; // Show 3 pages on small screens, 5 on larger
     const pages: number[] = [];
-    
+
     if (totalPages <= maxVisible) {
-      // Show all pages if total is less than or equal to maxVisible
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Smart pagination logic
       const half = Math.floor(maxVisible / 2);
       let start = Math.max(1, currentPage - half);
       const end = Math.min(totalPages, start + maxVisible - 1);
-      
-      // Adjust start if we're near the end
+
       if (end - start < maxVisible - 1) {
         start = Math.max(1, end - maxVisible + 1);
       }
-      
+
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   };
 
@@ -94,7 +105,7 @@ export function PaginationWrapper({
   return (
     <div className={`space-y-4 mt-8 pt-6 border-t ${className || ''}`}>
       {/* Top row: Items per page and results summary */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         {showItemsPerPage && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Items per page:</span>
@@ -231,7 +242,7 @@ export function PaginationWrapper({
       </Pagination>
 
       {/* Jump to page */}
-      {showJumpToPage && (
+      {showJumpToPage && width > 640 && (
         <div className="flex items-center justify-center gap-2 text-sm">
           <span className="text-muted-foreground">Go to page:</span>
           <Input

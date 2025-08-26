@@ -43,11 +43,9 @@ interface SearchServiceProps {
 }
 
 interface FilterState {
-  search: string;
   specialization: string;
   minPrice: string;
   maxPrice: string;
-  sortBy: string;
 }
 
 const SearchService: React.FC<SearchServiceProps> = ({
@@ -67,7 +65,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Specialties state
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [loadingSpecialties, setLoadingSpecialties] = useState(false);
@@ -82,30 +80,28 @@ const SearchService: React.FC<SearchServiceProps> = ({
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
-    search: "",
     specialization: "",
     minPrice: "",
     maxPrice: "",
-    sortBy: "name",
   });
 
-
+  const [search, setSearch] = useState("");
 
   // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(filters.search);
-    }, 300);
+      setDebouncedSearch(search);
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [filters.search]);
+  }, [search]);
 
   // Fetch specialties
   const fetchSpecialties = useCallback(async () => {
     if (specialties.length > 0) return; // Don't fetch if already loaded
-    
+
     setLoadingSpecialties(true);
     try {
       const data = await specialtyService.getAll();
@@ -127,7 +123,6 @@ const SearchService: React.FC<SearchServiceProps> = ({
         page: currentPage,
         limit: itemsPerPage,
         search: debouncedSearch || undefined,
-        sortBy: filters.sortBy || undefined,
         minPrice: filters.minPrice ? parseFloat(filters.minPrice) : undefined,
         maxPrice: filters.maxPrice ? parseFloat(filters.maxPrice) : undefined,
       };
@@ -140,9 +135,8 @@ const SearchService: React.FC<SearchServiceProps> = ({
         );
       } else {
         response = await consultationServiceApi.getMany({
-          options: {
-            pagination: params,
-          },
+          ...params,
+          name: params.search,
         });
       }
 
@@ -162,10 +156,12 @@ const SearchService: React.FC<SearchServiceProps> = ({
     const fetchInitialSelectedServices = async () => {
       if (isOpen && initialSelectedIds.length > 0) {
         try {
-          const initialServices = await consultationServiceApi.getByIds(initialSelectedIds);
+          const initialServices = await consultationServiceApi.getByIds(
+            initialSelectedIds
+          );
           setSelectedServices(initialServices);
           // Ensure selectedIds is in sync with the actually loaded services
-          const loadedIds = initialServices.map(service => service._id);
+          const loadedIds = initialServices.map((service) => service._id);
           setSelectedIds(new Set(loadedIds));
         } catch (error) {
           console.error("Error fetching initial selected services:", error);
@@ -199,7 +195,6 @@ const SearchService: React.FC<SearchServiceProps> = ({
     filters.specialization,
     filters.minPrice,
     filters.maxPrice,
-    filters.sortBy,
   ]);
 
   // Handle pagination changes
@@ -245,11 +240,9 @@ const SearchService: React.FC<SearchServiceProps> = ({
   // Clear filters
   const clearFilters = () => {
     setFilters({
-      search: "",
       specialization: "",
       minPrice: "",
       maxPrice: "",
-      sortBy: "name",
     });
   };
 
@@ -268,21 +261,23 @@ const SearchService: React.FC<SearchServiceProps> = ({
   };
 
   // Specialization Combobox Component
-  const SpecializationCombobox = ({ 
-    value, 
-    onValueChange, 
+  const SpecializationCombobox = ({
+    value,
+    onValueChange,
     disabled = false,
-    className = "w-full"
+    className = "w-full",
   }: {
-    value: string,
-    onValueChange: (value: string) => void,
-    disabled?: boolean,
-    className?: string
+    value: string;
+    onValueChange: (value: string) => void;
+    disabled?: boolean;
+    className?: string;
   }) => {
     const [open, setOpen] = useState(false);
-    
-    const selectedSpecialty = specialties.find(specialty => specialty._id === value);
-    
+
+    const selectedSpecialty = specialties.find(
+      (specialty) => specialty._id === value
+    );
+
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -299,7 +294,10 @@ const SearchService: React.FC<SearchServiceProps> = ({
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0 z-50">
           <Command>
-            <CommandInput placeholder="Search specializations..." className="h-9" />
+            <CommandInput
+              placeholder="Search specializations..."
+              className="h-9"
+            />
             <CommandList>
               <CommandEmpty>
                 {loadingSpecialties ? "Loading..." : "No specialization found."}
@@ -325,7 +323,8 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     key={specialty._id}
                     value={specialty.name}
                     onSelect={() => {
-                      const newValue = value === specialty._id ? "" : specialty._id;
+                      const newValue =
+                        value === specialty._id ? "" : specialty._id;
                       onValueChange(newValue);
                       setOpen(false);
                     }}
@@ -363,10 +362,16 @@ const SearchService: React.FC<SearchServiceProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="font-medium text-gray-900 text-sm truncate">{service.name}</h4>
-              {isSelected && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+              <h4 className="font-medium text-gray-900 text-sm truncate">
+                {service.name}
+              </h4>
+              {isSelected && (
+                <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              )}
             </div>
-            <p className="text-xs text-gray-600 mt-1 line-clamp-1">{service.description}</p>
+            <p className="text-xs text-gray-600 mt-1 line-clamp-1">
+              {service.description}
+            </p>
             <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
               <span className="flex-shrink-0">{service.duration}min</span>
               <span className="font-medium text-green-600 flex-shrink-0">
@@ -389,7 +394,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
 
-      <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col h-[80vh]">
         <DialogHeader>
           <DialogTitle>Search Consultation Services</DialogTitle>
           <DialogDescription>
@@ -414,8 +419,8 @@ const SearchService: React.FC<SearchServiceProps> = ({
                   <input
                     type="text"
                     placeholder="Search..."
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange("search", e.target.value)}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -447,11 +452,15 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     </label>
                     <SpecializationCombobox
                       value={filters.specialization}
-                      onValueChange={(value) => handleFilterChange("specialization", value)}
+                      onValueChange={(value) =>
+                        handleFilterChange("specialization", value)
+                      }
                       disabled={loadingSpecialties}
                     />
                     {loadingSpecialties && (
-                      <div className="text-xs text-gray-500 mt-1">Loading...</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Loading...
+                      </div>
                     )}
                   </div>
 
@@ -488,24 +497,6 @@ const SearchService: React.FC<SearchServiceProps> = ({
                       />
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-2">
-                      Sort By
-                    </label>
-                    <select
-                      value={filters.sortBy}
-                      onChange={(e) =>
-                        handleFilterChange("sortBy", e.target.value)
-                      }
-                      className="w-full px-2 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                      <option value="name">Name A-Z</option>
-                      <option value="price">Price Low-High</option>
-                      <option value="duration">Duration</option>
-                      <option value="createdAt">Newest First</option>
-                    </select>
-                  </div>
                 </div>
               </div>
             </div>
@@ -521,33 +512,24 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 <input
                   type="text"
                   placeholder="Search services..."
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange("search", e.target.value)}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              
+
               {/* Filter Row */}
               <div className="grid grid-cols-2 gap-2">
                 <SpecializationCombobox
                   value={filters.specialization}
-                  onValueChange={(value) => handleFilterChange("specialization", value)}
+                  onValueChange={(value) =>
+                    handleFilterChange("specialization", value)
+                  }
                   disabled={loadingSpecialties}
                   className="h-10"
                 />
-                
-                <select
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                  className="px-2 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="name">Name A-Z</option>
-                  <option value="price">Price Low-High</option>
-                  <option value="duration">Duration</option>
-                  <option value="createdAt">Newest First</option>
-                </select>
               </div>
-              
+
               {/* Price Filters */}
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -555,7 +537,9 @@ const SearchService: React.FC<SearchServiceProps> = ({
                   placeholder="Min Price"
                   min="0"
                   value={filters.minPrice}
-                  onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("minPrice", e.target.value)
+                  }
                   className="px-2 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <input
@@ -563,13 +547,17 @@ const SearchService: React.FC<SearchServiceProps> = ({
                   placeholder="Max Price"
                   min="0"
                   value={filters.maxPrice}
-                  onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("maxPrice", e.target.value)
+                  }
                   className="px-2 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              
+
               {/* Clear Filters */}
-              {(filters.specialization || filters.minPrice || filters.maxPrice) && (
+              {(filters.specialization ||
+                filters.minPrice ||
+                filters.maxPrice) && (
                 <div className="text-center">
                   <button
                     onClick={clearFilters}
@@ -580,7 +568,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 </div>
               )}
             </div>
-            
+
             {/* Results */}
             <div className="flex-1">
               {loading ? (
@@ -599,11 +587,13 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 <div className="flex items-center justify-center h-96 text-gray-500">
                   <div className="text-center">
                     <div className="text-sm">No services found</div>
-                    <div className="text-xs mt-1">Try adjusting your search or filters</div>
+                    <div className="text-xs mt-1">
+                      Try adjusting your search or filters
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 overflow-y-auto max-h-96 pr-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 overflow-y-auto max-h-[24vh] md:max-h-[47vh] pr-2">
                   {services.map(renderServiceCard)}
                 </div>
               )}

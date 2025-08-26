@@ -172,7 +172,7 @@ export default function ScheduleDetailModal({
           );
 
           // Fetch detailed service information
-          const services = await consultationServiceApi.getByIds(serviceIds);
+          const services = await consultationServiceApi.getByIds(serviceIds as string[]);
 
           const roomIds = services.map((s) => s.room).filter((r) => r !== undefined);
           const rooms = await roomService.getByIds(roomIds);

@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import {
   ScheduleHeader,
   ScheduleFilters,
   AppointmentList,
-  AppointmentSummary,
   AppointmentDetails,
 } from "@/components/doctor/schedules";
 import { Appointment } from "@/types/appointment";
@@ -22,8 +20,6 @@ import {
 import { ScheduleStatus } from "@/types/schedule";
 import { AppointmentStatus } from "@/types/appointment";
 import { User } from "@/types/user";
-import { consultationServiceApi } from "@/services/consultationService.service";
-import { ConsultationService } from "@/types/consultation";
 import { toast } from "sonner";
 
 type ViewMode = "list" | "details";
@@ -51,16 +47,12 @@ function mapScheduleStatusToAppointmentStatus(
 }
 
 export default function DoctorSchedules() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("today");
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [serviceDetails, setServiceDetails] = useState<
-    Record<string, ConsultationService>
-  >({});
   const [patientDetails, setPatientDetails] = useState<Record<string, User>>(
     {}
   );
@@ -142,10 +134,7 @@ export default function DoctorSchedules() {
         ? `Package: ${schedule.packageId}`
         : "Services appointment",
       duration: "N/A", // Not available in schedule data
-      symptoms:
-        schedule.services
-          ?.map((s) => serviceDetails[s.service]?.name || s.service)
-          .join(", ") || "No services specified",
+      symptoms: "",
       previousVisits: 0, // Not available in schedule data
       // Add enhanced user info
       patientGender: user?.gender || "N/A",
@@ -180,41 +169,6 @@ export default function DoctorSchedules() {
       fetchAllPatientDetails();
     }
   }, [schedules, patientDetails, loadingPatients, fetchPatientDetails]);
-
-  // Fetch service details when schedules are loaded
-  useEffect(() => {
-    const fetchAllServiceDetails = async () => {
-      // Extract all unique service IDs from all schedules
-      const serviceIds = schedules
-        .flatMap((schedule) => schedule.services?.map((s) => s.service) || [])
-        .filter((id): id is string => !!id && !serviceDetails[id]);
-
-      if (serviceIds.length > 0) {
-        try {
-          const uniqueServiceIds = [...new Set(serviceIds)];
-          const services = await consultationServiceApi.getByIds(
-            uniqueServiceIds
-          );
-
-          // Create a map of service details by ID
-          const serviceDetailsMap = services.reduce((acc, service) => {
-            if (service?._id) {
-              acc[service._id] = service;
-            }
-            return acc;
-          }, {} as Record<string, ConsultationService>);
-
-          setServiceDetails((prev) => ({ ...prev, ...serviceDetailsMap }));
-        } catch (error) {
-          console.error("Error fetching service details:", error);
-        }
-      }
-    };
-
-    if (schedules.length > 0) {
-      fetchAllServiceDetails();
-    }
-  }, [schedules, serviceDetails]);
 
   // Handle date filter changes to refetch data
   useEffect(() => {
@@ -368,8 +322,8 @@ export default function DoctorSchedules() {
         examinationDate: new Date(appointment.date).toISOString(),
         symptoms: appointment.symptoms?.split(", ") || [],
         services: appointment.originalSchedule.services
-          ?.map((s) => s.service)
-          .filter((id): id is string => !!id),
+          ?.map((s) => s.service as string)
+          .filter((id) => !!id),
       };
 
       const newExamination = await medicalExaminationService.create(
@@ -392,10 +346,6 @@ export default function DoctorSchedules() {
     setSelectedAppointment(null);
     setViewMode("list");
     setRightPanelSize(50);
-  };
-
-  const handleAddAppointment = () => {
-    router.push("/doctor/schedules/new");
   };
 
   // Determine if right panel should be shown
@@ -458,7 +408,7 @@ export default function DoctorSchedules() {
         >
           <div className="h-full space-y-6 overflow-auto p-6">
             {/* Header */}
-            <ScheduleHeader onAddAppointment={handleAddAppointment} />
+            <ScheduleHeader />
 
             {/* Filters */}
             <ScheduleFilters
@@ -492,9 +442,6 @@ export default function DoctorSchedules() {
               onViewDetails={handleViewDetails}
               onStartConsultation={handleStartConsultation}
             />
-
-            {/* Summary Card */}
-            <AppointmentSummary appointments={appointments} />
           </div>
         </Panel>
 

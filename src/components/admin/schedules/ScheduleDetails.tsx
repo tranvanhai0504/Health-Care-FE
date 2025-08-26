@@ -1,10 +1,16 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { scheduleService, userService, paymentService } from "@/services";
+import useSWR from "swr";
+import {
+  scheduleService,
+  userService,
+  paymentService,
+  roomService,
+} from "@/services";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
-import { ScheduleResponse, ScheduleStatus } from "@/types/schedule";
+import { ScheduleResponse, ScheduleResponseGetSingle, ScheduleStatus } from "@/types/schedule";
 import { ConsultationService } from "@/types/consultation";
 import { ConsultationPackage } from "@/types/package";
 import { User as UserType } from "@/types/user";
@@ -17,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import QRCode from "qrcode";
+import { generatePaymentQrHtml } from "@/utils/paymentQrTemplate";
 
 import {
   Calendar,
@@ -41,10 +49,12 @@ import {
   Play,
   CheckCircle2,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import { format } from "date-fns";
 import SearchService from "@/components/dialogs/search-service";
 import { useToast } from "@/hooks/useToast";
+import { Room } from "@/types/room";
 
 interface ScheduleDetailsProps {
   scheduleId: string;
@@ -232,9 +242,19 @@ export function ScheduleDetails({
   onClose,
   refetch,
 }: ScheduleDetailsProps) {
-  const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: schedule,
+    error: fetchError,
+    isLoading: loading,
+    mutate: mutateSchedule,
+  } = useSWR(
+    scheduleId ? `schedule/${scheduleId}` : null,
+    () => scheduleService.getById(scheduleId!),
+    {
+      refreshInterval: 5000, // Refresh every 5 seconds to get payment status updates
+    }
+  );
+
   const [serviceDetails, setServiceDetails] = useState<ConsultationService[]>(
     []
   );
@@ -249,7 +269,7 @@ export function ScheduleDetails({
   const [updatingPaymentMethod, setUpdatingPaymentMethod] = useState(false);
   // Editing states
   const [isEditing, setIsEditing] = useState(false);
-  const [editedSchedule, setEditedSchedule] = useState<ScheduleResponse | null>(
+  const [editedSchedule, setEditedSchedule] = useState<ScheduleResponseGetSingle | null>(
     null
   );
   const [saving, setSaving] = useState(false);
@@ -274,6 +294,8 @@ export function ScheduleDetails({
   // User data state
   const [userData, setUserData] = useState<UserType | null>(null);
   const [userLoading, setUserLoading] = useState(false);
+
+  const [roomDetails, setRoomDetails] = useState<Room[]>([]);
 
   // Toast hook
   const {
@@ -330,39 +352,27 @@ export function ScheduleDetails({
   };
 
   useEffect(() => {
-    if (!scheduleId) return;
-    setLoading(true);
-    setError(null);
-    setUserData(null); // Reset user data
+    if (schedule) {
+      setEditedSchedule(schedule);
+      const initAgg = getPaymentAggregate(schedule);
+      setPaymentForm({
+        totalPrice: initAgg.totalPrice,
+        totalPaid: initAgg.totalPaid,
+        paymentMethod: "cash",
+        paymentNotes: "",
+      });
 
-    scheduleService
-      .getById(scheduleId)
-      .then((data) => {
-        setSchedule(data);
-        setEditedSchedule(data);
-        // Initialize payment form
-        const initAgg = getPaymentAggregate(data);
-        setPaymentForm({
-          totalPrice: initAgg.totalPrice,
-          totalPaid: initAgg.totalPaid,
-          paymentMethod: "cash", // Default payment method
-          paymentNotes: "", // Default notes
-        });
-
-        // Fetch user data if userId exists
-        if (data.userId && typeof data.userId === "string") {
-          fetchUserData(data.userId);
-        } else if (
-          data.userId &&
-          typeof data.userId === "object" &&
-          data.userId._id
-        ) {
-          fetchUserData(data.userId._id);
-        }
-      })
-      .catch(() => setError("Failed to fetch schedule details."))
-      .finally(() => setLoading(false));
-  }, [scheduleId]);
+      if (schedule.userId && typeof schedule.userId === "string") {
+        fetchUserData(schedule.userId);
+      } else if (
+        schedule.userId &&
+        typeof schedule.userId === "object" &&
+        schedule.userId._id
+      ) {
+        fetchUserData(schedule.userId._id);
+      }
+    }
+  }, [schedule]);
 
   // Editing functions
   const handleStartEditing = () => {
@@ -372,7 +382,7 @@ export function ScheduleDetails({
 
   const handleCancelEditing = () => {
     setIsEditing(false);
-    setEditedSchedule(schedule);
+    setEditedSchedule(schedule!);
     setIsEditingPayment(false);
     if (schedule) {
       const agg = getPaymentAggregate(schedule);
@@ -390,12 +400,33 @@ export function ScheduleDetails({
 
     setSaving(true);
     try {
-      // TODO: Implement save functionality
-      // await scheduleService.update(scheduleId, editedSchedule);
-      setSchedule(editedSchedule);
+      const serviceIds =
+        editedSchedule.services?.map((s) => {
+          if (typeof s.service === "string") return s.service;
+          return s.service._id;
+        }) || [];
+
+      const updatePayload = {
+        ...editedSchedule,
+        services: serviceIds,
+        payment: {
+          totalPrice: paymentForm.totalPrice,
+          totalPaid: paymentForm.totalPaid,
+          paymentMethod: paymentForm.paymentMethod,
+          paymentNotes: paymentForm.paymentNotes,
+        },
+      };
+
+      await scheduleService.update(scheduleId, updatePayload);
+      await mutateSchedule(); // Re-fetch data to confirm changes
+
       setIsEditing(false);
       setIsEditingPayment(false);
-      console.log("Saving changes:", editedSchedule, paymentForm);
+      toast({
+        title: "Success",
+        description: "Schedule updated successfully.",
+        type: "success",
+      });
     } catch (error) {
       console.error("Error saving changes:", error);
     } finally {
@@ -423,7 +454,8 @@ export function ScheduleDetails({
 
     // Convert selected services to schedule service format
     const newServices = selectedServices.map((service) => ({
-      service: service._id,
+      _id: service._id,
+      service: service,
       status: "pending" as const,
     }));
 
@@ -438,7 +470,7 @@ export function ScheduleDetails({
   const getCurrentlySelectedServiceIds = () => {
     if (!editedSchedule?.services) return [];
     return editedSchedule.services.map((s) =>
-      typeof s === "string" ? s : s.service
+      typeof s === "string" ? s : (s.service as ConsultationService)._id
     );
   };
 
@@ -449,10 +481,12 @@ export function ScheduleDetails({
     try {
       await scheduleService.update(schedule._id, { status: newStatus });
 
-      // Update local state
-      const updatedSchedule = { ...schedule, status: newStatus };
-      setSchedule(updatedSchedule);
-      setEditedSchedule(updatedSchedule);
+      // Optimistic update
+      mutateSchedule(
+        { ...schedule, status: newStatus } as ScheduleResponseGetSingle,
+        false
+      );
+      setEditedSchedule({ ...schedule, status: newStatus } as ScheduleResponseGetSingle);
 
       toast({
         title: "Success",
@@ -491,7 +525,7 @@ export function ScheduleDetails({
     }));
   };
 
-    const handlePaymentMethodChange = async (newMethod: string) => {
+  const handlePaymentMethodChange = async (newMethod: string) => {
     if (!schedule) return;
     const paymentIds = getPaymentsFromSchedule(schedule).map((p) => p._id);
     if (paymentIds.length === 0) {
@@ -505,8 +539,8 @@ export function ScheduleDetails({
         paymentIds,
         method: newMethod,
       });
+      await mutateSchedule(); // Re-fetch from server
       const refreshed = await scheduleService.getById(scheduleId);
-      setSchedule(refreshed);
       setEditedSchedule(refreshed);
       handlePaymentFormChange("paymentMethod", newMethod);
       toast({
@@ -541,21 +575,64 @@ export function ScheduleDetails({
         orderInfo: `Payment for schedule ${schedule._id}`,
         paymentIds: paymentIds,
       };
+
+      // Get the payment URL from the service (same as old logic)
       const response = await paymentService.createVNPayPayment(paymentData);
-      if (response.paymentUrl) {
-        window.location.href = response.paymentUrl;
-      } else {
+      if (!response.paymentUrl) {
         toast({
           title: "Error",
           description: "Could not get payment URL. Please try again.",
           type: "error",
         });
+        return;
+      }
+
+      // Generate QR code with the payment URL
+      const qrCodeDataURL = await QRCode.toDataURL(response.paymentUrl, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF",
+        },
+      });
+
+      // Generate HTML content using template
+      const htmlContent = generatePaymentQrHtml({
+        scheduleId: schedule._id.slice(-6).toUpperCase(),
+        amount: formatPrice(remainingBalance),
+        orderInfo: paymentData.orderInfo,
+        qrCodeDataUrl: qrCodeDataURL,
+      });
+
+      // Open new window with QR code
+      const newWindow = window.open(
+        "",
+        "_blank",
+        "width=500,height=700,scrollbars=yes,resizable=yes"
+      );
+      if (newWindow) {
+        newWindow.document.write(htmlContent);
+        newWindow.document.close();
+
+        toast({
+          title: "QR Code Generated",
+          description: "Bank transfer QR code opened in new window",
+          type: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description:
+            "Could not open new window. Please check your popup blocker.",
+          type: "error",
+        });
       }
     } catch (error) {
-      console.error("Error creating VNPay payment:", error);
+      console.error("Error generating QR code:", error);
       toast({
         title: "Error",
-        description: "Failed to initiate card payment. Please try again.",
+        description: "Failed to generate QR code. Please try again.",
         type: "error",
       });
     } finally {
@@ -570,15 +647,24 @@ export function ScheduleDetails({
       return;
     }
     setServicesLoading(true);
-    const serviceIds = schedule.services.map(
-      (s: import("@/types/schedule").ScheduleService | string) =>
-        typeof s === "string" ? s : s.service
+
+    setServiceDetails(
+      schedule.services.map((s) => s.service as ConsultationService)
     );
-    consultationServiceApi
-      .getByIds(serviceIds)
-      .then((services) => setServiceDetails(services))
-      .finally(() => setServicesLoading(false));
+
+    const roomIds = schedule.services
+      .map((s) => s.service.room)
+      .filter((r): r is string => r !== undefined)
+      .filter((r, i, arr) => arr.indexOf(r) === i);
+
+    roomService.getByIds(roomIds).then((rooms) => {
+      setRoomDetails(rooms);
+    });
+
+    setServicesLoading(false);
   }, [schedule]);
+
+  console.log(roomDetails);
 
   // Ensure we have service details for any services referenced by payments as well
   useEffect(() => {
@@ -626,8 +712,6 @@ export function ScheduleDetails({
       .finally(() => setPackageLoading(false));
   }, [schedule]);
 
-  console.log(paymentForm);
-
   if (loading) {
     return (
       <div className="h-full bg-white flex flex-col">
@@ -651,7 +735,7 @@ export function ScheduleDetails({
     );
   }
 
-  if (error) {
+  if (fetchError) {
     return (
       <div className="h-full bg-white flex flex-col">
         <div className="flex-shrink-0 p-4 border-b border-gray-200">
@@ -670,7 +754,7 @@ export function ScheduleDetails({
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Error Loading Schedule
             </h3>
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600">{fetchError.message}</p>
           </div>
         </div>
       </div>
@@ -832,6 +916,7 @@ export function ScheduleDetails({
           </div>
           <div className="ml-6 space-y-1 text-sm">
             <div>Date: {format(scheduleDate, "MMM d, yyyy")}</div>
+            <div>Day: {format(scheduleDate, "EEEE")}</div>
             <div>
               Time Slot:{" "}
               {schedule.timeOffset === 0
@@ -978,14 +1063,7 @@ export function ScheduleDetails({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {(schedule.services || []).map((scheduleService, index) => {
-                      const serviceDetail = serviceDetails.find(
-                        (s) =>
-                          s._id ===
-                          (typeof scheduleService === "string"
-                            ? scheduleService
-                            : scheduleService.service)
-                      );
+                    {((isEditing ? editedSchedule?.services : schedule?.services) || []).map((scheduleService, index) => {
                       return (
                         <div
                           key={index}
@@ -995,7 +1073,7 @@ export function ScheduleDetails({
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="text-sm font-semibold text-gray-900">
-                                  {serviceDetail?.name || "Service"}
+                                  {scheduleService.service.name || "Service"}
                                 </h4>
                                 {typeof scheduleService === "object" &&
                                   scheduleService.status && (
@@ -1021,25 +1099,44 @@ export function ScheduleDetails({
                                   </Button>
                                 )}
                               </div>
-                              {serviceDetail && (
+                              {scheduleService.service && (
                                 <>
                                   <p className="text-xs text-gray-600 mb-2">
-                                    {serviceDetail.description}
+                                    {scheduleService.service.description}
                                   </p>
                                   <div className="flex items-center gap-3 text-xs text-gray-500">
                                     <div className="flex items-center gap-1">
                                       <Timer className="h-3 w-3" />
                                       <span>
-                                        {formatDuration(serviceDetail.duration)}
+                                        {formatDuration(
+                                          scheduleService.service.duration
+                                        )}
                                       </span>
                                     </div>
-                                    {serviceDetail.specialization &&
-                                      typeof serviceDetail.specialization ===
-                                        "object" && (
+                                    {scheduleService.service.room && (
+                                      <div className="flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" />
+                                        <span>
+                                          {
+                                            roomDetails.find(
+                                              (r) =>
+                                                r._id ===
+                                                scheduleService.service.room
+                                            )?.name
+                                          }
+                                        </span>
+                                      </div>
+                                    )}
+                                    {scheduleService.service.specialization &&
+                                      typeof scheduleService.service
+                                        .specialization === "object" && (
                                         <div className="flex items-center gap-1">
                                           <Building2 className="h-3 w-3" />
                                           <span>
-                                            {serviceDetail.specialization.name}
+                                            {
+                                              scheduleService.service
+                                                .specialization.name
+                                            }
                                           </span>
                                         </div>
                                       )}
@@ -1047,10 +1144,10 @@ export function ScheduleDetails({
                                 </>
                               )}
                             </div>
-                            {serviceDetail && (
+                            {scheduleService.service && (
                               <div className="text-right">
                                 <div className="text-sm font-bold text-gray-700">
-                                  {formatPrice(serviceDetail.price)}
+                                  {formatPrice(scheduleService.service.price)}
                                 </div>
                               </div>
                             )}
@@ -1190,8 +1287,13 @@ export function ScheduleDetails({
                       </span>
                       <Select
                         value={paymentForm.paymentMethod || ""}
+                        defaultValue={paymentForm.paymentMethod || ""}
                         onValueChange={handlePaymentMethodChange}
-                        disabled={isEditingPayment || updatingPaymentMethod}
+                        disabled={
+                          isEditingPayment ||
+                          updatingPaymentMethod ||
+                          paymentForm.totalPaid === paymentForm.totalPrice
+                        }
                       >
                         <SelectTrigger className="inline-flex h-auto p-1 border-none text-xs text-gray-500 bg-gray-100 rounded-sm w-fit">
                           <SelectValue placeholder="Select method" />
@@ -1280,11 +1382,9 @@ export function ScheduleDetails({
                                     await paymentService.updateStatus(p._id, {
                                       status: "paid",
                                     });
+                                    await mutateSchedule(); // Re-fetch from server
                                     const refreshed =
-                                      await scheduleService.getById(
-                                        scheduleId
-                                      );
-                                    setSchedule(refreshed);
+                                      await scheduleService.getById(scheduleId);
                                     setEditedSchedule(refreshed);
                                     toast({
                                       title: "Payment updated",
@@ -1347,10 +1447,10 @@ export function ScheduleDetails({
                                   })
                                 )
                               );
+                              await mutateSchedule(); // Re-fetch from server
                               const refreshed = await scheduleService.getById(
                                 scheduleId
                               );
-                              setSchedule(refreshed);
                               setEditedSchedule(refreshed);
                               toast({
                                 title: "Payments updated",
@@ -1379,22 +1479,23 @@ export function ScheduleDetails({
                     )}
                   </div>
                 )}
-                {paymentForm.paymentMethod === "bank_transfer" && !isFullyPaid && (
-                  <div className="mt-4">
-                    <Button
-                      onClick={handlePayWithCard}
-                      disabled={isProcessingCardPayment}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isProcessingCardPayment ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <CreditCard className="h-4 w-4 mr-2" />
-                      )}
-                      Pay {formatPrice(remainingBalance)} via Bank Transfer
-                    </Button>
-                  </div>
-                )}
+                {paymentForm.paymentMethod === "bank_transfer" &&
+                  !isFullyPaid && (
+                    <div className="mt-4">
+                      <Button
+                        onClick={handlePayWithCard}
+                        disabled={isProcessingCardPayment}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                      >
+                        {isProcessingCardPayment ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <CreditCard className="h-4 w-4 mr-2" />
+                        )}
+                        Pay {formatPrice(remainingBalance)} via Bank Transfer
+                      </Button>
+                    </div>
+                  )}
               </div>
             </div>
           )}

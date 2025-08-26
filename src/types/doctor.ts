@@ -36,6 +36,7 @@ export interface DoctorWithPopulatedData {
   averageRating: number;
   createdAt: string;
   updatedAt: string;
+  room: string;
 }
 
 /**
@@ -60,4 +61,4 @@ export interface DoctorGetAllParams extends GetManyParams {
   maxConsultationFee?: number;
   minRating?: number;
   bio?: string;
-} 
+}

@@ -210,17 +210,13 @@ export default function AdminSchedulesPage() {
     });
   };
 
-  const formatTimeSlot = (dayOffset: number, timeOffset: 0 | 1) => {
-    const days = [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ];
-    const dayName = days[dayOffset] || "Unknown";
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const formatTimeSlot = (weekPeriod: any, dayOffset: number, timeOffset: 0 | 1) => {
+    if (!weekPeriod || !weekPeriod.from) return "Unknown";
+    const date = new Date(weekPeriod.from);
+    date.setDate(date.getDate() + dayOffset);
+    const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
     const timeSlot = timeOffset === 0 ? "Morning" : "Afternoon";
     return `${dayName} ${timeSlot}`;
   };
@@ -380,7 +376,7 @@ export default function AdminSchedulesPage() {
                               <TableHead>Time Slot</TableHead>
                               <TableHead>Date</TableHead>
                               <TableHead>Status</TableHead>
-                              <TableHead>Payment</TableHead>
+
                               <TableHead className="text-right">
                                 Actions
                               </TableHead>
@@ -424,6 +420,7 @@ export default function AdminSchedulesPage() {
                                   <div className="flex items-center gap-1 text-sm">
                                     <Clock className="h-3 w-3 text-gray-400" />
                                     {formatTimeSlot(
+                                      schedule.weekPeriod,
                                       schedule.dayOffset,
                                       schedule.timeOffset
                                     )}
@@ -445,38 +442,7 @@ export default function AdminSchedulesPage() {
                                     {schedule.status}
                                   </Badge>
                                 </TableCell>
-                                <TableCell>
-                                  <div className="text-sm">
-                                    <div className="flex items-center gap-1">
-                                      <span className="font-medium">
-                                        ${schedule.payment?.totalPaid || 0}
-                                      </span>
-                                      <span className="text-gray-500">
-                                        / ${schedule.payment?.totalPrice || 0}
-                                      </span>
-                                    </div>
-                                    {schedule.payment && (
-                                      <div className="flex items-center gap-1 mt-1">
-                                        {schedule.payment.totalPaid >=
-                                        schedule.payment.totalPrice ? (
-                                          <CheckCircle className="h-3 w-3 text-green-500" />
-                                        ) : schedule.payment.totalPaid > 0 ? (
-                                          <AlertCircle className="h-3 w-3 text-yellow-500" />
-                                        ) : (
-                                          <XCircle className="h-3 w-3 text-red-500" />
-                                        )}
-                                        <span className="text-xs text-gray-500">
-                                          {schedule.payment.totalPaid >=
-                                          schedule.payment.totalPrice
-                                            ? "Paid"
-                                            : schedule.payment.totalPaid > 0
-                                            ? "Partial"
-                                            : "Unpaid"}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </TableCell>
+
                                 <TableCell className="text-right">
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
