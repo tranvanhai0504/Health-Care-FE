@@ -9,13 +9,11 @@ import { Appointment } from "@/types/appointment";
 interface AppointmentCardProps {
   appointment: Appointment;
   onViewDetails: (appointment: Appointment) => void;
-  onStartConsultation?: (appointment: Appointment) => void;
 }
 
 export function AppointmentCard({
   appointment,
   onViewDetails,
-  onStartConsultation,
 }: AppointmentCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -119,16 +117,6 @@ export function AppointmentCard({
                 <span className="hidden sm:inline">View Details</span>
                 <span className="sm:hidden">View</span>
               </Button>
-              {appointment.status === "in-progress" && onStartConsultation && (
-                <Button
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => onStartConsultation(appointment)}
-                >
-                  <span className="hidden sm:inline">Start</span>
-                  <span className="sm:hidden">▶</span>
-                </Button>
-              )}
             </div>
           </div>
         </div>

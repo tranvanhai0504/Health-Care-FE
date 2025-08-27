@@ -9,14 +9,12 @@ interface AppointmentListProps {
   appointments: Appointment[];
   loading: boolean;
   onViewDetails: (appointment: Appointment) => void;
-  onStartConsultation?: (appointment: Appointment) => void;
 }
 
 export function AppointmentList({
   appointments,
   loading,
   onViewDetails,
-  onStartConsultation,
 }: AppointmentListProps) {
   if (loading) {
     return (
@@ -49,7 +47,6 @@ export function AppointmentList({
           key={appointment.id}
           appointment={appointment}
           onViewDetails={onViewDetails}
-          onStartConsultation={onStartConsultation}
         />
       ))}
     </div>

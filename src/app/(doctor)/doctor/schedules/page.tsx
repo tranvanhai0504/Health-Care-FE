@@ -9,8 +9,6 @@ import {
   AppointmentDetails,
 } from "@/components/doctor/schedules";
 import { Appointment } from "@/types/appointment";
-import { CreateMedicalExaminationData } from "@/types/medicalExamination";
-import { medicalExaminationService } from "@/services/medicalExamination.service";
 import { userService } from "@/services/user.service";
 import {
   useDoctorSchedules,
@@ -20,7 +18,6 @@ import {
 import { ScheduleStatus } from "@/types/schedule";
 import { AppointmentStatus } from "@/types/appointment";
 import { User } from "@/types/user";
-import { toast } from "sonner";
 
 type ViewMode = "list" | "details";
 
@@ -301,47 +298,6 @@ export default function DoctorSchedules() {
     }
   };
 
-  const handleStartConsultation = async (appointment: Appointment) => {
-    if (
-      !appointment.userId ||
-      typeof appointment.userId !== "string" ||
-      !appointment.originalSchedule
-    ) {
-      console.error(
-        "Cannot create medical examination: missing patient ID or original schedule."
-      );
-      toast.error(
-        "Cannot create medical examination: missing patient ID or original schedule."
-      );
-      return;
-    }
-
-    try {
-      const examinationData: CreateMedicalExaminationData = {
-        patient: appointment.userId,
-        examinationDate: new Date(appointment.date).toISOString(),
-        symptoms: appointment.symptoms?.split(", ") || [],
-        services: appointment.originalSchedule.services
-          ?.map((s) => s.service as string)
-          .filter((id) => !!id),
-      };
-
-      const newExamination = await medicalExaminationService.create(
-        examinationData
-      );
-      console.log("Successfully created medical examination:", newExamination);
-
-      toast.success("Medical examination created successfully!");
-      refetch();
-      handleCloseRightPanel();
-      setViewMode("details");
-      setSelectedAppointment(appointment);
-    } catch (error) {
-      console.error("Error creating medical examination:", error);
-      toast.error("Failed to create medical examination. Please try again.");
-    }
-  };
-
   const handleCloseRightPanel = () => {
     setSelectedAppointment(null);
     setViewMode("list");
@@ -377,7 +333,6 @@ export default function DoctorSchedules() {
             <AppointmentDetails
               appointment={selectedAppointment}
               onClose={handleCloseRightPanel}
-              onStartConsultation={handleStartConsultation}
               handleExpandRightPanel={handleExpandRightPanel}
               handleCollapseRightPanel={handleCollapseRightPanel}
               rightPanelSize={rightPanelSize}
@@ -440,7 +395,6 @@ export default function DoctorSchedules() {
               appointments={filteredAppointments}
               loading={loading}
               onViewDetails={handleViewDetails}
-              onStartConsultation={handleStartConsultation}
             />
           </div>
         </Panel>
