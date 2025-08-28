@@ -55,6 +55,7 @@ import {
 import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { ScheduleDetails } from "@/components/admin/schedules";
+import { formatScheduleDate, getScheduleDate } from "@/utils/formatters";
 
 export default function AdminSchedulesPage() {
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
@@ -211,13 +212,7 @@ export default function AdminSchedulesPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatDate = (weekPeriod: any, dayOffset: number = 0) => {
     if (!weekPeriod || !weekPeriod.from) return "Invalid Date";
-    const date = new Date(weekPeriod.from);
-    date.setDate(date.getDate() + dayOffset); // Add dayOffset to get actual appointment date
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatScheduleDate(weekPeriod, dayOffset, 'MMM dd, yyyy');
   };
   const formatTimeSlot = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -226,9 +221,8 @@ export default function AdminSchedulesPage() {
     timeOffset: 0 | 1
   ) => {
     if (!weekPeriod || !weekPeriod.from) return "Unknown";
-    const date = new Date(weekPeriod.from);
-    date.setDate(date.getDate() + dayOffset);
-    const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
+    const appointmentDate = getScheduleDate(weekPeriod, dayOffset);
+    const dayName = appointmentDate.toLocaleDateString("en-US", { weekday: "long" });
     const timeSlot = timeOffset === 0 ? "Morning" : "Afternoon";
     return `${dayName} ${timeSlot}`;
   };
@@ -277,7 +271,7 @@ export default function AdminSchedulesPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   {/* Search and Filters */}
-                  <div className="mb-6 flex flex-col lg:flex-row gap-4 items-center justify-between w-full overflow-x-auto">
+                  <div className="mb-6 flex flex-col lg:flex-row gap-4 items-center justify-between w-full overflow-x-auto pb-2">
                     <div className="relative w-full lg:max-w-xs">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                       <Input

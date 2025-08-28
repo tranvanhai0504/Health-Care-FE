@@ -58,9 +58,7 @@ export function ScheduleFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="tomorrow">Tomorrow</SelectItem>
             <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import QRCode from "qrcode";
 import { generatePaymentQrHtml } from "@/utils/paymentQrTemplate";
+import { getScheduleDate } from "@/utils/formatters";
 
 import {
   Calendar,
@@ -70,11 +71,9 @@ interface ScheduleDetailsProps {
   rightPanelSize?: number;
 }
 
-const getScheduleDate = (schedule: ScheduleResponse) => {
+const getScheduleDateFromSchedule = (schedule: ScheduleResponse) => {
   if (!schedule.weekPeriod || !schedule.weekPeriod.from) return new Date();
-  const base = new Date(schedule.weekPeriod.from);
-  base.setDate(base.getDate() + (schedule.dayOffset || 0));
-  return base;
+  return getScheduleDate(schedule.weekPeriod, schedule.dayOffset);
 };
 
 const getStatusBadge = (status: ScheduleStatus) => {
@@ -797,7 +796,7 @@ export function ScheduleDetails({
     );
   }
 
-  const scheduleDate = getScheduleDate(schedule);
+  const scheduleDate = getScheduleDateFromSchedule(schedule);
 
   return (
     <div className="h-full bg-white flex flex-col">
@@ -1091,7 +1090,7 @@ export function ScheduleDetails({
                           key={index}
                           className="bg-gray-50 rounded-lg p-3 border"
                         >
-                          <div className="flex items-start justify-between">
+                          <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="text-sm font-semibold text-gray-900">
@@ -1292,7 +1291,7 @@ export function ScheduleDetails({
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Balance:</span>
+                      <span className="text-sm text-gray-600">Amount left to pay:</span>
                       <span
                         className={`font-semibold ${
                           remainingBalance > 0

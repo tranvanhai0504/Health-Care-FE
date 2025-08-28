@@ -1,33 +1,12 @@
 "use client";
 import React, { useEffect, useState, useTransition } from "react";
 import { scheduleService } from "@/services/schedule.service";
-import { Schedule, ScheduleResponse, ScheduleStatus } from "@/types";
+import { ScheduleResponse, ScheduleStatus } from "@/types";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Calendar,
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Search,
-} from "lucide-react";
-import {
-  format,
-  isFuture,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameDay,
-  addMonths,
-  subMonths,
-  startOfWeek,
-  endOfWeek,
-  isSameMonth,
-} from "date-fns";
 import { Input } from "@/components/ui/input";
+import { Search, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -35,14 +14,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  format,
+} from "date-fns";
 import { cn } from "@/lib/utils";
 import ScheduleDetailModal from "@/components/doctor/schedules/schedule-detail-modal";
+import { getScheduleDate } from "@/utils/formatters";
 
 // Extended interface for schedules with additional details
 interface ScheduleWithDetails extends ScheduleResponse {
   serviceName?: string;
   packageName?: string;
 }
+
+// Helper function to get schedule date from schedule object
+const getScheduleDateFromSchedule = (schedule: ScheduleResponse): Date => {
+  return getScheduleDate(schedule.weekPeriod, schedule.dayOffset);
+};
 
 // Custom Badge component
 const Badge = ({
@@ -88,14 +85,6 @@ const Badge = ({
   );
 };
 
-// Helper function to format schedule date from weekPeriod and dayOffset
-const getScheduleDate = (schedule: Schedule): Date => {
-  const startDate = new Date(schedule.weekPeriod.from);
-  const targetDate = new Date(startDate);
-  targetDate.setDate(startDate.getDate() + schedule.dayOffset);
-  return targetDate;
-};
-
 // Helper function to get time period description
 const getTimePeriodDescription = (timeOffset: 0 | 1): string => {
   return timeOffset === 0
@@ -114,6 +103,7 @@ const SchedulesPage = () => {
   const [selectedSchedule, setSelectedSchedule] =
     useState<ScheduleWithDetails | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSidebarMobile, setShowSidebarMobile] = useState(false);
   const router = useRouter();
 
   // Fetch schedules
@@ -192,7 +182,7 @@ const SchedulesPage = () => {
   // Get schedules for a specific date
   const getSchedulesForDate = (date: Date) => {
     return schedules.filter((schedule) => {
-      const scheduleDate = getScheduleDate(schedule);
+      const scheduleDate = getScheduleDateFromSchedule(schedule);
       return isSameDay(scheduleDate, date);
     });
   };
@@ -234,16 +224,7 @@ const SchedulesPage = () => {
     setSelectedSchedule(null);
   };
 
-  const handleEditSchedule = (scheduleId: string) => {
-    router.push(`/consultations/${scheduleId}/schedule`);
-    handleCloseModal();
-  };
 
-  const handleCancelSchedule = (scheduleId: string) => {
-    // TODO: Implement cancel schedule functionality
-    console.log("Cancel schedule:", scheduleId);
-    handleCloseModal();
-  };
 
   // Calendar navigation
   const goToPreviousMonth = () => {
@@ -272,32 +253,40 @@ const SchedulesPage = () => {
   });
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row h-[100dvh] bg-gray-50">
       {/* Main Calendar Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="w-full md:flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="bg-white border-b px-0 md:px-6 py-3 md:py-4">
+          <div className="flex flex-col gap-2 lg:gap-0 lg:flex-row lg:items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Schedule</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Schedule</h1>
+              <p className="text-gray-600 mt-1 text-sm md:text-base">
                 Manage your appointments and sessions
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={goToToday}>
+            <div className="flex items-center gap-2 md:gap-3">
+              <Button variant="outline" size="sm" onClick={goToToday}>
                 Today
               </Button>
-              <Button onClick={() => router.push("/booking")}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button size="sm" onClick={() => router.push("/booking")}>
+                <Calendar className="h-4 w-4 mr-2" />
                 New Schedule
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setShowSidebarMobile((s) => !s)}
+              >
+                {showSidebarMobile ? "Hide Details" : "Day Details"}
               </Button>
             </div>
           </div>
         </div>
 
         {/* Calendar Navigation */}
-        <div className="bg-white border-b px-6 py-4">
+        <div className="bg-white border-b px-0 md:px-6 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -309,10 +298,10 @@ const SchedulesPage = () => {
                 </Button>
               </div>
               <div>
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-lg md:text-xl font-semibold">
                   {format(currentMonth, "MMMM yyyy")}
                 </h2>
-                <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                <div className="hidden md:flex items-center gap-4 mt-1 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-500 to-green-700 border border-green-400"></div>
                     <span>Today</span>
@@ -328,7 +317,7 @@ const SchedulesPage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
               <span>
                 {selectedDateSchedules.length} schedule
                 {selectedDateSchedules.length !== 1 ? "s" : ""} on{" "}
@@ -356,13 +345,13 @@ const SchedulesPage = () => {
 
         {/* Calendar Grid */}
         <div className="flex-1 bg-white">
-          <div className="p-6">
+          <div className="py-4 md:p-6 overflow-x-auto md:overflow-visible">
             {/* Day headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-1 mb-2 w-full md:min-w-0">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div
                   key={day}
-                  className="p-2 text-sm font-medium text-gray-500 text-center"
+                  className="p-2 text-xs md:text-sm font-medium text-gray-500 text-center"
                 >
                   {day}
                 </div>
@@ -370,7 +359,7 @@ const SchedulesPage = () => {
             </div>
 
             {/* Calendar days */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1 w-full md:min-w-0">
               {calendarDays.map((day, dayIdx) => {
                 const daySchedules = getSchedulesForDate(day);
                 const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -382,7 +371,7 @@ const SchedulesPage = () => {
                     key={dayIdx}
                     onClick={() => setSelectedDate(day)}
                     className={cn(
-                      "min-h-[100px] p-2 border border-gray-100 text-left transition-all duration-200 relative group",
+                      "min-h-[70px] lg:min-h-[100px] p-2 border border-gray-100 text-left transition-all duration-200 relative group",
                       isSelected && "bg-blue-50 border-blue-200 shadow-sm",
                       !isCurrentMonth && "text-gray-300 bg-gray-50/50",
                       isToday &&
@@ -399,7 +388,7 @@ const SchedulesPage = () => {
                   >
                     <div
                       className={cn(
-                        "text-sm font-semibold mb-1 transition-colors duration-200",
+                        "text-xs md:text-sm font-semibold mb-1 transition-colors duration-200",
                         isToday && "text-green-700",
                         isSelected && "text-blue-700",
                         !isToday &&
@@ -422,7 +411,7 @@ const SchedulesPage = () => {
                       <div className="flex justify-center mt-1">
                         <div
                           className={cn(
-                            "relative w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border-2 transition-all duration-200 hover:scale-110",
+                            "relative size-5 lg:size-7 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border-2 transition-all duration-200 hover:scale-110",
                             isSelected
                               ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white border-blue-400 shadow-blue-200"
                               : isToday
@@ -455,7 +444,13 @@ const SchedulesPage = () => {
       </div>
 
       {/* Right Sidebar */}
-      <div className="w-96 bg-white border-l flex flex-col">
+      <div
+        className={cn(
+          "bg-white border-l md:border-l flex flex-col",
+          "w-full md:w-96",
+          showSidebarMobile ? "flex" : "hidden md:flex"
+        )}
+      >
         {/* Sidebar Header */}
         <div className="border-b p-4">
           <h3 className="font-semibold text-lg mb-3">
@@ -520,29 +515,30 @@ const SchedulesPage = () => {
                 className="mt-3"
                 onClick={() => router.push("/booking")}
               >
-                <Plus className="h-4 w-4 mr-1" />
+                <Calendar className="h-4 w-4 mr-1" />
                 Add Schedule
+                
               </Button>
             </div>
           ) : (
             <div className="p-4 space-y-3">
               {getFilteredSchedules()
                 .filter((schedule) =>
-                  isSameDay(getScheduleDate(schedule), selectedDate)
+                  isSameDay(getScheduleDateFromSchedule(schedule), selectedDate)
                 )
                 .map((schedule) => (
-                  <Card
+                  <div
                     key={schedule._id}
-                    className="hover:shadow-md transition-shadow cursor-pointer"
+                    className="hover:shadow-md transition-shadow cursor-pointer rounded-lg"
                   >
-                    <CardContent className="p-4">
+                    <div className="p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h4 className="font-medium text-sm mb-1">
                             {schedule.packageName || "Medical Consultation"}
                           </h4>
                           <div className="flex items-center text-xs text-gray-500 mb-2">
-                            <Clock className="h-3 w-3 mr-1" />
+                            <Calendar className="h-3 w-3 mr-1" />
                             {getTimePeriodDescription(schedule.timeOffset)}
                           </div>
                         </div>
@@ -562,23 +558,11 @@ const SchedulesPage = () => {
                           >
                             View
                           </Button>
-                          {(schedule.status === ScheduleStatus.CONFIRMED ||
-                            schedule.status === ScheduleStatus.CHECKEDIN) &&
-                            isFuture(getScheduleDate(schedule)) && (
-                              <Button
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() =>
-                                  handleEditSchedule(schedule._id!)
-                                }
-                              >
-                                Reschedule
-                              </Button>
-                            )}
+
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
             </div>
           )}
@@ -597,6 +581,11 @@ const SchedulesPage = () => {
           >
             View All Schedules
           </Button>
+          <div className="md:hidden mt-3">
+            <Button variant="ghost" className="w-full" onClick={() => setShowSidebarMobile(false)}>
+              Close
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -606,8 +595,6 @@ const SchedulesPage = () => {
         packageName={selectedSchedule?.packageName}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onEdit={handleEditSchedule}
-        onCancel={handleCancelSchedule}
       />
     </div>
   );

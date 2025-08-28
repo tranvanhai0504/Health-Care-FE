@@ -32,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { roomService } from "@/services/room.service";
 
 interface SearchServiceProps {
   isOpen: boolean;
@@ -208,7 +209,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
   };
 
   // Handle service selection
-  const handleServiceSelect = (service: ConsultationService) => {
+  const handleServiceSelect = async (service: ConsultationService) => {
     if (multiple) {
       const newSelectedIds = new Set(selectedIds);
       const newSelectedServices = [...selectedServices];
@@ -221,10 +222,21 @@ const SearchService: React.FC<SearchServiceProps> = ({
         if (index > -1) newSelectedServices.splice(index, 1);
       } else {
         newSelectedIds.add(service._id);
-        newSelectedServices.push(service);
+
+        const room = await roomService.getById(service.room!);
+
+        const newServiceWithFields = {
+          ...service,
+          specialization: specialties.find(
+            (specialty) => specialty._id === service.specialization
+          ),
+          roomDetail: room,
+        };
+        newSelectedServices.push(newServiceWithFields);
       }
 
       setSelectedIds(newSelectedIds);
+
       setSelectedServices(newSelectedServices);
     } else {
       setSelectedIds(new Set([service._id]));
@@ -380,7 +392,11 @@ const SearchService: React.FC<SearchServiceProps> = ({
               {service.specialization &&
                 typeof service.specialization === "string" && (
                   <span className="px-1.5 py-0.5 bg-gray-100 rounded text-xs truncate">
-                    {service.specialization}
+                    {
+                      specialties.find(
+                        (specialty) => specialty._id === service.specialization
+                      )?.name
+                    }
                   </span>
                 )}
             </div>

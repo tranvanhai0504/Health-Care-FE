@@ -95,14 +95,14 @@ export function AppointmentCard({
               <Badge
                 className={`${getTypeColor(
                   appointment.type
-                )} text-xs px-2 py-0.5`}
+                )} text-xs px-2 py-0.5 hover:bg-primary/10`}
               >
                 {appointment.type}
               </Badge>
               <Badge
                 className={`${getStatusColor(
                   appointment.status
-                )} text-xs px-2 py-0.5`}
+                )} text-xs px-2 py-0.5 hover:bg-primary/10`}
               >
                 {appointment.status}
               </Badge>

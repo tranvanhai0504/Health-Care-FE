@@ -22,6 +22,12 @@ export * from './image';
 // Medical examination types
 export * from './medicalExamination';
 
+// Medicine types
+export * from './medicine';
+
+// Medication types
+export * from './medication';
+
 // Package types
 export * from './package';
 

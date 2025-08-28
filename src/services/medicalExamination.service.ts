@@ -7,7 +7,8 @@ import {
   PopulatedMedicalExamination,
   CreateMedicalExaminationData,
   UpdateMedicalExaminationData,
-  MedicalExaminationGetManyParams
+  MedicalExaminationGetManyParams,
+  CreateFollowUpRequest
 } from '@/types';
 
 export class MedicalExaminationService extends BaseService<MedicalExamination> {
@@ -235,6 +236,25 @@ export class MedicalExaminationService extends BaseService<MedicalExamination> {
     };
 
     return this.getWithAdvancedFilter(filter, { page, limit });
+  }
+
+  /**
+   * Create a follow-up for a medical examination result
+   * POST /followup/:id
+   * Auth: Required | Role: DOCTOR only (assumed)
+   * @param id - Medical examination result ID
+   * @param data - Follow-up request payload
+   * @returns Promise with updated medical examination (server returns status+data)
+   */
+  async createFollowUp(
+    id: string,
+    data: CreateFollowUpRequest
+  ): Promise<MedicalExamination> {
+    const response = await api.put<ApiResponse<MedicalExamination>>(
+      `${this.basePath}/followup/${id}`,
+      data
+    );
+    return response.data.data;
   }
 }
 

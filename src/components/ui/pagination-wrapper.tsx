@@ -103,7 +103,7 @@ export function PaginationWrapper({
   // if (totalPages <= 1) return null;
 
   return (
-    <div className={`space-y-4 mt-8 pt-6 border-t ${className || ''}`}>
+    <div className={`space-y-4 border-t ${className || ''}`}>
       {/* Top row: Items per page and results summary */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         {showItemsPerPage && (

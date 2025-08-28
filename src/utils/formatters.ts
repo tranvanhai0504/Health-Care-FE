@@ -92,4 +92,46 @@ export const formatDateTime = (dateString: string): string => {
     console.warn('Failed to format datetime:', dateString, error);
     return dateString;
   }
+};
+
+/**
+ * Calculate the actual date from weekPeriod and dayOffset
+ * @param weekPeriod - Object containing from and to dates
+ * @param dayOffset - Day offset from week start (0 = Sunday, 1 = Monday, etc.)
+ * @returns Date object representing the actual appointment date in UTC+7
+ */
+export const getScheduleDate = (weekPeriod: { from: string | Date; to: string | Date }, dayOffset: number): Date => {
+  try {
+    // Parse the week start date
+    const weekStart = typeof weekPeriod.from === 'string' ? new Date(weekPeriod.from) : weekPeriod.from;
+    
+    // Add the day offset to get the actual appointment date
+    const appointmentDate = new Date(weekStart);
+    appointmentDate.setDate(weekStart.getDate() + dayOffset);
+    
+    // Convert to UTC+7 by adding 7 hours
+    const utcPlus7Date = new Date(appointmentDate.getTime() + (7 * 60 * 60 * 1000));
+    
+    return utcPlus7Date;
+  } catch (error) {
+    console.warn('Failed to calculate schedule date:', error);
+    return new Date();
+  }
+};
+
+/**
+ * Format schedule date from weekPeriod and dayOffset
+ * @param weekPeriod - Object containing from and to dates
+ * @param dayOffset - Day offset from week start (0 = Sunday, 1 = Monday, etc.)
+ * @param formatString - Optional format string (default: 'MMM dd, yyyy')
+ * @returns Formatted date string in UTC+7
+ */
+export const formatScheduleDate = (weekPeriod: { from: string | Date; to: string | Date }, dayOffset: number, formatString: string = 'MMM dd, yyyy'): string => {
+  try {
+    const appointmentDate = getScheduleDate(weekPeriod, dayOffset);
+    return format(appointmentDate, formatString);
+  } catch (error) {
+    console.warn('Failed to format schedule date:', error);
+    return 'Invalid Date';
+  }
 }; 

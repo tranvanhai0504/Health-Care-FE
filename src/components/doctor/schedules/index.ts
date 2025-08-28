@@ -3,7 +3,6 @@ export { ScheduleFilters } from './ScheduleFilters';
 export { AppointmentCard } from './AppointmentCard';
 export { AppointmentList } from './AppointmentList';
 export { AppointmentDetails } from './AppointmentDetails';
-export { MedicalExaminationForm } from './MedicalExaminationForm';
 export { PrescriptionForm } from './PrescriptionForm';
 export { ScheduleManager } from './ScheduleManager';
 

@@ -18,6 +18,15 @@ import { medicalExaminationService } from "@/services/medicalExamination.service
 
 import { useToast } from "@/hooks/useToast";
 import React from "react";
+import { Switch } from "@/components/ui/switch";
+import SearchService from "@/components/dialogs/search-service";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import {
   ClipboardList,
@@ -28,25 +37,84 @@ import {
   XCircle,
   Save,
 } from "lucide-react";
+import { scheduleService } from "@/services/schedule.service";
+import { getScheduleDate } from "@/utils";
 
 interface MedicalExaminationDetailsProps {
   examination: PopulatedMedicalExamination;
   onUpdate: (updatedExamination: PopulatedMedicalExamination) => void;
   doctorProfile: DoctorWithPopulatedData;
+  disabled?: boolean;
 }
 
 export function MedicalExaminationDetails({
   examination,
   onUpdate,
   doctorProfile,
+  disabled = false,
 }: MedicalExaminationDetailsProps) {
   const { toast } = useToast();
-
   const [services, setServices] = useState<ConsultationService[]>([]);
-
   const [isLoading, setIsLoading] = useState(true);
-
   const [formData, setFormData] = useState<UpdateMedicalExaminationData>({});
+
+  // Follow-up local UI state
+  const [followUpEnabled, setFollowUpEnabled] = useState<boolean>(
+    !!examination.followUp
+  );
+  const [followUpNotes, setFollowUpNotes] = useState<string>(
+    examination.followUp?.notes || ""
+  );
+  const [followUpDate, setFollowUpDate] = useState<string>(""); // YYYY-MM-DD
+  const [followUpTimeOffset, setFollowUpTimeOffset] = useState<"0" | "1">("0");
+  const [followUpServiceDialogOpen, setFollowUpServiceDialogOpen] =
+    useState(false);
+  const [followUpSelectedServices, setFollowUpSelectedServices] = useState<
+    ConsultationService[]
+  >([]);
+  const [isEditingFollowUp, setIsEditingFollowUp] = useState<boolean>(false);
+  const [existingFollowUpData, setExistingFollowUpData] = useState<{
+    date: string;
+    timeOffset: "0" | "1";
+    services: ConsultationService[];
+    notes: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchFollowUp = async () => {
+      if (examination.followUp) {
+        const scheduleFollowUp = await scheduleService.getById(
+          examination.followUp.schedule as string
+        );
+
+        setFollowUpEnabled(true);
+        setFollowUpNotes(examination.followUp.notes || "");
+        const date = getScheduleDate(
+          scheduleFollowUp.weekPeriod,
+          scheduleFollowUp.dayOffset
+        );
+
+        const followUpDateStr = date.toISOString() || "";
+        setFollowUpDate(followUpDateStr);
+        setFollowUpTimeOffset(
+          scheduleFollowUp.timeOffset.toString() as "0" | "1"
+        );
+        const followUpServices =
+          scheduleFollowUp.services?.map((s) => s.service) || [];
+        setFollowUpSelectedServices(followUpServices);
+
+        // Store existing follow-up data for display
+        setExistingFollowUpData({
+          date: followUpDateStr,
+          timeOffset: scheduleFollowUp.timeOffset.toString() as "0" | "1",
+          services: followUpServices,
+          notes: examination.followUp.notes || "",
+        });
+      }
+    };
+
+    fetchFollowUp();
+  }, [examination.followUp]);
 
   useEffect(() => {
     const initializeFormData = async () => {
@@ -108,8 +176,6 @@ export function MedicalExaminationDetails({
   }, [examination]);
   const [isSaving, setIsSaving] = useState(false);
 
-  console.log("formData", formData);
-
   const handleSymptomChange = (index: number, value: string) => {
     const newSymptoms = [...(formData.symptoms || [])];
     newSymptoms[index] = value;
@@ -157,15 +223,7 @@ export function MedicalExaminationDetails({
     newDiagnosis.splice(index, 1);
     setFormData((prev) => ({ ...prev, finalDiagnosis: newDiagnosis }));
   };
-  const handleFollowUpChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      followUp: { ...(prev.followUp || {}), [name]: value },
-    }));
-  };
+  // Removed old generic follow-up change handler in favor of explicit local state
 
   const handleSubclinicalResultChange = (
     index: number,
@@ -186,7 +244,7 @@ export function MedicalExaminationDetails({
   const handleSave = async (serviceIndex?: number) => {
     setIsSaving(true);
     try {
-      let updateData: UpdateMedicalExaminationData = formData;
+      let updateData: UpdateMedicalExaminationData = structuredClone(formData);
 
       if (
         typeof serviceIndex === "number" &&
@@ -197,7 +255,76 @@ export function MedicalExaminationDetails({
         };
       }
 
+      delete updateData.followUp;
+
       await medicalExaminationService.update(examination._id, updateData);
+
+      // Handle follow-up creation when enabled
+      if (followUpEnabled) {
+        if (!formData.followUp?.schedule) {
+          const patientId =
+            typeof examination.patient === "string"
+              ? examination.patient
+              : examination.patient?._id;
+
+          let weekFromISO: string | undefined = undefined;
+          let weekToISO: string | undefined = undefined;
+          let dayOffset: number | undefined = undefined;
+          if (followUpDate) {
+            const selected = new Date(followUpDate);
+            const weekPeriod = scheduleService.getWeekPeriod(selected);
+            weekFromISO = weekPeriod.from.toISOString();
+            weekToISO = weekPeriod.to.toISOString();
+            // derive dayOffset based on UTC difference from week start
+            dayOffset = Math.floor(
+              (selected.getTime() - weekPeriod.from.getTime()) /
+                (24 * 60 * 60 * 1000)
+            );
+          }
+
+          await medicalExaminationService.createFollowUp(examination._id, {
+            notes: followUpNotes || undefined,
+            schedule: {
+              userId: patientId as string,
+              dayOffset: dayOffset ?? 0,
+              timeOffset: parseInt(followUpTimeOffset, 10),
+              services: followUpSelectedServices.map((s) => s._id),
+              weekPeriod:
+                weekFromISO && weekToISO
+                  ? { from: weekFromISO, to: weekToISO }
+                  : undefined,
+            },
+          });
+        } else {
+          let weekFromISO: Date | undefined = undefined;
+          let weekToISO: Date | undefined = undefined;
+          let dayOffset: number | undefined = undefined;
+          if (followUpDate) {
+            const selected = new Date(followUpDate);
+            const weekPeriod = scheduleService.getWeekPeriod(selected);
+            weekFromISO = weekPeriod.from;
+            weekToISO = weekPeriod.to;
+            // derive dayOffset based on UTC difference from week start
+            dayOffset = Math.floor(
+              (selected.getTime() - weekPeriod.from.getTime()) /
+                (24 * 60 * 60 * 1000)
+            );
+          }
+
+          await scheduleService.update(formData.followUp?.schedule as string, {
+            weekPeriod:
+              weekFromISO && weekToISO
+                ? { from: weekFromISO, to: weekToISO }
+                : undefined,
+            dayOffset: dayOffset ?? 0,
+            timeOffset: parseInt(followUpTimeOffset, 10) as 0 | 1,
+            services: followUpSelectedServices.map((s) => s._id),
+          });
+        }
+
+        setIsEditingFollowUp(false);
+      }
+
       const updatedExamination =
         await medicalExaminationService.getByIdPopulated(examination._id);
       onUpdate(updatedExamination);
@@ -231,6 +358,7 @@ export function MedicalExaminationDetails({
                   value={symptom}
                   onChange={(e) => handleSymptomChange(index, e.target.value)}
                   placeholder={`Symptom #${index + 1}`}
+                  disabled={disabled}
                 />
                 <Button
                   type="button"
@@ -254,6 +382,7 @@ export function MedicalExaminationDetails({
             size="sm"
             onClick={addSymptom}
             className="flex items-center gap-2"
+            disabled={disabled}
           >
             <PlusCircle className="w-4 h-4" />
             Add Symptom
@@ -286,7 +415,7 @@ export function MedicalExaminationDetails({
 
               const isAuthor = result.performedBy === doctorProfile?._id;
               const isNew = !result.performedBy;
-              const canEdit = (isNew && canEditBySpecialization) || isAuthor;
+              const canEdit = ((isNew && canEditBySpecialization) || isAuthor) && !disabled;
 
               return (
                 <div
@@ -368,6 +497,7 @@ export function MedicalExaminationDetails({
                     value={diag.icdCode}
                     onChange={(e) => handleDiagnosisChange(e, index)}
                     placeholder={`ICD-10 Code #${index + 1}`}
+                    disabled={disabled}
                   />
                   <Button
                     type="button"
@@ -379,12 +509,13 @@ export function MedicalExaminationDetails({
                     <XCircle className="w-5 h-5" />
                   </Button>
                 </div>
-                <Textarea
-                  name="description"
-                  value={diag.description}
-                  onChange={(e) => handleDiagnosisChange(e, index)}
-                  placeholder={`Description #${index + 1}`}
-                />
+                                  <Textarea
+                    name="description"
+                    value={diag.description}
+                    onChange={(e) => handleDiagnosisChange(e, index)}
+                    placeholder={`Description #${index + 1}`}
+                    disabled={disabled}
+                  />
               </div>
             ))
           ) : (
@@ -398,6 +529,7 @@ export function MedicalExaminationDetails({
             size="sm"
             onClick={addDiagnosis}
             className="flex items-center gap-2"
+            disabled={disabled}
           >
             <PlusCircle className="w-4 h-4" />
             Add Diagnosis
@@ -411,35 +543,197 @@ export function MedicalExaminationDetails({
           Follow-Up
         </h3>
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="nextVisit">Next Visit</Label>
-            <Input
-              id="nextVisit"
-              name="nextVisit"
-              type="date"
-              className="w-fit mt-2"
-              value={formData.followUp?.nextVisit?.split("T")[0] || ""}
-              onChange={handleFollowUpChange}
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={followUpEnabled}
+              onCheckedChange={(checked) => setFollowUpEnabled(!!checked)}
+              disabled={disabled}
             />
+            <span className="text-sm">Enable follow-up</span>
           </div>
-          <div>
-            <Label htmlFor="followUpNotes">Notes</Label>
-            <Textarea
-              id="followUpNotes"
-              name="notes"
-              className="w-fit mt-2"
-              value={formData.followUp?.notes || ""}
-              onChange={handleFollowUpChange}
-              placeholder="Follow-up notes"
-            />
-          </div>
+
+          {followUpEnabled && (
+            <>
+              {/* Information Board for existing follow-up */}
+              {existingFollowUpData && !isEditingFollowUp ? (
+                <div className="space-y-4 p-4 border rounded-md bg-blue-50/50">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-primary">
+                      Follow-up Information
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingFollowUp(true)}
+                      className="text-primary border-primary hover:bg-primary/10"
+                      disabled={disabled}
+                    >
+                      Edit Follow-up
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-primary">
+                        Date
+                      </Label>
+                      <p className="text-sm text-primary mt-1">
+                        {new Date(
+                          existingFollowUpData.date
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-primary">
+                        Time
+                      </Label>
+                      <p className="text-sm text-primary mt-1">
+                        {existingFollowUpData.timeOffset === "0"
+                          ? "Morning"
+                          : "Afternoon"}
+                      </p>
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-sm font-medium text-primary">
+                        Services
+                      </Label>
+                      <div className="mt-1 space-y-2">
+                        {existingFollowUpData.services.length > 0 ? (
+                          existingFollowUpData.services.map(
+                            (service, index) => (
+                              <div
+                                key={index}
+                                className="bg-white p-2 rounded border border-gray-200"
+                              >
+                                <p className="text-sm font-medium text-primary">
+                                  {service.name}
+                                </p>
+                                {service.description && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {service.description}
+                                  </p>
+                                )}
+                              </div>
+                            )
+                          )
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No services selected
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {existingFollowUpData.notes && (
+                    <div>
+                      <Label className="text-sm font-medium text-primary">
+                        Notes
+                      </Label>
+                      <p className="text-sm text-primary mt-1 bg-white p-2 rounded border">
+                        {existingFollowUpData.notes}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Edit Form */
+                <div className="space-y-4 p-4 border rounded-md bg-gray-50/50">
+                  {existingFollowUpData && (
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-semibold">Edit Follow-up</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingFollowUp(false)}
+                        className="text-gray-600 hover:text-gray-800"
+                      >
+                        Cancel Edit
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="followUpDate">Date</Label>
+                      <Input
+                        id="followUpDate"
+                        type="date"
+                        className="mt-2"
+                        value={followUpDate.split("T")[0]}
+                        onChange={(e) => setFollowUpDate(e.target.value)}
+                        disabled={disabled}
+                      />
+                    </div>
+                    <div>
+                      <Label>Time</Label>
+                                              <Select
+                          value={followUpTimeOffset}
+                          onValueChange={(v) =>
+                            setFollowUpTimeOffset(v as "0" | "1")
+                          }
+                          disabled={disabled}
+                        >
+                        <SelectTrigger className="mt-2">
+                          <SelectValue placeholder="Select time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Morning</SelectItem>
+                          <SelectItem value="1">Afternoon</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Services</Label>
+                      <div className="mt-2">
+                        <SearchService
+                          isOpen={followUpServiceDialogOpen}
+                          onOpenChange={setFollowUpServiceDialogOpen}
+                          onApply={(selected) =>
+                            setFollowUpSelectedServices(selected)
+                          }
+                          multiple={true}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              type="button"
+                              className="w-full justify-between"
+                            >
+                              {followUpSelectedServices.length > 0
+                                ? `${followUpSelectedServices.length} service(s) selected`
+                                : "Select services"}
+                            </Button>
+                          }
+                          initialSelectedIds={followUpSelectedServices.map(
+                            (s) => s._id
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="followUpNotes">Notes</Label>
+                                      <Textarea
+                    id="followUpNotes"
+                    className="mt-2"
+                    value={followUpNotes}
+                    onChange={(e) => setFollowUpNotes(e.target.value)}
+                    placeholder="Follow-up notes"
+                    disabled={disabled}
+                  />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
       <div className="mt-6">
         <Button
           onClick={() => handleSave()}
-          disabled={isSaving}
+          disabled={isSaving || disabled}
           className="w-full flex items-center gap-2"
         >
           <Save className="w-4 h-4" />

@@ -193,7 +193,7 @@ function BookingPageContent() {
     setBookingInProgress(true);
 
     try {
-      // Calculate week period and day offset
+      // Calculate week period and day offset (UTC-based)
       const weekPeriod = scheduleService.getWeekPeriod(selectedDate);
       const dayOffset = scheduleService.getDayOffset(selectedDate);
       const timeOffset = selectedTimePeriod.id === "morning" ? 0 : 1;

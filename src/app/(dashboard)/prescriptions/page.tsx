@@ -2,28 +2,315 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { prescriptionService } from "@/services";
-import { Prescription } from "@/types";
+import { prescriptionService, userService, medicineService } from "@/services";
+import { Prescription, User, Medicine } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Search,
   FileText,
   Calendar,
-  User,
   Pill,
-  Clock,
   AlertCircle,
-  CheckCircle,
-  X,
   Loader2,
   LogIn,
+  Stethoscope,
+  DollarSign,
+  User as UserIcon,
+  Phone,
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+
+interface PrescriptionDetailModalProps {
+  prescription: Prescription | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+function PrescriptionDetailModal({ prescription, isOpen, onClose }: PrescriptionDetailModalProps) {
+  const [doctorUser, setDoctorUser] = useState<User | null>(null);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [isLoadingDoctor, setIsLoadingDoctor] = useState(false);
+  const [isLoadingMedicines, setIsLoadingMedicines] = useState(false);
+
+  useEffect(() => {
+    if (prescription && isOpen) {
+      fetchDoctorUserInfo();
+      fetchMedicineInfo();
+    }
+  }, [prescription, isOpen]);
+
+  const fetchDoctorUserInfo = async () => {
+    if (!prescription || typeof prescription.doctor === 'string') return;
+    
+    setIsLoadingDoctor(true);
+    try {
+      const doctorUserData = await userService.getById(prescription.doctor.user);
+      setDoctorUser(doctorUserData);
+    } catch (error) {
+      console.error("Error fetching doctor user info:", error);
+    } finally {
+      setIsLoadingDoctor(false);
+    }
+  };
+
+  const fetchMedicineInfo = async () => {
+    if (!prescription) return;
+    
+    setIsLoadingMedicines(true);
+    try {
+      const medicineIds = prescription.medications.map(med => med.medicine);
+      console.log('Debug - Fetching medicines for IDs:', medicineIds);
+      
+      const medicinePromises = medicineIds.map(async (id) => {
+        try {
+          console.log(`Debug - Fetching medicine with ID: ${id}`);
+          const result = await medicineService.getById(id);
+          console.log(`Debug - Medicine ${id} result:`, result);
+          return result;
+        } catch (error) {
+          console.error(`Error fetching medicine ${id}:`, error);
+          return null; // Return null for failed requests
+        }
+      });
+      
+      const medicineData: (Medicine | null)[] = await Promise.all(medicinePromises);
+      console.log('Debug - All medicine data:', medicineData);
+      
+      // Filter out null values (failed requests)
+      const validMedicines = medicineData.filter((medicine): medicine is Medicine => medicine !== null);
+      console.log('Debug - Valid medicines:', validMedicines);
+      
+      setMedicines(validMedicines);
+    } catch (error) {
+      console.error("Error fetching medicine info:", error);
+      setMedicines([]);
+    } finally {
+      setIsLoadingMedicines(false);
+    }
+  };
+
+  if (!prescription) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+                     <DialogTitle className="flex items-center gap-2">
+             <Pill className="h-5 w-5 text-primary" />
+             Prescription Details
+           </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs font-medium text-gray-600">Date Issued</p>
+                <p className="text-sm text-gray-900">
+                  {format(new Date(prescription.dateIssued), "PPP")}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-gray-500" />
+              <div>
+                <p className="text-xs font-medium text-gray-600">Total Cost</p>
+                <p className="text-sm text-gray-900">
+                  {prescription.totalCost.toLocaleString()} VND
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Doctor Information */}
+          <div className="border border-gray-200 rounded-lg p-4">
+                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+               <Stethoscope className="h-5 w-5 text-primary" />
+               Doctor Information
+             </h3>
+            {typeof prescription.doctor === 'string' ? (
+              <p className="text-gray-500">Doctor ID: {prescription.doctor}</p>
+            ) : (
+              <div className="space-y-4">
+                {/* Doctor User Info */}
+                {isLoadingDoctor ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-gray-500">Loading doctor information...</span>
+                  </div>
+                ) : doctorUser ? (
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-primary/5 rounded-lg">
+                   <div className="flex items-center gap-2">
+                     <UserIcon className="h-4 w-4 text-primary" />
+                     <div>
+                       <p className="text-xs font-medium text-gray-600">Name</p>
+                       <p className="text-sm text-gray-900 font-medium">{doctorUser.name}</p>
+                     </div>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <Phone className="h-4 w-4 text-primary" />
+                     <div>
+                       <p className="text-xs font-medium text-gray-600">Phone</p>
+                       <p className="text-sm text-gray-900 font-medium">{doctorUser.phoneNumber}</p>
+                     </div>
+                   </div>
+                 </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Unable to load doctor information</p>
+                )}
+
+                {/* Doctor Professional Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Experience</p>
+                    <p className="text-gray-900">{prescription.doctor.experience} years</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Consultation Fee</p>
+                    <p className="text-gray-900">{prescription.doctor.consultationFee.toLocaleString()} VND</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-gray-700">Qualifications</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {prescription.doctor.qualifications.map((qual, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {qual}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  {prescription.doctor.bio && prescription.doctor.bio !== 'undefined' && (
+                    <div className="md:col-span-2">
+                      <p className="text-sm font-medium text-gray-700">Bio</p>
+                      <p className="text-gray-900">{prescription.doctor.bio}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Diagnosis */}
+          <div className="border border-gray-200 rounded-lg p-4">
+                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+               <FileText className="h-5 w-5 text-primary" />
+               Diagnosis
+             </h3>
+             <p className="text-gray-900 bg-primary/5 p-3 rounded-md">
+               {prescription.diagnosis}
+             </p>
+          </div>
+
+          {/* Notes */}
+          {prescription.notes && (
+            <div className="border border-gray-200 rounded-lg p-4">
+                           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+               <AlertCircle className="h-5 w-5 text-primary" />
+               Notes
+             </h3>
+             <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+               {prescription.notes}
+             </p>
+            </div>
+          )}
+
+          {/* Medications */}
+          <div className="border border-gray-200 rounded-lg p-4">
+                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+               <Pill className="h-5 w-5 text-primary" />
+               Medications ({prescription.medications.length})
+             </h3>
+                         {isLoadingMedicines ? (
+               <div className="flex items-center gap-2">
+                 <Loader2 className="h-4 w-4 animate-spin" />
+                 <span className="text-sm text-gray-500">Loading medicine information...</span>
+               </div>
+             ) : (
+               <div className="overflow-x-auto">
+                 <table className="w-full text-sm">
+                   <thead>
+                     <tr className="border-b border-gray-200">
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Medicine</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Dosage</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Form</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Route</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Quantity</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Frequency</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">Duration</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {prescription.medications.map((medication, index) => {
+                       const medicine = medicines.find(m => m && m._id === medication.medicine);
+                       return (
+                         <tr key={index} className="border-b border-gray-100 hover:bg-gray-50/50">
+                           <td className="py-3 px-3">
+                             <div className="font-medium text-gray-900">
+                               {medicine ? medicine.name : `Medicine ${index + 1}`}
+                             </div>
+                             {!medicine && (
+                               <div className="text-xs text-yellow-600 mt-1">
+                                 ID: {medication.medicine}
+                               </div>
+                             )}
+                           </td>
+                           <td className="py-3 px-3 text-gray-700">
+                             {medicine ? medicine.dosage : '-'}
+                           </td>
+                           <td className="py-3 px-3 text-gray-700">
+                             {medicine ? medicine.form : '-'}
+                           </td>
+                           <td className="py-3 px-3 text-gray-700">
+                             {medicine ? medicine.route : '-'}
+                           </td>
+                           <td className="py-3 px-3">
+                             <Badge variant="outline" className="text-xs">
+                               {medication.quantity}
+                             </Badge>
+                           </td>
+                           <td className="py-3 px-3 text-gray-700">
+                             {medication.frequency || '-'}
+                           </td>
+                           <td className="py-3 px-3 text-gray-700">
+                             {medication.duration || '-'}
+                           </td>
+                         </tr>
+                       );
+                     })}
+                   </tbody>
+                 </table>
+               </div>
+             )}
+          </div>
+
+          {/* Payment Status */}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
+            <Badge
+              variant={prescription.isPaid ? "default" : "secondary"}
+              className={prescription.isPaid ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
+            >
+              {prescription.isPaid ? "Paid" : "Pending Payment"}
+            </Badge>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function PrescriptionsPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -31,6 +318,8 @@ export default function PrescriptionsPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredPrescriptions, setFilteredPrescriptions] = useState<Prescription[]>([]);
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Fetch prescriptions when component mounts and user is authenticated
   useEffect(() => {
@@ -47,9 +336,6 @@ export default function PrescriptionsPage() {
     } else {
       const filtered = prescriptions.filter((prescription) =>
         prescription.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prescription.medications.some(med => 
-          med.name.toLowerCase().includes(searchTerm.toLowerCase())
-        ) ||
         prescription.notes?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPrescriptions(filtered);
@@ -72,64 +358,14 @@ export default function PrescriptionsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
-        label: "Pending",
-        className: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        icon: Clock,
-      },
-      dispensed: {
-        label: "Dispensed",
-        className: "bg-green-100 text-green-800 border-green-200",
-        icon: CheckCircle,
-      },
-      cancelled: {
-        label: "Cancelled",
-        className: "bg-red-100 text-red-800 border-red-200",
-        icon: X,
-      },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    const IconComponent = config.icon;
-
-    return (
-      <Badge className={`${config.className} px-2 py-1 text-xs font-medium flex items-center gap-1`}>
-        <IconComponent className="h-3 w-3" />
-        {config.label}
-      </Badge>
-    );
+  const handlePrescriptionClick = (prescription: Prescription) => {
+    setSelectedPrescription(prescription);
+    setIsDetailModalOpen(true);
   };
 
-  const getPaymentStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
-        label: "Pending",
-        className: "bg-orange-100 text-orange-800 border-orange-200",
-        icon: Clock,
-      },
-      paid: {
-        label: "Paid",
-        className: "bg-green-100 text-green-800 border-green-200",
-        icon: CheckCircle,
-      },
-      cancelled: {
-        label: "Cancelled",
-        className: "bg-red-100 text-red-800 border-red-200",
-        icon: X,
-      },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    const IconComponent = config.icon;
-
-    return (
-      <Badge className={`${config.className} px-2 py-1 text-xs font-medium flex items-center gap-1`}>
-        <IconComponent className="h-3 w-3" />
-        {config.label}
-      </Badge>
-    );
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedPrescription(null);
   };
 
   // Show loading state while checking authentication
@@ -162,10 +398,10 @@ export default function PrescriptionsPage() {
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto">
-        <div className="max-w-md mx-auto text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn className="h-8 w-8 text-blue-600" />
-          </div>
+                 <div className="max-w-md mx-auto text-center">
+           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+             <LogIn className="h-8 w-8 text-primary" />
+           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Access Your Prescriptions
           </h1>
@@ -190,9 +426,9 @@ export default function PrescriptionsPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <FileText className="h-5 w-5 text-blue-600" />
-          </div>
+                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+             <FileText className="h-5 w-5 text-primary" />
+           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Prescriptions</h1>
             <p className="text-gray-600">
@@ -202,11 +438,11 @@ export default function PrescriptionsPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                 <div className="relative max-w-md">
+           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary/60" />
           <Input
             type="text"
-            placeholder="Search by diagnosis, medication, or notes..."
+            placeholder="Search by diagnosis or notes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 pr-4 py-2"
@@ -221,10 +457,7 @@ export default function PrescriptionsPage() {
             <Card key={i}>
               <CardHeader>
                 <Skeleton className="h-6 w-32" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
-                </div>
+                <Skeleton className="h-4 w-24" />
               </CardHeader>
               <CardContent>
                 <Skeleton className="h-4 w-full mb-2" />
@@ -255,21 +488,19 @@ export default function PrescriptionsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredPrescriptions.map((prescription) => (
-            <Card key={prescription.id} className="hover:shadow-lg transition-shadow">
+            <Card 
+              key={prescription._id} 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handlePrescriptionClick(prescription)}
+            >
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2">
-                    {prescription.diagnosis}
-                  </CardTitle>
-                  <div className="flex flex-col gap-2">
-                    {getStatusBadge(prescription.status)}
-                    {getPaymentStatusBadge(prescription.paymentStatus)}
-                  </div>
-                </div>
+                <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2">
+                  {prescription.diagnosis}
+                </CardTitle>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {format(new Date(prescription.createdAt), "MMM d, yyyy")}
+                    {format(new Date(prescription.dateIssued), "MMM d, yyyy")}
                   </span>
                 </div>
               </CardHeader>
@@ -284,9 +515,11 @@ export default function PrescriptionsPage() {
                   <div className="space-y-2">
                     {prescription.medications.slice(0, 2).map((med, index) => (
                       <div key={index} className="text-sm">
-                        <div className="font-medium text-gray-900">{med.name}</div>
+                        <div className="font-medium text-gray-900">
+                          Medicine {index + 1}
+                        </div>
                         <div className="text-gray-600 text-xs">
-                          {med.dosage} • {med.frequency} • {med.duration}
+                          Quantity: {med.quantity}
                         </div>
                       </div>
                     ))}
@@ -311,15 +544,15 @@ export default function PrescriptionsPage() {
                   </div>
                 )}
 
-                {/* Schedule Info */}
-                {prescription.scheduleId && (
-                  <div className="pt-2 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <User className="h-3 w-3" />
-                      <span>From scheduled consultation</span>
-                    </div>
+                {/* Total Cost */}
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Total Cost:</span>
+                    <span className="font-medium text-gray-900">
+                      {prescription.totalCost.toLocaleString()} VND
+                    </span>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -344,6 +577,13 @@ export default function PrescriptionsPage() {
           </Button>
         </div>
       )}
+
+      {/* Prescription Detail Modal */}
+      <PrescriptionDetailModal
+        prescription={selectedPrescription}
+        isOpen={isDetailModalOpen}
+        onClose={closeDetailModal}
+      />
     </div>
   );
 }
