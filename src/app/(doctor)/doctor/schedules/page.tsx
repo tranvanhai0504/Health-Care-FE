@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import {
   ScheduleHeader,
@@ -18,6 +18,7 @@ import {
 import { ScheduleStatus } from "@/types/schedule";
 import { AppointmentStatus } from "@/types/appointment";
 import { User } from "@/types/user";
+import { getScheduleDate } from "@/utils/formatters";
 
 type ViewMode = "list" | "details";
 
@@ -46,7 +47,7 @@ function mapScheduleStatusToAppointmentStatus(
 export default function DoctorSchedules() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("today");
+  const [dateFilter, setDateFilter] = useState<"today" | "week">("today");
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -103,45 +104,46 @@ export default function DoctorSchedules() {
   };
 
   // Convert schedules to appointments format for compatibility with existing components
-  const appointments: Appointment[] = schedules.map((schedule) => {
-    // Get enhanced patient information
-    const user = getPatientInfo(schedule);
-    const userId =
-      typeof schedule.userId === "string"
-        ? schedule.userId
-        : schedule.userId?._id;
+  const appointments: Appointment[] = useMemo(
+    () =>
+      schedules.map((schedule) => {
+        // Get enhanced patient information
+        const user = getPatientInfo(schedule);
+        const userId =
+          typeof schedule.userId === "string"
+            ? schedule.userId
+            : schedule.userId?._id;
 
-    return {
-      id: schedule._id || "",
-      patientName: user?.name || `Patient ${userId || "Unknown"}`,
-      patientPhone: user?.phoneNumber || "N/A",
-      patientEmail: user?.email || "N/A",
-      patientAddress: user?.address || "N/A",
-      time: schedule.timeOffset === 0 ? "09:00 AM" : "02:00 PM", // Convert timeOffset to time format
-      date: new Date(
-        new Date(schedule.weekPeriod.from).getTime() +
-          schedule.dayOffset * 24 * 60 * 60 * 1000 +
-          7 * 60 * 60 * 1000
-      )
-        .toISOString()
-        .split("T")[0],
-      type: schedule.type === "services" ? "Services" : "Package",
-      status: mapScheduleStatusToAppointmentStatus(schedule.status),
-      notes: schedule.packageId
-        ? `Package: ${schedule.packageId}`
-        : "Services appointment",
-      duration: "N/A", // Not available in schedule data
-      symptoms: "",
-      previousVisits: 0, // Not available in schedule data
-      // Add enhanced user info
-      patientGender: user?.gender || "N/A",
-      patientDateOfBirth: user?.dateOfBirth || "N/A",
-      patientOccupation: user?.occupation || "N/A",
-      // Store the user ID for future reference
-      userId: userId,
-      originalSchedule: schedule,
-    };
-  });
+        return {
+          id: schedule._id || "",
+          patientName: user?.name || `Patient ${userId || "Unknown"}`,
+          patientPhone: user?.phoneNumber || "N/A",
+          patientEmail: user?.email || "N/A",
+          patientAddress: user?.address || "N/A",
+          time: schedule.timeOffset === 0 ? "09:00 AM" : "02:00 PM", // Convert timeOffset to time format
+          date: getScheduleDate(schedule.weekPeriod, schedule.dayOffset)
+            .toISOString()
+            .split("T")[0],
+          type: schedule.type === "services" ? "Services" : "Package",
+          status: mapScheduleStatusToAppointmentStatus(schedule.status),
+          notes: schedule.packageId
+            ? `Package: ${schedule.packageId}`
+            : "Services appointment",
+          duration: "N/A", // Not available in schedule data
+          symptoms: "",
+          previousVisits: 0, // Not available in schedule data
+          // Add enhanced user info
+          patientGender: user?.gender || "N/A",
+          patientDateOfBirth: user?.dateOfBirth || "N/A",
+          patientOccupation: user?.occupation || "N/A",
+          // Store the user ID for future reference
+          userId: userId,
+          originalSchedule: schedule,
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [schedules]
+  );
 
   // Fetch patient details when schedules are loaded
   useEffect(() => {
@@ -177,45 +179,17 @@ export default function DoctorSchedules() {
       switch (dateFilter) {
         case "today":
           const weekPeriod = getWeekPeriod(now);
-          // Parse the week period dates and convert to UTC+7
-          const weekStart = new Date(weekPeriod.from);
-          const weekEnd = new Date(weekPeriod.to);
-          // Convert to UTC+7 timezone
-          const weekStartUTC = new Date(
-            weekStart.getTime() - 7 * 60 * 60 * 1000
-          );
-          const weekEndUTC = new Date(weekEnd.getTime() - 7 * 60 * 60 * 1000);
-          from = weekStartUTC.toISOString();
-          to = weekEndUTC.toISOString();
+          console.log(weekPeriod);
+          
+          from = weekPeriod.from.toISOString();
+          to = weekPeriod.to.toISOString();
+          console.log(from, to);
           break;
         case "week":
           const weekPeriod2 = getWeekPeriod(now);
-          // Parse the week period dates and convert to UTC+7
-          const weekStart2 = new Date(weekPeriod2.from);
-          const weekEnd2 = new Date(weekPeriod2.to);
-          // Convert to UTC+7 timezone
-          const weekStartUTC2 = new Date(
-            weekStart2.getTime() - 7 * 60 * 60 * 1000
-          );
-          const weekEndUTC2 = new Date(weekEnd2.getTime() - 7 * 60 * 60 * 1000);
-          from = weekStartUTC2.toISOString();
-          to = weekEndUTC2.toISOString();
+          from = weekPeriod2.from.toISOString();
+          to = weekPeriod2.to.toISOString();
           isFullWeek = true;
-          break;
-        case "month":
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          startOfMonth.setHours(0, 0, 0, 0);
-          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          endOfMonth.setHours(23, 59, 59, 999);
-          // Convert to UTC+7 timezone
-          const startOfMonthUTC = new Date(
-            startOfMonth.getTime() - 7 * 60 * 60 * 1000
-          );
-          const endOfMonthUTC = new Date(
-            endOfMonth.getTime() - 7 * 60 * 60 * 1000
-          );
-          from = startOfMonthUTC.toISOString();
-          to = endOfMonthUTC.toISOString();
           break;
         default:
           return; // Don't refetch for "all" or unknown filters
@@ -372,7 +346,16 @@ export default function DoctorSchedules() {
               dateFilter={dateFilter}
               onSearchChange={setSearchQuery}
               onStatusFilterChange={setStatusFilter}
-              onDateFilterChange={setDateFilter}
+              onDateFilterChange={(value: string) => {
+                // Normalize unsupported options to allowed ones
+                if (value === "tomorrow") {
+                  setDateFilter("today");
+                } else if (value === "month") {
+                  setDateFilter("week");
+                } else if (value === "today" || value === "week") {
+                  setDateFilter(value);
+                }
+              }}
             />
 
             {/* Error Display */}

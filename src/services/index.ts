@@ -8,6 +8,8 @@ import { scheduleService } from './schedule.service';
 import { specialtyService } from './specialties.service';
 import { BlogService } from './blogs.service';
 import { prescriptionService } from './prescription.service';
+import { medicationService } from './medication.service';
+import { medicineService } from './medicine.service';
 import { medicalExaminationService } from './medicalExamination.service';
 import { promotionService } from './promotion.service';
 import { imageService } from './image.service';
@@ -38,6 +40,8 @@ export {
   specialtyService,
   blogService,
   prescriptionService,
+  medicationService,
+  medicineService,
   medicalExaminationService,
   promotionService,
   imageService,

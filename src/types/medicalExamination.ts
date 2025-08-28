@@ -41,8 +41,25 @@ export interface FinalDiagnosis {
  * Follow-up information interface
  */
 export interface FollowUp {
-  nextVisit?: string;
+  schedule?: string;
   notes?: string;
+}
+
+/**
+ * Follow-up creation request payload
+ */
+export interface CreateFollowUpRequest {
+  notes?: string;
+  schedule: {
+    userId: string;
+    dayOffset: number;
+    timeOffset: number;
+    services: string[];
+    weekPeriod?: {
+      from: string; // ISO date string
+      to: string;   // ISO date string
+    };
+  };
 }
 
 /**
@@ -104,6 +121,7 @@ export interface CreateMedicalExaminationData {
   finalDiagnosis?: FinalDiagnosis[];
   prescription?: string; // ObjectId, optional
   followUp?: FollowUp;
+  scheduleReferrence: string;
 }
 
 /**

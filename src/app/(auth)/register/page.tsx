@@ -73,7 +73,7 @@ const SignUpPage = () => {
             </p>
           </div>
 
-          <div className="bg-card rounded-xl shadow-sm border p-6">
+          <div className="bg-card">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}

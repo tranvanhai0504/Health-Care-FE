@@ -3,7 +3,6 @@ import api from '@/lib/axios';
 import { 
   ApiResponse,
   PaginatedApiResponse,
-
   Prescription,
   CreatePrescriptionData,
   GetManyParams
@@ -11,7 +10,7 @@ import {
 
 export class PrescriptionService extends BaseService<Prescription> {
   constructor() {
-    super('/api/v1/prescription');
+    super('/api/v1/prescriptions');
   }
 
   /**
@@ -23,8 +22,6 @@ export class PrescriptionService extends BaseService<Prescription> {
     const response = await api.get<ApiResponse<PaginatedApiResponse<Prescription>>>(this.basePath, { params });
     return response.data.data;
   }
-
-
 
   /**
    * Get many prescriptions (paginated endpoint)
@@ -46,7 +43,8 @@ export class PrescriptionService extends BaseService<Prescription> {
    */
   async getById(id: string): Promise<Prescription> {
     const response = await api.get<ApiResponse<Prescription>>(`${this.basePath}/${id}`);
-    return response.data.data;
+    // Handle both response formats: response.data.data and response.data
+    return response.data.data || response.data;
   }
 
   /**
@@ -76,7 +74,11 @@ export class PrescriptionService extends BaseService<Prescription> {
    */
   async create(data: CreatePrescriptionData): Promise<Prescription> {
     const response = await api.post<ApiResponse<Prescription>>(this.basePath, data);
-    return response.data.data;
+    
+    // Handle both response formats: response.data.data and response.data
+    const prescriptionData = response.data.data || response.data;
+    
+    return prescriptionData;
   }
 
   /**
@@ -87,19 +89,6 @@ export class PrescriptionService extends BaseService<Prescription> {
    */
   async update(id: string, data: Partial<CreatePrescriptionData>): Promise<Prescription> {
     const response = await api.put<ApiResponse<Prescription>>(`${this.basePath}/${id}`, data);
-    return response.data.data;
-  }
-
-  /**
-   * Update prescription payment status
-   * @param id - The ID of the prescription
-   * @param paymentStatus - The new payment status
-   * @returns Promise with the updated prescription
-   */
-  async updatePaymentStatus(id: string, paymentStatus: 'pending' | 'paid' | 'cancelled'): Promise<Prescription> {
-    const response = await api.put<ApiResponse<Prescription>>(`${this.basePath}/${id}/payment`, {
-      paymentStatus
-    });
     return response.data.data;
   }
 

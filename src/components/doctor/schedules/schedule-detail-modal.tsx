@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -39,6 +38,7 @@ import {
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import { roomService } from "@/services/room.service";
+import { getScheduleDate } from "@/utils/formatters";
 
 interface ScheduleDetailModalProps {
   schedule: ScheduleResponse | null;
@@ -50,11 +50,8 @@ interface ScheduleDetailModalProps {
 }
 
 // Helper function to format schedule date from weekPeriod and dayOffset
-const getScheduleDate = (schedule: ScheduleResponse): Date => {
-  const startDate = new Date(schedule.weekPeriod.from);
-  const targetDate = new Date(startDate);
-  targetDate.setDate(startDate.getDate() + schedule.dayOffset);
-  return targetDate;
+const getScheduleDateFromSchedule = (schedule: ScheduleResponse): Date => {
+  return getScheduleDate(schedule.weekPeriod, schedule.dayOffset);
 };
 
 // Helper function to get status badge with enhanced styling
@@ -209,7 +206,7 @@ export default function ScheduleDetailModal({
 
   if (!schedule) return null;
 
-  const scheduleDate = getScheduleDate(schedule);
+  const scheduleDate = getScheduleDateFromSchedule(schedule);
   const canEdit =
     isFuture(scheduleDate) &&
     (schedule.status === ScheduleStatus.CONFIRMED ||
@@ -245,7 +242,7 @@ export default function ScheduleDetailModal({
                 <DialogTitle className="text-lg font-semibold text-gray-900">
                   Schedule Details
                 </DialogTitle>
-                <DialogDescription className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
                   <Package className="h-3 w-3 text-gray-500" />
                   {schedule.type === "package"
                     ? packageDetails?.title ||
@@ -264,7 +261,7 @@ export default function ScheduleDetailModal({
                       </div>
                     </>
                   )}
-                </DialogDescription>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(schedule.status)}

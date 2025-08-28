@@ -5,12 +5,11 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   BarChart3,
-  Users,
   Calendar,
-  Stethoscope,
+  // Stethoscope,
   Settings,
   LogOut,
-  PillIcon,
+  // PillIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -35,21 +34,16 @@ const DoctorSidebar = () => {
       href: "/doctor/schedules",
       icon: <Calendar className="w-5 h-5" />,
     },
-    {
-      title: "Prescriptions",
-      href: "/doctor/prescriptions",
-      icon: <PillIcon className="w-5 h-5" />,
-    },
-    {
-      title: "Medical Examinations",
-      href: "/doctor/examinations",
-      icon: <Stethoscope className="w-5 h-5" />,
-    },
-    {
-      title: "My Patients",
-      href: "/doctor/patients",
-      icon: <Users className="w-5 h-5" />,
-    },
+    // {
+    //   title: "Prescriptions",
+    //   href: "/doctor/prescriptions",
+    //   icon: <PillIcon className="w-5 h-5" />,
+    // },
+    // {
+    //   title: "Medical Examinations",
+    //   href: "/doctor/examinations",
+    //   icon: <Stethoscope className="w-5 h-5" />,
+    // },
     {
       title: "Profile",
       href: "/doctor/profile",

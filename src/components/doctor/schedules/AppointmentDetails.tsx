@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+
 import {
   Accordion,
   AccordionContent,
@@ -33,20 +35,22 @@ import {
 import { useToast } from "@/hooks/useToast";
 
 import { MedicalExaminationDetails } from "./MedicalExaminationDetails";
+import { PrescriptionDisplay } from "./PrescriptionDisplay";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { scheduleService } from "@/services/schedule.service";
+import { ScheduleStatus } from "@/types/schedule";
 import { ConsultationService, DoctorWithPopulatedData } from "@/types";
 import SearchService from "@/components/dialogs/search-service";
 import { useAuthStore } from "@/stores/auth";
 import { doctorService, roomService } from "@/services";
+import { prescriptionService } from "@/services/prescription.service";
+import { CreatePrescriptionData } from "@/types/prescription";
+import { CreatePrescriptionDialog } from "@/components/dialogs/create-prescription";
 
 interface AppointmentDetailsProps {
   appointment: Appointment;
   onClose: () => void;
   onViewHistory?: (appointment: Appointment) => void;
-  onCreatePrescription?: (
-    medicalExamination: PopulatedMedicalExamination
-  ) => void;
   handleExpandRightPanel?: () => void;
   handleCollapseRightPanel?: () => void;
   rightPanelSize?: number;
@@ -56,7 +60,6 @@ export function AppointmentDetails({
   appointment,
   onClose,
   onViewHistory,
-  onCreatePrescription,
   handleExpandRightPanel,
   handleCollapseRightPanel,
   rightPanelSize,
@@ -69,12 +72,113 @@ export function AppointmentDetails({
   );
   const [isSearchServiceDialogOpen, setIsSearchServiceDialogOpen] =
     useState(false);
-  const [medicalExamination, setMedicalExamination] =
-    useState<PopulatedMedicalExamination | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+
+  // Prescription dialog state
+  const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
+
+  // Handler for prescription creation
+  const handleCreatePrescriptionClick = () => {
+    setShowPrescriptionForm(true);
+  };
+
+  const handlePrescriptionFormSave = async (data: CreatePrescriptionData) => {
+    try {
+      // Create the prescription
+      const createdPrescription = await prescriptionService.create(data);
+      
+      // Check if we have a valid prescription with _id
+      if (!createdPrescription || !createdPrescription._id) {
+        throw new Error("Invalid prescription response from API");
+      }
+      
+      // Update medical examination with prescription ID
+      if (medicalExamination?._id) {
+        await medicalExaminationService.update(medicalExamination._id, {
+          prescription: createdPrescription._id
+        });
+      }
+      
+      // Update schedule status to completed
+      if (appointment.originalSchedule?._id) {
+        await scheduleService.update(appointment.originalSchedule._id, {
+          status: ScheduleStatus.COMPLETED
+        });
+      }
+      
+      // Refetch the medical examination to get updated data
+      await mutateMedicalExamination();
+      
+      // Get the prescription details
+      const prescriptionDetails = await prescriptionService.getById(createdPrescription._id);
+      
+      // Close the form and reset state
+      setShowPrescriptionForm(false);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Prescription created successfully and appointment marked as completed!",
+      });
+      
+      console.log("Created prescription:", prescriptionDetails);
+    } catch (error) {
+      console.error("Error creating prescription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create prescription. Please try again.",
+      });
+    }
+  };
+
+
+
+
+
+  // Fetch medical examination data using SWR with automatic refresh every 10 seconds
+  const {
+    data: medicalExamination,
+    isLoading,
+    error: medicalExaminationError,
+    mutate: mutateMedicalExamination,
+  } = useSWR(
+    appointment.originalSchedule?._id
+      ? [
+          "",
+          "medicalExamination",
+          String(appointment.originalSchedule._id),
+        ]
+      : null,
+    async ([, , scheduleId]: [string, string, string]) => {
+      const response = await medicalExaminationService.getAllPopulated({
+        options: {
+          filter: {
+            scheduleReferrence: scheduleId,
+          },
+          populateOptions: {
+            path: "scheduleReferrence",
+          },
+        },
+      });
+
+      return response.data.length > 0
+        ? (response.data[0] as PopulatedMedicalExamination)
+        : null;
+    },
+    {
+      revalidateOnFocus: false,
+      refreshInterval: 10000, // Refresh every 10 seconds
+      revalidateOnReconnect: true,
+      dedupingInterval: 5000, // Dedupe requests within 5 seconds
+      errorRetryCount: 3,
+      errorRetryInterval: 5000,
+    }
+  );
   const { user } = useAuthStore();
   const [doctorProfile, setDoctorProfile] =
     useState<DoctorWithPopulatedData | null>(null);
+
+  console.log(medicalExamination)
 
   useEffect(() => {
     const fetchDoctorProfile = async () => {
@@ -98,37 +202,18 @@ export function AppointmentDetails({
   }, [user]);
 
   useEffect(() => {
-    const fetchMedicalExamination = async () => {
-      if (!appointment.userId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await medicalExaminationService.getAllPopulated({
-          patient: appointment.userId as string,
-          examinationDate: new Date(appointment.date).toISOString(),
-        });
-
-        if (response.data.length > 0) {
-          setMedicalExamination(response.data[0]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch medical examination:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch existing medical examination.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchMedicalExamination();
+    if (medicalExaminationError) {
+      console.error(
+        "Failed to fetch medical examination:",
+        medicalExaminationError
+      );
+      toast({
+        title: "Error",
+        description: "Failed to fetch existing medical examination.",
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointment]);
-
-  console.log(appointment);
+  }, [medicalExaminationError]);
 
   useEffect(() => {
     const fetchInitialServices = async () => {
@@ -183,10 +268,13 @@ export function AppointmentDetails({
         symptoms: appointment.symptoms ? [appointment.symptoms] : [],
         services:
           appointment.originalSchedule?.services?.map((s) => s.service) || [],
+        scheduleReferrence: appointment.originalSchedule?._id as string,
       };
 
       // Create the medical examination
-      await medicalExaminationService.create(medicalExaminationData);
+      medicalExaminationService.create(medicalExaminationData);
+
+      await mutateMedicalExamination();
 
       toast({
         title: "Medical Examination Created",
@@ -229,14 +317,8 @@ export function AppointmentDetails({
     if (!appointment.originalSchedule?._id) return;
 
     try {
-      const updatedServiceIds = services
-        .map((s) => s._id)
-        .filter(
-          (s) =>
-            !appointment.originalSchedule?.services?.find(
-              (ss) => ss.service === s
-            )
-        );
+      const updatedServiceIds = services.map((s) => s._id);
+
       await scheduleService.update(appointment.originalSchedule._id, {
         services: updatedServiceIds,
       });
@@ -476,34 +558,28 @@ export function AppointmentDetails({
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 p-2">
+                {appointment.status !== "in-progress" && appointment.originalSchedule?.status !== ScheduleStatus.COMPLETED && (
+                  <div className="w-full text-xs p-2 border bg-yellow-50 text-yellow-700 border-yellow-200 rounded-md mb-3">
+                    <p>
+                      Services cannot be edited until the patient is checked in
+                      and paid.
+                    </p>
+                  </div>
+                )}
+                {appointment.originalSchedule?.status === ScheduleStatus.COMPLETED && (
+                  <div className="w-full text-xs p-2 border bg-green-50 text-green-700 border-green-200 rounded-md mb-3">
+                    <p>
+                      Services cannot be edited as this appointment is completed.
+                    </p>
+                  </div>
+                )}
                 {isLoadingServices ? (
                   <p className="text-sm text-gray-500">Loading services...</p>
                 ) : (
                   <>
-                    {services.map((service) => (
-                      // <div
-                      //   key={service._id}
-                      //   className="p-2 border rounded-md flex justify-between items-center"
-                      // >
-                      //   <div>
-                      //     <p className="font-semibold">{service.name}</p>
-                      //     <p className="text-sm text-gray-500">
-                      //       {service.description}
-                      //     </p>
-                      //   </div>
-                      //   {newlyAddedServiceIds.has(service._id) && (
-                      //     <Button
-                      //       type="button"
-                      //       variant="outline"
-                      //       size="sm"
-                      //       onClick={() => handleRemoveService(service._id)}
-                      //     >
-                      //       Remove
-                      //     </Button>
-                      //   )}
-                      // </div>
+                    {services.map((service, index) => (
                       <div
-                        key={service._id}
+                        key={`${service._id}-${index}`}
                         className="bg-gray-50 rounded-lg p-3 border"
                       >
                         <div className="flex items-start justify-between">
@@ -522,11 +598,13 @@ export function AppointmentDetails({
                                     : "bg-yellow-50 text-yellow-700 border-yellow-200"
                                 }`}
                               >
-                                {
-                                  appointment.originalSchedule?.services?.find(
-                                    (s) => s.service === service._id
-                                  )?.status
-                                }
+                                {appointment.originalSchedule?.services?.find(
+                                  (s) => s.service === service._id
+                                )?.status || (
+                                  <div className="text-xs text-gray-500">
+                                    temporary
+                                  </div>
+                                )}
                               </Badge>
                             </div>
                             {service && (
@@ -535,10 +613,14 @@ export function AppointmentDetails({
                                   {service.description}
                                 </p>
                                 <div className="flex items-center gap-3 text-xs text-gray-500">
-                                  {service.room && (
+                                  {service.room && service.roomDetail && (
                                     <div className="flex items-center gap-1">
                                       <MapPin className="h-3 w-3" />
-                                      <span>{service.roomDetail?.name}</span>
+                                      <span>
+                                        {service.roomDetail?.name} - room{" "}
+                                        {service.roomDetail?.roomNumber} - floor{" "}
+                                        {service.roomDetail?.roomFloor}
+                                      </span>
                                     </div>
                                   )}
                                   {service.specialization &&
@@ -554,16 +636,21 @@ export function AppointmentDetails({
                                 </div>
                               </>
                             )}
-                            {newlyAddedServiceIds.has(service._id) && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRemoveService(service._id)}
-                              >
-                                Remove
-                              </Button>
-                            )}
+                            {newlyAddedServiceIds.has(service._id) &&
+                              appointment.status === "in-progress" &&
+                              appointment.originalSchedule?.status !== ScheduleStatus.COMPLETED && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="mt-2"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleRemoveService(service._id)
+                                  }
+                                >
+                                  Remove
+                                </Button>
+                              )}
                           </div>
                         </div>
                       </div>
@@ -575,13 +662,32 @@ export function AppointmentDetails({
                     type="button"
                     variant="outline"
                     onClick={() => setIsSearchServiceDialogOpen(true)}
+                    disabled={appointment.status !== "in-progress" || appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
+                    title={
+                      appointment.originalSchedule?.status === ScheduleStatus.COMPLETED
+                        ? "Services cannot be edited as appointment is completed"
+                        : appointment.status !== "in-progress"
+                        ? "Patient must be checked in and paid to edit services"
+                        : ""
+                    }
                   >
                     Add Service
                   </Button>
                   <Button
                     type="button"
                     onClick={handleSaveServices}
-                    disabled={newlyAddedServiceIds.size === 0}
+                    disabled={
+                      newlyAddedServiceIds.size === 0 ||
+                      appointment.status !== "in-progress" ||
+                      appointment.originalSchedule?.status === ScheduleStatus.COMPLETED
+                    }
+                    title={
+                      appointment.originalSchedule?.status === ScheduleStatus.COMPLETED
+                        ? "Services cannot be edited as appointment is completed"
+                        : appointment.status !== "in-progress"
+                        ? "Patient must be checked in and paid to save services"
+                        : ""
+                    }
                   >
                     Save Services
                   </Button>
@@ -607,8 +713,11 @@ export function AppointmentDetails({
                 {medicalExamination && doctorProfile ? (
                   <MedicalExaminationDetails
                     examination={medicalExamination}
-                    onUpdate={(updated) => setMedicalExamination(updated)}
+                    onUpdate={(updated) =>
+                      mutateMedicalExamination(updated, false)
+                    }
                     doctorProfile={doctorProfile}
+                    disabled={!!medicalExamination.prescription || appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                   />
                 ) : (
                   <div>
@@ -649,6 +758,26 @@ export function AppointmentDetails({
               </div>
             </AccordionContent>
           </AccordionItem>
+
+          {/* Prescription Information */}
+          {medicalExamination?.prescription && (
+            <AccordionItem value="prescription-info">
+              <AccordionTrigger className="text-base font-semibold">
+                Prescription
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="p-2">
+                  <PrescriptionDisplay 
+                    prescriptionId={
+                      typeof medicalExamination.prescription === 'string' 
+                        ? medicalExamination.prescription 
+                        : medicalExamination.prescription._id
+                    } 
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
 
         {/* Action Buttons */}
@@ -665,7 +794,8 @@ export function AppointmentDetails({
                     <Button
                       size="sm"
                       className="flex-1 text-xs h-8"
-                      onClick={() => onCreatePrescription?.(medicalExamination)}
+                      onClick={handleCreatePrescriptionClick}
+                      disabled={appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                     >
                       Create Prescription
                     </Button>
@@ -674,11 +804,16 @@ export function AppointmentDetails({
                       size="sm"
                       className="flex-1 text-xs h-8"
                       onClick={handleStartConsultation}
+                      disabled={appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                     >
                       Start Consultation
                     </Button>
                   )}
                 </>
+              ) : appointment.originalSchedule?.status === ScheduleStatus.COMPLETED ? (
+                <div className="w-fit text-xs p-2 border bg-green-50 text-green-700 border-green-200 rounded-md">
+                  <p>Appointment completed</p>
+                </div>
               ) : (
                 <div className="w-fit text-xs p-2 border bg-yellow-50 text-yellow-700 border-yellow-200 rounded-md">
                   <p>This patient is not checked or paid yet.</p>
@@ -699,6 +834,29 @@ export function AppointmentDetails({
           )}
         </div>
       </div>
+
+      {/* Create Prescription Dialog */}
+      <CreatePrescriptionDialog
+        isOpen={showPrescriptionForm}
+        onOpenChange={setShowPrescriptionForm}
+        onSave={handlePrescriptionFormSave}
+        patientId={
+          medicalExamination?.patient
+            ? typeof medicalExamination.patient === "string"
+              ? medicalExamination.patient
+              : medicalExamination.patient._id
+            : appointment.originalSchedule?.userId
+            ? typeof appointment.originalSchedule.userId === "string"
+              ? appointment.originalSchedule.userId
+              : appointment.originalSchedule.userId._id
+            : ""
+        }
+        patientName={
+          appointment.patientName || "Patient"
+        }
+      />
+
+
     </div>
   );
 }

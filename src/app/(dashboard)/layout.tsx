@@ -10,9 +10,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container mx-auto !py-8 px-10 max-w-7xl mt-16 relative">
+    <div className="container mx-auto py-4 lg:!py-8 px-4 lg:px-10 max-w-7xl mt-16 relative">
       <AutoBreadcrumb />
-      <div className="flex-1 container py-4">{children}</div>
+      <div className="flex-1 container lg:py-4">{children}</div>
       <ServicesList />
 
       {/* AI Chat Components */}

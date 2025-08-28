@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
 import { scheduleService } from "@/services/schedule.service";
 import { doctorService } from "@/services/doctor.service";
 import { ScheduleResponseGetByDoctor } from "@/types/schedule";
@@ -30,94 +31,108 @@ interface UseDoctorSchedulesReturn {
 export function useDoctorSchedules(
   initialParams?: UseDoctorSchedulesParams
 ): UseDoctorSchedulesReturn {
-  const [schedules, setSchedules] = useState<ScheduleResponseGetByDoctor[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [paramsState, setParamsState] = useState<
+    UseDoctorSchedulesParams | undefined
+  >(initialParams);
   const { user } = useAuth();
+
+  // Fetch doctor profile to get doctorId
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      if (!user?._id) return;
+      try {
+        const profile = await doctorService.findOneByUserId(user._id);
+        setDoctorId(profile._id);
+      } catch (err) {
+        console.error("Failed to fetch doctor profile:", err);
+      }
+    };
+    fetchDoctor();
+  }, [user?._id]);
+
+  // SWR for schedules
+  const {
+    data: schedules,
+    isLoading: loading,
+    error: swrError,
+    mutate,
+  } = useSWR(
+    doctorId
+      ? [
+          "doctorSchedules",
+          doctorId,
+          paramsState?.from || null,
+          paramsState?.to || null,
+          paramsState?.dayOffset ?? null,
+          paramsState?.fullWeek ?? true,
+        ]
+      : null,
+    async ([, dId, from, to, dayOffset, fullWeek]: [
+      string,
+      string,
+      string | null,
+      string | null,
+      number | null,
+      boolean
+    ]) => {
+      // Default to current week if no parameters provided
+      const now = new Date();
+      const weekPeriod = scheduleService.getWeekPeriod(now);
+      const startOfWeek = weekPeriod.from;
+      const endOfWeek = weekPeriod.to;
+
+      const isFullWeek = fullWeek ?? true;
+
+      // Normalize dates
+      const fromDate = from ? new Date(from) : startOfWeek;
+      const toDate = to ? new Date(to) : endOfWeek;
+
+      const requestParams = {
+        from: fromDate.toISOString(),
+        to: toDate.toISOString(),
+        dayOffset: isFullWeek
+          ? undefined
+          : dayOffset ?? (now.getDay() === 0 ? 6 : now.getDay() - 1),
+        fullWeek: isFullWeek,
+      };
+
+      const data = await scheduleService.getByDoctor(
+        dId,
+        requestParams.from,
+        requestParams.to,
+        requestParams.dayOffset,
+        requestParams.fullWeek
+      );
+      return data as ScheduleResponseGetByDoctor[];
+    },
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      refreshInterval: 10000,
+    }
+  );
+
+  const error = swrError
+    ? swrError instanceof Error
+      ? swrError.message
+      : "Failed to fetch schedules"
+    : null;
 
   const fetchSchedules = useCallback(
     async (params: UseDoctorSchedulesParams = {}) => {
-      if (!user?._id) {
-        setError("User not authenticated");
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        // First, get the doctor profile using the user ID
-        const doctorProfile = await doctorService.findOneByUserId(user._id);
-        const currentDoctorId = doctorProfile._id;
-        setDoctorId(currentDoctorId);
-
-        // Default to current week if no parameters provided
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
-        startOfWeek.setHours(0, 0, 0, 0);
-
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
-        endOfWeek.setHours(23, 59, 59, 999);
-
-        const isFullWeek = params.fullWeek ?? true;
-
-        // Normalize dates to ensure proper time boundaries
-        const fromDate = params.from ? new Date(params.from) : startOfWeek;
-        const toDate = params.to ? new Date(params.to) : endOfWeek;
-
-        // Convert to UTC+7 timezone (backend timezone)
-        // Set from date to start of day in UTC+7 (17:00:00.000 UTC)
-        fromDate.setHours(0, 0, 0, 0);
-        const fromUTC = new Date(fromDate.getTime() - (7 * 60 * 60 * 1000)); // Subtract 7 hours
-
-        // Set to date to end of day in UTC+7 (16:59:59.999 UTC next day)
-        toDate.setHours(23, 59, 59, 999);
-        const toUTC = new Date(toDate.getTime() - (7 * 60 * 60 * 1000)); // Subtract 7 hours
-
-        const requestParams = {
-          from: fromUTC.toISOString(),
-          to: toUTC.toISOString(),
-          dayOffset: isFullWeek ? undefined : (params.dayOffset ?? (now.getDay() === 0 ? 6 : now.getDay() - 1)),
-          fullWeek: isFullWeek,
-        };
-
-        // Use the doctor ID instead of user ID
-        const data = await scheduleService.getByDoctor(
-          currentDoctorId,
-          requestParams.from,
-          requestParams.to,
-          requestParams.dayOffset,
-          requestParams.fullWeek
-        );
-
-        setSchedules(data);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to fetch schedules";
-        setError(errorMessage);
-        console.error("Error fetching doctor schedules:", err);
-      } finally {
-        setLoading(false);
-      }
+      setParamsState(params);
+      await mutate();
     },
-    [user?._id]
+    [mutate]
   );
 
-  const refetch = useCallback(() => {
-    return fetchSchedules(initialParams);
-  }, [fetchSchedules, initialParams]);
-
-  // Initial fetch on mount
-  useEffect(() => {
-    if (user?._id) {
-      fetchSchedules(initialParams);
-    }
-  }, [user?._id, fetchSchedules, initialParams]);
+  const refetch = useCallback(async () => {
+    await mutate();
+  }, [mutate]);
 
   return {
-    schedules,
+    schedules: schedules || [],
     loading,
     error,
     doctorId,
@@ -132,22 +147,7 @@ export function useDoctorSchedules(
  * @returns Object with from and to ISO strings for the week in UTC+7 timezone
  */
 export function getWeekPeriod(date: Date = new Date()) {
-  const startOfWeek = new Date(date);
-  startOfWeek.setDate(date.getDate() - date.getDay() + 1); // Monday
-  startOfWeek.setHours(0, 0, 0, 0); // Start of day (00:00:00.000)
-
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
-  endOfWeek.setHours(23, 59, 59, 999); // End of day (23:59:59.999)
-
-  // Convert to UTC+7 timezone (backend timezone)
-  const startOfWeekUTC = new Date(startOfWeek.getTime() - (7 * 60 * 60 * 1000));
-  const endOfWeekUTC = new Date(endOfWeek.getTime() - (7 * 60 * 60 * 1000));
-
-  return {
-    from: startOfWeekUTC.toISOString(),
-    to: endOfWeekUTC.toISOString(),
-  };
+  return scheduleService.getWeekPeriod(date);
 }
 
 /**

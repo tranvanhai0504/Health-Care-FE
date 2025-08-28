@@ -7,7 +7,7 @@ function SignInFormWrapper() {
 
 export default function LoginPage() {
   return (
-    <div className=" flex-col items-center justify-center py-12">
+    <div className="flex h-full flex-col items-center justify-center py-12">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] md:w-[450px]">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">

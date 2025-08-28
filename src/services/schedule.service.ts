@@ -106,9 +106,9 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns Promise with array of schedules
    */
   async getAll(): Promise<PaginatedApiResponse<ScheduleResponse>> {
-    const response = await api.get<ApiResponse<PaginatedApiResponse<ScheduleResponse>>>(
-      this.basePath
-    );
+    const response = await api.get<
+      ApiResponse<PaginatedApiResponse<ScheduleResponse>>
+    >(this.basePath);
     return response.data.data;
   }
 
@@ -175,18 +175,31 @@ export class ScheduleService extends BaseService<Schedule> {
    * @returns CDateRange representing the week period
    */
   getWeekPeriod(selectedDate: Date): CDateRange {
-    const startOfWeek = new Date(selectedDate);
-    startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay()); // Start from Sunday
-    startOfWeek.setHours(0, 0, 0, 0);
+    const MS_DAY = 24 * 60 * 60 * 1000;
+    const TZ_MS = 7 * 60 * 60 * 1000; // UTC+7
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // End on Saturday
-    endOfWeek.setHours(23, 59, 59, 999);
+    // Shift into a UTC+7 "timeline"
+    const t = selectedDate.getTime();
+    const shifted = new Date(t + TZ_MS);
 
-    return {
-      from: startOfWeek,
-      to: endOfWeek,
-    };
+    // Day-of-week in that timeline (0=Sun..6=Sat)
+    const dow = shifted.getUTCDay();
+
+    // Midnight of the shifted date (acts as local midnight in UTC+7)
+    const shiftedMidnightMs = Date.UTC(
+      shifted.getUTCFullYear(),
+      shifted.getUTCMonth(),
+      shifted.getUTCDate()
+    );
+
+    // Start of week in shifted timeline: Sunday 00:00 (UTC+7)
+    const startShiftedMs = shiftedMidnightMs - dow * MS_DAY;
+
+    // Convert back to real UTC
+    const from = new Date(startShiftedMs - TZ_MS); // Sat 17:00:00.000Z
+    const to = new Date(startShiftedMs + 7 * MS_DAY - 1 - TZ_MS); // Sat 16:59:59.999Z
+
+    return { from, to };
   }
 
   /**
@@ -236,7 +249,7 @@ export class ScheduleService extends BaseService<Schedule> {
         params: {
           ...params,
           // Request populated user data
-          populate: 'userId',
+          populate: "userId",
         },
       }
     );

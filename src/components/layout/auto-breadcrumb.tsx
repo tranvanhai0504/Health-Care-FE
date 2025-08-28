@@ -290,7 +290,7 @@ export function AutoBreadcrumb() {
       pathTranslations={pathTranslations}
       excludePaths={excludePaths}
       homeHref="/"
-      className="mb-4 py-2"
+      className="lg:mb-4 py-2"
     />
   );
 } 
