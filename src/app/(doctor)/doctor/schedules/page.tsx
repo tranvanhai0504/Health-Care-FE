@@ -141,6 +141,7 @@ export default function DoctorSchedules() {
           originalSchedule: schedule,
         };
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [schedules]
   );
 

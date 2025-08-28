@@ -1,7 +1,7 @@
 /**
- * Medication interface for prescriptions (form data)
+ * Prescription Medication interface for prescription forms
  */
-export interface Medication {
+export interface PrescriptionMedication {
   medicineId: string; // Medicine ID - required
   name: string;
   dosage: string;

@@ -48,6 +48,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
       fetchDoctorUserInfo();
       fetchMedicineInfo();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prescription, isOpen]);
 
   const fetchDoctorUserInfo = async () => {

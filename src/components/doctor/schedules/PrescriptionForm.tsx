@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { X, Plus } from "lucide-react";
-import { CreatePrescriptionData, Medication } from "@/types/prescription";
+import { CreatePrescriptionData, PrescriptionMedication } from "@/types/prescription";
 
 interface PrescriptionFormProps {
   onSave: (data: CreatePrescriptionData) => Promise<void>;
@@ -15,29 +15,56 @@ interface PrescriptionFormProps {
 }
 
 export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFormProps) {
-  const [formData, setFormData] = useState<CreatePrescriptionData>({
+  const [formData, setFormData] = useState<{
+    patient: string;
+    diagnosis: string;
+    notes: string;
+    medications: PrescriptionMedication[];
+    totalCost: number;
+  }>({
     patient: patientId,
     diagnosis: "",
     notes: "",
     medications: [],
+    totalCost: 0,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Calculate total cost based on medications
+  const calculateTotalCost = (medications: PrescriptionMedication[]): number => {
+    // For now, we'll use a simple calculation
+    // In a real app, you might want to fetch actual medicine prices
+    return medications.reduce((total, med) => {
+      if (med.quantity) {
+        // Base cost per medicine (you might want to fetch this from the API)
+        const baseCost = 1000; // 1000 VND per medicine
+        return total + (baseCost * med.quantity);
+      }
+      return total;
+    }, 0);
+  };
+
   const addMedication = () => {
-    setFormData(prev => ({
-      ...prev,
-      medications: [
+    setFormData(prev => {
+      const newMedications = [
         ...prev.medications,
         {
+          medicineId: "",
           name: "",
           dosage: "",
           frequency: "",
           duration: "",
           instructions: "",
+          quantity: 1,
         }
-      ]
-    }));
+      ];
+      return {
+        ...prev,
+        medications: newMedications,
+        totalCost: calculateTotalCost(newMedications),
+      };
+    });
   };
 
   const removeMedication = (index: number) => {
@@ -47,13 +74,17 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
     }));
   };
 
-  const updateMedication = (index: number, field: keyof Medication, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      medications: prev.medications.map((med, i) => 
+  const updateMedication = (index: number, field: keyof PrescriptionMedication, value: string | number) => {
+    setFormData(prev => {
+      const updatedMedications = prev.medications.map((med, i) => 
         i === index ? { ...med, [field]: value } : med
-      )
-    }));
+      );
+      return {
+        ...prev,
+        medications: updatedMedications,
+        totalCost: calculateTotalCost(updatedMedications),
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,7 +92,21 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
     setIsSubmitting(true);
     
     try {
-      await onSave(formData);
+      // Transform the data to match API format
+      const apiData: CreatePrescriptionData = {
+        patient: formData.patient,
+        diagnosis: formData.diagnosis,
+        notes: formData.notes,
+        totalCost: formData.totalCost,
+        medications: formData.medications.map(med => ({
+          medicine: med.medicineId,
+          quantity: med.quantity,
+          frequency: med.frequency,
+          duration: med.duration
+        }))
+      };
+      
+      await onSave(apiData);
     } catch (error) {
       console.error('Error saving prescription:', error);
     } finally {
@@ -110,7 +155,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
 
         {formData.medications.length === 0 && (
           <p className="text-sm text-gray-500 text-center py-4">
-            No medications added yet. Click "Add Medication" to start.
+            No medications added yet. Click &quot;Add Medication&quot; to start.
           </p>
         )}
 
@@ -169,6 +214,19 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
                   value={medication.duration}
                   onChange={(e) => updateMedication(index, 'duration', e.target.value)}
                   placeholder="e.g., 7 days"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor={`quantity-${index}`}>Quantity</Label>
+                <Input
+                  id={`quantity-${index}`}
+                  type="number"
+                  min="1"
+                  value={medication.quantity}
+                  onChange={(e) => updateMedication(index, 'quantity', parseInt(e.target.value) || 1)}
+                  placeholder="1"
                   required
                 />
               </div>

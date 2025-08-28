@@ -76,14 +76,9 @@ export function AppointmentDetails({
 
   // Prescription dialog state
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
-  const [pendingPrescriptionExamination, setPendingPrescriptionExamination] =
-    useState<PopulatedMedicalExamination | null>(null);
 
   // Handler for prescription creation
-  const handleCreatePrescriptionClick = (
-    examination: PopulatedMedicalExamination
-  ) => {
-    setPendingPrescriptionExamination(examination);
+  const handleCreatePrescriptionClick = () => {
     setShowPrescriptionForm(true);
   };
 
@@ -119,7 +114,6 @@ export function AppointmentDetails({
       
       // Close the form and reset state
       setShowPrescriptionForm(false);
-      setPendingPrescriptionExamination(null);
       
       // Show success message
       toast({
@@ -137,10 +131,7 @@ export function AppointmentDetails({
     }
   };
 
-  const handlePrescriptionFormCancel = () => {
-    setShowPrescriptionForm(false);
-    setPendingPrescriptionExamination(null);
-  };
+
 
 
 
@@ -803,9 +794,7 @@ export function AppointmentDetails({
                     <Button
                       size="sm"
                       className="flex-1 text-xs h-8"
-                      onClick={() =>
-                        handleCreatePrescriptionClick(medicalExamination)
-                      }
+                      onClick={handleCreatePrescriptionClick}
                       disabled={appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                     >
                       Create Prescription

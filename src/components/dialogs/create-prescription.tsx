@@ -83,7 +83,7 @@ export function CreatePrescriptionDialog({
         limit: 100, // Get more medicines for better selection
         ...(searchTerm && { name: searchTerm })
       });
-      setMedicines(response || []);
+      setMedicines(response?.data || []);
     } catch (error) {
       console.error('Error fetching medicines:', error);
       setMedicines([]);
@@ -179,7 +179,7 @@ export function CreatePrescriptionDialog({
     if (value.trim()) {
       try {
         const response = await medicineService.searchByName(value, { limit: 50 });
-        setMedicines(response || []);
+        setMedicines(response?.data || []);
       } catch (error) {
         console.error('Error searching medicines:', error);
       }

@@ -1,11 +1,4 @@
-// Medicine interface
-export interface Medicine {
-  _id?: string;
-  name: string;
-  dosage: string;
-  form: string;
-  route: string;
-}
+import { Medicine } from './medicine';
 
 // Medication interface
 export interface Medication {
