@@ -22,8 +22,10 @@ import {
   Star,
   Users,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function HealthPackagesSection() {
+  const { t } = useTranslation();
   const [packages, setPackages] = useState<ConsultationPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,14 +45,14 @@ export function HealthPackagesSection() {
         setPackages(response.data);
       } catch (err) {
         console.error("Error fetching health packages:", err);
-        setError("Failed to load health packages");
+        setError(t("landing.healthPackages.failedToLoad"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPackages();
-  }, []);
+  }, [t]);
 
   if (error) {
     return null; // Don't show the section if there's an error
@@ -67,12 +69,10 @@ export function HealthPackagesSection() {
             <Package className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Health Packages
+            {t("landing.healthPackages.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Comprehensive health packages designed to provide complete care
-            solutions at affordable prices. Choose the perfect package for your
-            health needs.
+            {t("landing.healthPackages.description")}
           </p>
         </div>
 
@@ -108,10 +108,10 @@ export function HealthPackagesSection() {
               <Package className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No Packages Available
+              {t("landing.healthPackages.noPackagesAvailable")}
             </h3>
             <p className="text-gray-600">
-              Health packages will be available soon. Check back later!
+              {t("landing.healthPackages.checkBackLater")}
             </p>
           </div>
         ) : (
@@ -141,7 +141,7 @@ export function HealthPackagesSection() {
                         <div className="absolute top-3 right-3">
                           <Badge className="bg-primary text-white px-3 py-1 text-xs font-semibold shadow-lg">
                             <Star className="h-3 w-3 mr-1" />
-                            Most Popular
+                            {t("landing.healthPackages.mostPopular")}
                           </Badge>
                         </div>
                       )}
@@ -153,7 +153,7 @@ export function HealthPackagesSection() {
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                         <Badge className="bg-primary text-white px-4 py-1 text-xs font-semibold shadow-lg">
                           <Star className="h-3 w-3 mr-1" />
-                          Most Popular
+                          {t("landing.healthPackages.mostPopular")}
                         </Badge>
                       </div>
                     )}
@@ -179,7 +179,7 @@ export function HealthPackagesSection() {
                         ) : (
                           <p className="text-2xl font-bold text-primary">
                             {pkg.price === 0
-                              ? "Free"
+                              ? t("landing.healthPackages.free")
                               : formatCurrency(pkg.price)}
                           </p>
                         )}
@@ -205,7 +205,7 @@ export function HealthPackagesSection() {
                         href={`/health-packages/${pkg._id}`}
                         className="flex items-center justify-center"
                       >
-                        Learn More
+                        {t("landing.healthPackages.learnMore")}
                         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </Button>
@@ -224,13 +224,12 @@ export function HealthPackagesSection() {
               >
                 <Link href="/health-packages" className="flex items-center">
                   <Users className="mr-3 h-5 w-5" />
-                  View All Health Packages
+                  {t("landing.healthPackages.viewAll")}
                   <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <p className="text-sm text-gray-500 mt-4">
-                Discover all our {packages.length}+ comprehensive health
-                packages
+                {t("landing.healthPackages.discoverAll", { count: packages.length })}
               </p>
             </div>
           </>

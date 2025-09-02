@@ -15,8 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 export function BlogSection() {
+  const { t } = useTranslation();
   const [blogs, setBlogs] = useState<BlogGetAllResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -84,7 +86,7 @@ export function BlogSection() {
 
   // Mock categories based on blog index (in a real app, these would come from your API)
   const getCategory = (index: number) => {
-    const categories = ["Wellness", "Medical Research", "Nutrition", "Mental Health"];
+    const categories = [t("landing.blog.wellness"), t("landing.blog.medicalResearch"), t("landing.blog.nutrition"), t("landing.blog.mentalHealth")];
     return categories[index % categories.length];
   };
 
@@ -96,11 +98,10 @@ export function BlogSection() {
             <Calendar className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Latest Health Updates
+            {t("landing.blog.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Stay informed with our latest healthcare articles, tips, and
-            insights from our medical experts.
+            {t("landing.blog.description")}
           </p>
         </div>
 
@@ -127,7 +128,7 @@ export function BlogSection() {
         ) : blogs.length === 0 ? (
           <div className="text-center p-12 bg-white rounded-xl shadow-sm border border-gray-100">
             <p className="text-gray-500 text-lg">
-              No articles available at the moment. Check back soon!
+              {t("landing.blog.noArticlesAvailable")}
             </p>
           </div>
         ) : (
@@ -141,13 +142,13 @@ export function BlogSection() {
                       <div className="md:col-span-3 p-6 md:p-8 flex flex-col justify-between">
                         <div>
                           <Badge className="mb-4 px-3 py-1 bg-primary/10 text-primary hover:bg-primary/15">
-                            Featured Article
+                            {t("landing.blog.featuredArticle")}
                           </Badge>
                           <CardTitle className="text-2xl md:text-3xl font-bold mb-4 group-hover:text-primary transition-colors">
                             {blogs[0].title}
                           </CardTitle>
                           <CardContent className="p-0 text-gray-600 line-clamp-3 mb-6">
-                            Read our featured article for the latest healthcare insights and recommendations from our experts.
+                            {t("landing.blog.featuredArticleDescription")}
                           </CardContent>
                         </div>
                         <div className="flex items-center justify-between">
@@ -156,10 +157,10 @@ export function BlogSection() {
                             <span>{formatDate(blogs[0].createdAt)}</span>
                             <span className="mx-2">•</span>
                             <Clock className="h-4 w-4 mr-1" />
-                            <span>5 min read</span>
+                            <span>{t("landing.blog.readTime")}</span>
                           </div>
                           <Button variant="ghost" size="sm" className="group/btn">
-                            Read More
+                            {t("landing.blog.readMore")}
                             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                           </Button>
                         </div>
@@ -208,17 +209,17 @@ export function BlogSection() {
                         <span>{formatDate(blog.createdAt)}</span>
                         <span className="mx-2">•</span>
                         <Clock className="h-4 w-4 mr-1" />
-                        <span>5 min read</span>
+                        <span>{t("landing.blog.readTime")}</span>
                       </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
                       <p className="text-gray-600 line-clamp-3">
-                        Read this article to learn more about the latest healthcare insights and recommendations.
+                        {t("landing.blog.articleDescription")}
                       </p>
                     </CardContent>
                     <CardFooter className="border-t border-gray-100 bg-gray-50 py-3">
                       <span className="text-primary font-medium flex items-center group-hover:underline">
-                        Read Article
+                        {t("landing.blog.readArticle")}
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </span>
                     </CardFooter>
@@ -232,7 +233,7 @@ export function BlogSection() {
         <div className="mt-16 text-center">
           <Button asChild variant="outline" size="lg" className="rounded-full px-8 group shadow-sm hover:shadow hover:bg-primary/5 hover:text-primary hover:border-primary/20">
             <Link href="/blogs" className="flex items-center">
-              View All Articles
+              {t("landing.blog.viewAllArticles")}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>

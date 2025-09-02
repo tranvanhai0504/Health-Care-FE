@@ -5,6 +5,19 @@ import { Bot, Sparkles } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import { MessageItem } from './message-item';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+
+interface ScheduleFormData {
+  dayOffset: number;
+  packageId: string;
+  status: string;
+  timeOffset: number;
+  type: string;
+  weekPeriod: {
+    from: string;
+    to: string;
+  };
+}
 
 export function MessageList() {
   const { 
@@ -14,6 +27,7 @@ export function MessageList() {
     sendMessage,
     isClient 
   } = useChat();
+  const { t } = useTranslation();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -36,12 +50,25 @@ export function MessageList() {
     }
   };
 
+  // Handle schedule confirmation
+  const handleScheduleConfirm = async (formData: ScheduleFormData) => {
+    // TODO: Implement the actual schedule confirmation logic
+    // This will make the API call to create/update the schedule
+    console.log('Schedule confirmation:', formData);
+    
+    // For now, just send a confirmation message
+    await sendMessage(t("chat.scheduleConfirmation.confirmed", {
+      type: formData.type,
+      date: new Date(formData.weekPeriod.from).toLocaleDateString()
+    }));
+  };
+
   // Welcome message suggestions
   const welcomeSuggestions = [
-    "How can I book an appointment?",
-    "What services do you offer?",
-    "Tell me about your doctors",
-    "What are your operating hours?"
+    t("chat.suggestions.bookAppointment"),
+    t("chat.suggestions.services"),
+    t("chat.suggestions.doctors"),
+    t("chat.suggestions.hours")
   ];
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -63,14 +90,14 @@ export function MessageList() {
           <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 py-2">
             <Bot size={24} className="text-primary" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Welcome to AI Assistant</h3>
+          <h3 className="font-semibold text-lg mb-2">{t("chat.welcome")}</h3>
           <p className="text-muted-foreground text-sm mb-6 max-w-xs">
-            I&apos;m here to help you with your healthcare needs. Ask me anything about our services, appointments, or general health questions.
+            {t("chat.welcomeMessage")}
           </p>
           
           {/* Suggestion buttons */}
           <div className="space-y-2 w-full max-w-xs">
-            <p className="text-xs text-muted-foreground mb-3">Try asking:</p>
+            <p className="text-xs text-muted-foreground mb-3">{t("chat.tryAsking")}</p>
             {welcomeSuggestions.map((suggestion, index) => (
               <button
                 key={index}
@@ -94,6 +121,7 @@ export function MessageList() {
           key={message.id}
           message={message}
           onRetry={handleRetry}
+          onScheduleConfirm={handleScheduleConfirm}
         />
       ))}
 

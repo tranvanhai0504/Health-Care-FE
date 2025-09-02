@@ -42,11 +42,11 @@ export const useChatStore = create<ChatState>()(
       ui: initialUIState,
 
       // Message actions
-      sendMessage: async (message: string) => {
+      sendMessage: async (message: string, imageFile?: File | null) => {
         const state = get();
         const conversationId = state.currentConversation?.id;
         
-        if (!conversationId || !message.trim()) return;
+        if (!conversationId || (!message.trim() && !imageFile)) return;
 
         // Add user message immediately
         const userMessage: ChatMessage = {
@@ -55,6 +55,7 @@ export const useChatStore = create<ChatState>()(
           content: message.trim(),
           timestamp: new Date(),
           status: MessageStatus.SENDING,
+          imageUrl: imageFile ? URL.createObjectURL(imageFile) : undefined,
         };
 
         // Update state with user message and loading state
@@ -78,6 +79,7 @@ export const useChatStore = create<ChatState>()(
           // Send to API
           const response = await chatService.sendMessage({
             message: message.trim(),
+            image: imageFile || undefined,
             conversationId,
             context: {
               currentPage: window.location.pathname,
@@ -92,6 +94,8 @@ export const useChatStore = create<ChatState>()(
             content: response.reply,
             timestamp: response.timestamp ? new Date(response.timestamp) : new Date(),
             status: MessageStatus.RECEIVED,
+            // Store form response if present
+            formResponse: response.formResponse,
           };
 
           set((state) => ({

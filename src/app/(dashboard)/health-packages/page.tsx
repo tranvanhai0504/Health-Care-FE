@@ -2,8 +2,12 @@
 import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import { consultationPackageService } from "@/services/consultationPackage.service";
-import { PaginationInfo, ConsultationPackage as BaseConsultationPackage } from "@/types";
+import {
+  PaginationInfo,
+  ConsultationPackage as BaseConsultationPackage,
+} from "@/types";
 import {
   Card,
   CardContent,
@@ -41,7 +45,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
 // Extend the base type with our UI-specific properties
 interface ConsultationPackage extends BaseConsultationPackage {
   isPopular?: boolean;
@@ -52,6 +55,7 @@ interface ConsultationPackage extends BaseConsultationPackage {
 }
 
 const HealthPackagesPage = () => {
+  const { t } = useTranslation();
   const [packages, setPackages] = useState<ConsultationPackage[]>([]);
   const [allPackages, setAllPackages] = useState<ConsultationPackage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +67,7 @@ const HealthPackagesPage = () => {
     total: 0,
     page: 1,
     limit: 12,
-    totalPages: 0
+    totalPages: 0,
   });
   const router = useRouter();
 
@@ -194,17 +198,17 @@ const HealthPackagesPage = () => {
 
   const getVisiblePages = () => {
     if (totalPages === 0) return [];
-    
+
     const maxVisible = 5;
     const halfVisible = Math.floor(maxVisible / 2);
-    
+
     let start = Math.max(1, currentPage - halfVisible);
     const end = Math.min(totalPages, start + maxVisible - 1);
-    
+
     if (end - start + 1 < maxVisible) {
       start = Math.max(1, end - maxVisible + 1);
     }
-    
+
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
@@ -212,17 +216,17 @@ const HealthPackagesPage = () => {
     <div className="container mx-auto px-4 max-w-7xl">
       {/* Hero section */}
       <div className="mb-10 py-8 px-6 rounded-2xl bg-gradient-to-r from-primary/10 to-transparent">
-        <h1 className="text-4xl font-bold mb-3">Health Packages</h1>
+        <h1 className="text-4xl font-bold mb-3">
+          {t("dashboard.healthPackages.title")}
+        </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mb-6">
-          Choose from our carefully designed health packages to ensure
-          comprehensive care for you and your family. Each package is tailored
-          to different healthcare needs.
+          {t("dashboard.healthPackages.subtitle")}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 mt-2">
           <div className="relative flex-grow max-w-xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search health packages..."
+              placeholder={t("dashboard.healthPackages.searchPlaceholder")}
               className="pl-10 h-12 w-full bg-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -239,14 +243,26 @@ const HealthPackagesPage = () => {
           <Select value={sortOption} onValueChange={setSortOption}>
             <SelectTrigger className="w-full sm:w-[180px] h-12 gap-2">
               <Filter className="w-4 h-4" />
-              <SelectValue placeholder="Sort packages" />
+              <SelectValue
+                placeholder={t("dashboard.healthPackages.sortPackages")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Default</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="popular">Most Popular</SelectItem>
-              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="default">
+                {t("dashboard.healthPackages.default")}
+              </SelectItem>
+              <SelectItem value="price-low">
+                {t("dashboard.healthPackages.priceLowToHigh")}
+              </SelectItem>
+              <SelectItem value="price-high">
+                {t("dashboard.healthPackages.priceHighToLow")}
+              </SelectItem>
+              <SelectItem value="popular">
+                {t("dashboard.healthPackages.mostPopular")}
+              </SelectItem>
+              <SelectItem value="newest">
+                {t("dashboard.healthPackages.newest")}
+              </SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -259,7 +275,7 @@ const HealthPackagesPage = () => {
             className="h-12 gap-2"
           >
             <RefreshCw className="h-4 w-4" />
-            Reset
+            {t("dashboard.healthPackages.reset")}
           </Button>
         </div>
       </div>
@@ -268,7 +284,7 @@ const HealthPackagesPage = () => {
       <div className="mb-8">
         <div className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
           <Tag className="h-4 w-4" />
-          Categories:
+          {t("dashboard.healthPackages.categories")}:
         </div>
         <div className="bg-muted/50 p-4 rounded-lg grid grid-cols-2 md:flex md:flex-wrap gap-2 justify-start">
           {getCategories().map((category) => (
@@ -278,24 +294,30 @@ const HealthPackagesPage = () => {
               onClick={() => setActiveCategory(category)}
               className={cn(
                 "px-4 py-2 capitalize text-sm w-fit transition-all",
-                activeCategory === category 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
+                activeCategory === category
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "hover:bg-muted-foreground/10"
               )}
             >
-              {category === "all" ? "All Packages" : category}
+              {category === "all"
+                ? t("dashboard.healthPackages.allPackages")
+                : category}
             </Button>
           ))}
         </div>
       </div>
 
       {/* Active filters display */}
-      {(searchQuery || activeCategory !== "all" || sortOption !== "default") && (
+      {(searchQuery ||
+        activeCategory !== "all" ||
+        sortOption !== "default") && (
         <div className="flex items-center gap-2 mb-6 p-4 bg-muted/50 rounded-lg">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <span className="text-sm text-muted-foreground">
+            {t("dashboard.healthPackages.activeFilters")}
+          </span>
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
-              Search: &quot;{searchQuery}&quot;
+              {t("dashboard.healthPackages.search")} &quot;{searchQuery}&quot;
               <button
                 onClick={() => setSearchQuery("")}
                 className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -306,7 +328,7 @@ const HealthPackagesPage = () => {
           )}
           {activeCategory !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              Category: {activeCategory}
+              {t("dashboard.healthPackages.category")} {activeCategory}
               <button
                 onClick={() => setActiveCategory("all")}
                 className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -317,7 +339,7 @@ const HealthPackagesPage = () => {
           )}
           {sortOption !== "default" && (
             <Badge variant="secondary" className="gap-1">
-              Sort: {sortOption}
+              {t("dashboard.healthPackages.sort")} {sortOption}
               <button
                 onClick={() => setSortOption("default")}
                 className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -333,7 +355,16 @@ const HealthPackagesPage = () => {
       {paginationInfo && (
         <div className="mb-6">
           <Badge variant="outline" className="text-sm">
-            Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-{Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of {paginationInfo.total} package{paginationInfo.total !== 1 ? "s" : ""}
+            {t("dashboard.healthPackages.showing")}{" "}
+            {(paginationInfo.page - 1) * paginationInfo.limit + 1}-
+            {Math.min(
+              paginationInfo.page * paginationInfo.limit,
+              paginationInfo.total
+            )}{" "}
+            {t("dashboard.healthPackages.of")} {paginationInfo.total}{" "}
+            {paginationInfo.total !== 1
+              ? t("dashboard.healthPackages.packages")
+              : t("dashboard.healthPackages.package")}
           </Badge>
         </div>
       )}
@@ -374,11 +405,13 @@ const HealthPackagesPage = () => {
       ) : packages.length === 0 ? (
         <div className="text-center py-16 px-4 rounded-xl border border-dashed border-border bg-muted/20">
           <PackageCheck className="mx-auto h-16 w-16 text-muted-foreground mb-6 opacity-70" />
-          <h3 className="text-xl font-semibold mb-3">No packages found</h3>
+          <h3 className="text-xl font-semibold mb-3">
+            {t("dashboard.healthPackages.noPackagesFound")}
+          </h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             {searchQuery || activeCategory !== "all" || sortOption !== "default"
-              ? "We couldn't find any packages matching your search criteria."
-              : "There are currently no health packages available."}
+              ? t("dashboard.healthPackages.noPackagesMatchFilters")
+              : t("dashboard.healthPackages.noPackagesAvailable")}
           </p>
           <Button
             onClick={() => {
@@ -391,7 +424,7 @@ const HealthPackagesPage = () => {
             className="gap-2"
           >
             <Filter className="h-4 w-4" />
-            Clear filters
+            {t("dashboard.healthPackages.clearFilters")}
           </Button>
         </div>
       ) : (
@@ -453,10 +486,12 @@ const HealthPackagesPage = () => {
                     {/* Package price */}
                     <div className="mb-4">
                       <span className="text-sm text-muted-foreground">
-                        Price
+                        {t("dashboard.healthPackages.price")}
                       </span>
                       <p className="text-2xl font-bold text-primary">
-                        {pkg.price === 0 ? "Free" : formatCurrency(pkg.price)}
+                        {pkg.price === 0
+                          ? t("dashboard.healthPackages.free")
+                          : formatCurrency(pkg.price)}
                       </p>
                     </div>
 
@@ -472,14 +507,19 @@ const HealthPackagesPage = () => {
                       {pkg.consultations && (
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5 text-primary" />
-                          <span>{pkg.consultations} visits</span>
+                          <span>
+                            {pkg.consultations}{" "}
+                            {t("dashboard.healthPackages.visits")}
+                          </span>
                         </div>
                       )}
 
                       {pkg.forFamily && (
                         <div className="flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-primary" />
-                          <span>Family package</span>
+                          <span>
+                            {t("dashboard.healthPackages.familyPackage")}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -492,7 +532,7 @@ const HealthPackagesPage = () => {
                     className="w-full justify-between group-hover:border-primary/40 group-hover:bg-primary/5 transition-colors"
                     onClick={() => navigateToDetails(pkg._id)}
                   >
-                    View Details
+                    {t("dashboard.healthPackages.viewDetails")}
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <BookPackageButton
@@ -544,23 +584,6 @@ const HealthPackagesPage = () => {
             </div>
           )}
         </>
-      )}
-
-      {/* Call to action section */}
-      {!loading && packages.length > 0 && (
-        <div className="mt-16 py-8 px-6 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 text-center">
-          <h2 className="text-2xl font-bold mb-3">
-            Need a custom health plan?
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            We can create a customized health package specifically for your
-            needs. Our healthcare specialists are ready to help.
-          </p>
-          <Button size="lg" className="gap-2">
-            <PackageCheck className="h-5 w-5" />
-            Request Custom Package
-          </Button>
-        </div>
       )}
     </div>
   );

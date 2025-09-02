@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import authService from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ type Props = {
 };
 
 export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
+  const { t } = useTranslation();
   const [changingPassword, setChangingPassword] = useState(false);
 
   // Initialize password change form
@@ -91,10 +93,10 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-primary" />
-            Change Password
+            {t("dialogs.changePassword.title")}
           </DialogTitle>
           <DialogDescription>
-            Enter your current password and choose a new one. Your new password should be at least 8 characters long.
+            {t("dialogs.changePassword.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -105,11 +107,11 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
               name="oldPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Current Password</FormLabel>
+                  <FormLabel>{t("dialogs.changePassword.currentPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your current password"
+                      placeholder={t("dialogs.changePassword.enterCurrentPassword")}
                       {...field}
                       disabled={changingPassword}
                     />
@@ -124,11 +126,11 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
+                  <FormLabel>{t("dialogs.changePassword.newPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your new password"
+                      placeholder={t("dialogs.changePassword.enterNewPassword")}
                       {...field}
                       disabled={changingPassword}
                     />
@@ -143,11 +145,11 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormLabel>{t("dialogs.changePassword.confirmNewPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Confirm your new password"
+                      placeholder={t("dialogs.changePassword.confirmNewPasswordPlaceholder")}
                       {...field}
                       disabled={changingPassword}
                     />
@@ -164,18 +166,18 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
                 onClick={handleClose}
                 disabled={changingPassword}
               >
-                Cancel
+                {t("dialogs.changePassword.cancel")}
               </Button>
               <Button type="submit" disabled={changingPassword}>
                 {changingPassword ? (
                   <span className="flex items-center">
                     <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
-                    Changing...
+                    {t("dialogs.changePassword.changing")}
                   </span>
                 ) : (
                   <span className="flex items-center">
                     <Key className="mr-2 h-4 w-4" />
-                    Change Password
+                    {t("dialogs.changePassword.changePassword")}
                   </span>
                 )}
               </Button>

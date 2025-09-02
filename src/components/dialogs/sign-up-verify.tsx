@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
 import { useSetupStore } from "@/stores/setup";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   isOpen: boolean;
@@ -30,10 +31,11 @@ export function SignUpVerifyModal({
   const [otp, setOtp] = useState("");
   const router = useRouter();
   const setUserInfo = useSetupStore((state) => state.setUserInfo);
+  const { t } = useTranslation();
 
   const handleVerify = useCallback(() => {
     if (otp.length !== 6) {
-      toast.error("Please enter a valid 6-digit OTP");
+      toast.error(t("auth.verify.enterValidOtp"));
       return;
     }
 
@@ -43,7 +45,7 @@ export function SignUpVerifyModal({
           code: otp,
           phoneNumber: phoneNumber,
         });
-        toast.success("OTP verified successfully");
+        toast.success(t("auth.verify.verifiedSuccessfully"));
 
         // Store the phone number in Zustand setup store
         if (response.msg.toLowerCase() === "ok") {
@@ -55,21 +57,21 @@ export function SignUpVerifyModal({
       } catch (error: unknown) {
         const axiosError = error as AxiosError<{ message: string }>;
         toast.error(
-          axiosError.response?.data?.message || "Failed to verify OTP"
+          axiosError.response?.data?.message || t("auth.verify.verificationFailed")
         );
       } finally {
         onOpenChange(false);
       }
     });
-  }, [otp, phoneNumber, setUserInfo, onOpenChange, router]);
+  }, [otp, phoneNumber, setUserInfo, onOpenChange, router, t]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Verify OTP</DialogTitle>
+          <DialogTitle>{t("auth.verify.title")}</DialogTitle>
           <DialogDescription className="text-xs">
-            Please enter the OTP sent to your registered mobile number.
+            {t("auth.verify.description")}
           </DialogDescription>
         </DialogHeader>
         <div className="w-full flex justify-center">
@@ -85,9 +87,9 @@ export function SignUpVerifyModal({
           </InputOTP>
         </div>
         <div className="text-xs flex items-center gap-1">
-          <p>Can&apos;t find the OTP?</p>
+          <p>{t("auth.verify.cantFindOtp")}</p>
           <Button variant="link" className="p-0 text-xs">
-            Resend OTP
+            {t("auth.verify.resendOtp")}
           </Button>
         </div>
         <DialogFooter>
@@ -97,7 +99,7 @@ export function SignUpVerifyModal({
             disabled={isPending || otp.length !== 6}
             onClick={handleVerify}
           >
-            Verify
+            {t("auth.verify.verify")}
           </Button>
         </DialogFooter>
       </DialogContent>

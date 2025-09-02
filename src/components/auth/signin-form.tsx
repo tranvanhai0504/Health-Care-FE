@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +36,7 @@ export default function SignInForm() {
   const redirectUrl = searchParams.get("redirect") || "/";
   const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useTranslation();
   const form = useForm<LoginCredentials>({
     defaultValues: {
       phoneNumber: "",
@@ -69,16 +71,16 @@ export default function SignInForm() {
         }
       }
     } else {
-      toast.error("Sign in failed. Please check your credentials.");
+      toast.error(t("auth.login.signInFailed"));
     }
   };
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl">Sign In</CardTitle>
+        <CardTitle className="text-2xl">{t("auth.login.signIn")}</CardTitle>
         <CardDescription>
-          Enter your credentials to access your account
+          {t("auth.login.subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -89,10 +91,10 @@ export default function SignInForm() {
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>{t("auth.login.phoneNumber")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter your phone number"
+                      placeholder={t("auth.login.phonePlaceholder")}
                       {...field}
                       disabled={isLoading}
                     />
@@ -107,12 +109,12 @@ export default function SignInForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("auth.login.password")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
+                        placeholder={t("auth.login.passwordPlaceholder")}
                         {...field}
                         disabled={isLoading}
                       />
@@ -149,7 +151,7 @@ export default function SignInForm() {
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Remember me</FormLabel>
+                    <FormLabel>{t("auth.login.rememberMe")}</FormLabel>
                   </div>
                 </FormItem>
               )}
@@ -159,10 +161,10 @@ export default function SignInForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {t("auth.login.signingIn")}
                 </>
               ) : (
-                "Sign In"
+                t("auth.login.signIn")
               )}
             </Button>
           </form>
@@ -174,14 +176,14 @@ export default function SignInForm() {
           className="w-full"
           onClick={() => router.push("/register")}
         >
-          Create an account
+          {t("auth.login.createAccount")}
         </Button>
         <Button
           variant="link"
           className="w-full"
           onClick={() => router.push("/forgot-password")}
         >
-          Forgot your password?
+          {t("auth.login.forgotPassword")}
         </Button>
       </CardFooter>
     </Card>

@@ -9,7 +9,6 @@ import {
   Calendar,
   Package,
   Stethoscope,
-  Settings,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,11 +48,6 @@ const AdminSidebar = () => {
       title: "Blogs",
       href: "/admin/blogs",
       icon: <FileText className="w-5 h-5" />,
-    },
-    {
-      title: "Settings",
-      href: "/admin/settings",
-      icon: <Settings className="w-5 h-5" />,
     },
   ];
 

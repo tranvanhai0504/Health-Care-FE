@@ -19,6 +19,7 @@ import { Search, Filter, Check, ChevronsUpDown } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import {
   Command,
   CommandEmpty,
@@ -57,6 +58,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
   trigger,
   initialSelectedIds = [],
 }) => {
+  const { t } = useTranslation();
   const [services, setServices] = useState<ConsultationService[]>([]);
   const [selectedServices, setSelectedServices] = useState<
     ConsultationService[]
@@ -300,19 +302,19 @@ const SearchService: React.FC<SearchServiceProps> = ({
             className={cn("justify-between text-sm", className)}
             disabled={disabled}
           >
-            {selectedSpecialty ? selectedSpecialty.name : "All Specializations"}
+            {selectedSpecialty ? selectedSpecialty.name : t("dialogs.searchService.allSpecializations")}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0 z-50">
           <Command>
             <CommandInput
-              placeholder="Search specializations..."
+              placeholder={t("dialogs.searchService.searchSpecializations")}
               className="h-9"
             />
             <CommandList>
               <CommandEmpty>
-                {loadingSpecialties ? "Loading..." : "No specialization found."}
+                {loadingSpecialties ? t("dialogs.searchService.loading") : t("dialogs.searchService.noSpecializationFound")}
               </CommandEmpty>
               <CommandGroup>
                 <CommandItem
@@ -322,7 +324,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     setOpen(false);
                   }}
                 >
-                  All Specializations
+                  {t("dialogs.searchService.allSpecializations")}
                   <Check
                     className={cn(
                       "ml-auto h-4 w-4",
@@ -412,12 +414,12 @@ const SearchService: React.FC<SearchServiceProps> = ({
 
       <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Search Consultation Services</DialogTitle>
+          <DialogTitle>{t("dialogs.searchService.title")}</DialogTitle>
           <DialogDescription>
-            Find and select consultation services.{" "}
+            {t("dialogs.searchService.description")}{" "}
             {multiple
-              ? "You can select multiple services."
-              : "Select one service."}
+              ? t("dialogs.searchService.selectMultiple")
+              : t("dialogs.searchService.selectOne")}
           </DialogDescription>
         </DialogHeader>
 
@@ -428,13 +430,13 @@ const SearchService: React.FC<SearchServiceProps> = ({
               {/* Search Bar */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Search Services
+                  {t("dialogs.searchService.searchServices")}
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder={t("dialogs.searchService.search")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -499,7 +501,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
 
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-2">
-                        Max Price
+                        {t("dialogs.searchService.maxPrice")}
                       </label>
                       <input
                         type="number"
@@ -527,7 +529,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search services..."
+                  placeholder={t("dialogs.searchService.searchServices")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -550,7 +552,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="number"
-                  placeholder="Min Price"
+                  placeholder={t("dialogs.searchService.minPrice")}
                   min="0"
                   value={filters.minPrice}
                   onChange={(e) =>
@@ -560,7 +562,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 />
                 <input
                   type="number"
-                  placeholder="Max Price"
+                  placeholder={t("dialogs.searchService.maxPrice")}
                   min="0"
                   value={filters.maxPrice}
                   onChange={(e) =>
@@ -579,7 +581,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     onClick={clearFilters}
                     className="text-sm text-blue-600 hover:text-blue-800"
                   >
-                    Clear filters
+                    {t("dialogs.searchService.clearFilters")}
                   </button>
                 </div>
               )}
@@ -590,21 +592,21 @@ const SearchService: React.FC<SearchServiceProps> = ({
               {loading ? (
                 <div className="flex items-center justify-center h-96 text-gray-600">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-sm">Loading services...</span>
+                  <span className="ml-2 text-sm">{t("dialogs.searchService.loadingServices")}</span>
                 </div>
               ) : error ? (
                 <div className="flex items-center justify-center h-96 text-red-600">
                   <div className="text-center">
                     <div className="text-sm font-medium">{error}</div>
-                    <div className="text-xs mt-1">Please try again</div>
+                    <div className="text-xs mt-1">{t("dialogs.searchService.pleaseTryAgain")}</div>
                   </div>
                 </div>
               ) : services.length === 0 ? (
                 <div className="flex items-center justify-center h-96 text-gray-500">
                   <div className="text-center">
-                    <div className="text-sm">No services found</div>
+                    <div className="text-sm">{t("dialogs.searchService.noServicesFound")}</div>
                     <div className="text-xs mt-1">
-                      Try adjusting your search or filters
+                      {t("dialogs.searchService.tryAdjustingFilters")}
                     </div>
                   </div>
                 </div>
@@ -635,8 +637,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
         <DialogFooter>
           <div className="flex items-center justify-between w-full">
             <div className="text-sm text-gray-600">
-              {selectedServices.length} service
-              {selectedServices.length !== 1 ? "s" : ""} selected
+              {selectedServices.length} {selectedServices.length !== 1 ? t("dialogs.searchService.services") : t("dialogs.searchService.service")} {t("dialogs.searchService.selected")}
             </div>
 
             <div className="flex gap-2">
@@ -654,7 +655,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 disabled={selectedServices.length === 0}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Apply ({selectedServices.length})
+                {t("dialogs.searchService.apply")} ({selectedServices.length})
               </button>
             </div>
           </div>

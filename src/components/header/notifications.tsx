@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +15,7 @@ import { waitingMessageService } from "@/services/waittingMessage.service";
 import { useAuth } from "@/hooks/useAuth";
 import { WaitingMessage } from "@/types/waitingMessage";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface NotificationItem {
   id: string;
@@ -24,18 +27,19 @@ interface NotificationItem {
 
 // Helper function to map WaitingMessage to NotificationItem
 const mapWaitingMessageToNotification = (
-  waitingMessage: WaitingMessage
+  waitingMessage: WaitingMessage,
+  t: (key: string) => string
 ): NotificationItem => {
   const getTitle = (status: WaitingMessage["status"]) => {
     switch (status) {
       case "pending":
-        return "Upcoming Reminder";
+        return t("navigation.notifications.upcomingReminder");
       case "sent":
-        return "Message Sent";
+        return t("navigation.notifications.messageSent");
       case "failed":
-        return "Message Failed";
+        return t("navigation.notifications.messageFailed");
       default:
-        return "Notification";
+        return t("navigation.notifications.notification");
     }
   };
 
@@ -44,7 +48,7 @@ const mapWaitingMessageToNotification = (
       return formatDistanceToNow(parseISO(dateString), { addSuffix: true });
     } catch (error) {
       console.warn("Failed to format relative time:", dateString, error);
-      return "Recently";
+      return t("navigation.notifications.recently");
     }
   };
 
@@ -59,6 +63,7 @@ const mapWaitingMessageToNotification = (
 
 const Notifications = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +84,7 @@ const Notifications = () => {
     try {
       const waitingMessages = await waitingMessageService.getUserMessages();
       const mappedNotifications = waitingMessages
-        .map(mapWaitingMessageToNotification)
+        .map(msg => mapWaitingMessageToNotification(msg, t))
         .sort((a, b) => {
           // Sort by status priority (pending first) then by time
           const statusPriority = { pending: 0, sent: 1, failed: 2 };
@@ -97,12 +102,12 @@ const Notifications = () => {
       setNotifications(mappedNotifications);
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
-      setError("Failed to load notifications");
+      setError(t("navigation.notifications.retry"));
       setNotifications([]);
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, t]);
 
   // Fetch notifications when component mounts or authentication changes
   useEffect(() => {
@@ -136,7 +141,7 @@ const Notifications = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[320px]">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+          <span>{t("navigation.notifications.title")}</span>
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -145,7 +150,7 @@ const Notifications = () => {
           {!isAuthenticated ? (
             <div className="py-4 px-4 text-center">
               <p className="text-sm text-muted-foreground">
-                Please sign in to view notifications
+                {t("navigation.notifications.signInToView")}
               </p>
             </div>
           ) : error ? (
@@ -157,13 +162,13 @@ const Notifications = () => {
                 className="mt-2"
                 onClick={fetchNotifications}
               >
-                Retry
+                {t("navigation.notifications.retry")}
               </Button>
             </div>
           ) : notifications.length === 0 && !loading ? (
             <div className="py-4 px-4 text-center">
               <p className="text-sm text-muted-foreground">
-                No notifications yet
+                {t("navigation.notifications.noNotifications")}
               </p>
             </div>
           ) : (
@@ -180,7 +185,7 @@ const Notifications = () => {
                         notification.status
                       )}`}
                     >
-                      {notification.status}
+                      {t(`navigation.notifications.${notification.status}`)}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground truncate">
@@ -202,7 +207,7 @@ const Notifications = () => {
               className="cursor-pointer justify-center text-sm text-primary"
               onClick={fetchNotifications}
             >
-              Refresh notifications
+              {t("navigation.notifications.refreshNotifications")}
             </DropdownMenuItem>
           </>
         )}

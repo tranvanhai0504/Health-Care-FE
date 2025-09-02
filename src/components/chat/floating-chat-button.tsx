@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useChat } from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 export function FloatingChatButton() {
+  const { t } = useTranslation();
   const { 
     toggleChat, 
     isOpen, 
@@ -32,7 +34,7 @@ export function FloatingChatButton() {
           "flex items-center justify-center relative group",
           isOpen && "bg-primary/80"
         )}
-        aria-label={isOpen ? "Close AI Chat" : "Open AI Chat"}
+        aria-label={isOpen ? t('chat.floatingButton.closeChat') : t('chat.floatingButton.openChat')}
       >
         <div className="relative">
           {isOpen ? (

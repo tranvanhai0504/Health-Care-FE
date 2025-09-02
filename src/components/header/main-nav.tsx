@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import {
@@ -7,15 +9,18 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { useTranslation } from "react-i18next";
 
 const MainNav = () => {
+  const { t } = useTranslation();
+
   return (
     <NavigationMenu className="hidden md:flex">
       <NavigationMenuList>
         <NavigationMenuItem>
           <Link href="/health-packages" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Health Packages
+              {t("navigation.mainNav.healthPackages")}
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
@@ -23,7 +28,7 @@ const MainNav = () => {
         <NavigationMenuItem>
           <Link href="/medical-services" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Medical Services
+              {t("navigation.mainNav.medicalServices")}
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
@@ -31,7 +36,7 @@ const MainNav = () => {
         <NavigationMenuItem>
           <Link href="/blogs" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Blogs
+              {t("navigation.mainNav.blogs")}
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "@uidotdev/usehooks";
+import { useTranslation } from "react-i18next";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import {
   ConsultationPackage,
@@ -72,6 +73,7 @@ import {
 } from "@/components/ui/select";
 
 export default function AdminHealthPackagesPage() {
+  const { t } = useTranslation();
   const [packages, setPackages] = useState<ConsultationPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
@@ -324,14 +326,14 @@ export default function AdminHealthPackagesPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
-                <Package className="h-5 w-5" /> Health Packages Management
+                <Package className="h-5 w-5" /> {t("admin.healthPackages.title")}
               </CardTitle>
               <CardDescription className="mt-1.5">
-                Manage all health packages available to users
+                {t("admin.healthPackages.subtitle")}
               </CardDescription>
             </div>
             <Button onClick={handleCreatePackage} className="w-full md:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Create New Package
+              <Plus className="mr-2 h-4 w-4" /> {t("admin.healthPackages.createNewPackage")}
             </Button>
           </div>
         </CardHeader>
@@ -342,7 +344,7 @@ export default function AdminHealthPackagesPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder={
-                  isSearching ? "Searching..." : "Search packages..."
+                  isSearching ? t("admin.healthPackages.searching") : t("admin.healthPackages.searchPackages")
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -370,10 +372,10 @@ export default function AdminHealthPackagesPage() {
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full lg:w-[180px]">
                   <Filter className="w-4 h-4" />
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder={t("admin.healthPackages.category")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">{t("admin.healthPackages.allCategories")}</SelectItem>
                   {allCategories.map((category) => (
                     <SelectItem
                       key={category}
@@ -391,7 +393,7 @@ export default function AdminHealthPackagesPage() {
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Min price"
+                    placeholder={t("admin.healthPackages.minPrice")}
                     value={minPriceFilter}
                     onChange={(e) => setMinPriceFilter(e.target.value)}
                     className="pl-10 w-[120px]"
@@ -402,7 +404,7 @@ export default function AdminHealthPackagesPage() {
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Max price"
+                    placeholder={t("admin.healthPackages.maxPrice")}
                     value={maxPriceFilter}
                     onChange={(e) => setMaxPriceFilter(e.target.value)}
                     className="pl-10 w-[120px]"
@@ -424,7 +426,7 @@ export default function AdminHealthPackagesPage() {
                 disabled={isSearching}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reset All
+                {t("admin.healthPackages.resetAll")}
               </Button>
             </div>
           </div>
@@ -436,7 +438,7 @@ export default function AdminHealthPackagesPage() {
             maxPriceFilter) && (
             <div className="flex items-center gap-2 mb-4 p-3 bg-muted/50 rounded-lg flex-wrap">
               <span className="text-sm text-muted-foreground">
-                Active filters:
+                {t("admin.healthPackages.activeFilters")}:
               </span>
               {searchQuery && (
                 <Badge variant="secondary" className="gap-1">
@@ -520,14 +522,14 @@ export default function AdminHealthPackagesPage() {
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                 <Package className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No packages found</h3>
+              <h3 className="text-lg font-medium mb-2">{t("admin.healthPackages.noPackagesFound")}</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery ||
                 categoryFilter !== "all" ||
                 minPriceFilter ||
                 maxPriceFilter
-                  ? "No packages match your current filters."
-                  : "No health packages have been created yet."}
+                  ? t("admin.healthPackages.noPackagesMatchFilters")
+                  : t("admin.healthPackages.noPackagesCreated")}
               </p>
               {searchQuery ||
               categoryFilter !== "all" ||
@@ -542,12 +544,12 @@ export default function AdminHealthPackagesPage() {
                     setMaxPriceFilter("");
                   }}
                 >
-                  Clear filters
+                  {t("admin.healthPackages.clearFilters")}
                 </Button>
               ) : (
                 <Button onClick={handleCreatePackage}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create your first package
+                  {t("admin.healthPackages.createFirstPackage")}
                 </Button>
               )}
             </div>
@@ -557,11 +559,11 @@ export default function AdminHealthPackagesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[300px]">Package Title</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="w-[300px]">{t("admin.healthPackages.packageTitle")}</TableHead>
+                      <TableHead>{t("admin.healthPackages.category")}</TableHead>
+                      <TableHead>{t("admin.healthPackages.price")}</TableHead>
+                      <TableHead>{t("admin.healthPackages.created")}</TableHead>
+                      <TableHead className="text-right">{t("admin.healthPackages.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -575,7 +577,7 @@ export default function AdminHealthPackagesPage() {
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                               {pkg.description
                                 ? pkg.description.substring(0, 80) + "..."
-                                : "No description"}
+                                : t("admin.healthPackages.noDescription")}
                             </p>
                           </div>
                         </TableCell>
@@ -587,7 +589,7 @@ export default function AdminHealthPackagesPage() {
                         <TableCell>
                           <span className="font-medium text-primary">
                             {pkg.price === 0
-                              ? "Free"
+                              ? t("admin.healthPackages.free")
                               : formatCurrency(pkg.price)}
                           </span>
                         </TableCell>
@@ -601,23 +603,23 @@ export default function AdminHealthPackagesPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t("admin.healthPackages.openMenu")}</span>
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>{t("admin.healthPackages.actions")}</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => handleViewPackage(pkg._id)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
-                                View
+                                {t("admin.healthPackages.view")}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleEditPackage(pkg._id)}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                                {t("admin.healthPackages.edit")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -625,7 +627,7 @@ export default function AdminHealthPackagesPage() {
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                {t("admin.healthPackages.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   Stethoscope,
@@ -40,6 +41,7 @@ import { useServiceListSafe } from "@/hooks/useServiceListSafe";
 import { formatPrice, formatDuration } from "@/utils";
 
 export default function ConsultationsPage() {
+  const { t } = useTranslation();
   const [consultationServices, setConsultationServices] = useState<
     ConsultationService[]
   >([]);
@@ -190,21 +192,20 @@ export default function ConsultationsPage() {
             <Link href="/">
               <Button variant="ghost" size="sm" className="gap-1">
                 <ArrowLeft className="h-4 w-4" />
-                <span>Back to Home</span>
+                <span>{t("dashboard.medicalServices.backToHome")}</span>
               </Button>
             </Link>
           </div>
           <h1 className="text-4xl font-bold tracking-tight">
-            Medical Consultation Services
+            {t("dashboard.medicalServices.title")}
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Browse our comprehensive range of medical services offered by expert
-            healthcare professionals
+            {t("dashboard.medicalServices.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="outline" className="text-sm text-nowrap">
-            {paginationInfo.total} total services
+            {paginationInfo.total} {t("dashboard.medicalServices.totalServices")}
           </Badge>
           {getTotalServices() > 0 && (
             <Button
@@ -230,7 +231,7 @@ export default function ConsultationsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search services by name or description..."
+              placeholder={t("dashboard.medicalServices.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-10"
@@ -243,10 +244,10 @@ export default function ConsultationsPage() {
               onValueChange={setSelectedSpecialty}
             >
               <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="All Specialties" />
+                <SelectValue placeholder={t("dashboard.medicalServices.allSpecialties")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Specialties</SelectItem>
+                <SelectItem value="all">{t("dashboard.medicalServices.allSpecialties")}</SelectItem>
                 {specialties.map((specialty) => (
                   <SelectItem key={specialty._id} value={specialty._id}>
                     {specialty.name}
@@ -260,10 +261,10 @@ export default function ConsultationsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="name">Sort by Name</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="duration">Duration</SelectItem>
+                <SelectItem value="name">{t("dashboard.medicalServices.sortByName")}</SelectItem>
+                <SelectItem value="price-low">{t("dashboard.medicalServices.priceLowToHigh")}</SelectItem>
+                <SelectItem value="price-high">{t("dashboard.medicalServices.priceHighToLow")}</SelectItem>
+                <SelectItem value="duration">{t("dashboard.medicalServices.duration")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -291,11 +292,11 @@ export default function ConsultationsPage() {
         {(searchTerm || selectedSpecialty !== "all") && (
           <div className="flex items-center gap-2 pt-2 border-t">
             <span className="text-sm text-muted-foreground">
-              Active filters:
+              {t("dashboard.medicalServices.activeFilters")}:
             </span>
             {searchTerm && (
               <Badge variant="secondary" className="gap-1">
-                Search: &quot;{searchTerm}&quot;
+                {t("dashboard.medicalServices.search")}: &quot;{searchTerm}&quot;
                 <button
                   onClick={() => setSearchTerm("")}
                   className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -324,7 +325,7 @@ export default function ConsultationsPage() {
               }}
               className="text-muted-foreground"
             >
-              Clear all
+              {t("dashboard.medicalServices.clearAll")}
             </Button>
             {getTotalServices() > 0 && (
               <Button
@@ -334,7 +335,7 @@ export default function ConsultationsPage() {
                 className="gap-2 bg-primary/5 border-primary/20"
               >
                 <ClipboardList className="h-4 w-4" />
-                {getTotalServices()} in list
+                {getTotalServices()} {t("dashboard.medicalServices.inList")}
               </Button>
             )}
           </div>
@@ -373,17 +374,16 @@ export default function ConsultationsPage() {
           <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
             <Stethoscope className="h-10 w-10 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-medium mb-2">No services found</h3>
+          <h3 className="text-xl font-medium mb-2">{t("dashboard.medicalServices.noServicesFound")}</h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             {searchTerm || selectedSpecialty !== "all"
-              ? "No services match your current filters. Try adjusting your search criteria."
-              : "No services are currently available."}
+              ? t("dashboard.medicalServices.noServicesMatchFilters")
+              : t("dashboard.medicalServices.noServicesAvailable")}
           </p>
           {getTotalServices() > 0 && (
             <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20 max-w-md mx-auto">
               <p className="text-sm text-muted-foreground mb-2">
-                You have {getTotalServices()} service
-                {getTotalServices() !== 1 ? "s" : ""} in your list
+                {t("dashboard.medicalServices.youHave")} {getTotalServices()} {getTotalServices() !== 1 ? t("dashboard.medicalServices.services") : t("dashboard.medicalServices.service")} {t("dashboard.medicalServices.inYourList")}
               </p>
               <Button
                 variant="outline"
@@ -392,7 +392,7 @@ export default function ConsultationsPage() {
                 className="gap-2"
               >
                 <ClipboardList className="h-4 w-4" />
-                View Service List
+                {t("dashboard.medicalServices.viewServiceList")}
               </Button>
             </div>
           )}
@@ -404,7 +404,7 @@ export default function ConsultationsPage() {
                 setSelectedSpecialty("all");
               }}
             >
-              Clear all filters
+              {t("dashboard.medicalServices.clearAllFilters")}
             </Button>
           )}
         </div>
@@ -494,7 +494,7 @@ export default function ConsultationsPage() {
                           router.push(`/medical-services/${service._id}`)
                         }
                       >
-                        View Details
+                        {t("dashboard.medicalServices.viewDetails")}
                       </Button>
                       <Button
                         size={viewMode === "list" ? "sm" : "default"}
@@ -505,7 +505,7 @@ export default function ConsultationsPage() {
                           )
                         }
                       >
-                        Book Now
+                        {t("dashboard.medicalServices.bookNow")}
                       </Button>
                     </div>
                     <AddToListButton

@@ -28,6 +28,7 @@ import {
 } from "@/schemas/password";
 import { useSetupStore } from "@/stores/setup";
 import { useAuthStore } from "@/stores/auth";
+import { useTranslation } from "react-i18next";
 
 const PasswordPage = () => {
   const router = useRouter();
@@ -36,6 +37,7 @@ const PasswordPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const userInfo = useSetupStore((state) => state.userInfo);
   const createUser = useAuthStore((state) => state.createUser);
+  const { t } = useTranslation();
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordFormSchema),
@@ -61,7 +63,7 @@ const PasswordPage = () => {
         // Use Zustand store for phoneNumber
         const phoneNumber = userInfo.phoneNumber;
         if (!phoneNumber) {
-          toast.error("Phone number not found");
+          toast.error(t("auth.setup.password.phoneNumberNotFound"));
           return;
         }
         // Only save password to setup store
@@ -74,7 +76,7 @@ const PasswordPage = () => {
         router.push("/set-up/information");
       } catch (error) {
         console.error(error);
-        toast.error("Failed to set password. Please try again.");
+        toast.error(t("auth.setup.password.passwordSetFailed"));
       }
     });
   }
@@ -87,10 +89,10 @@ const PasswordPage = () => {
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="font-bold text-2xl md:text-3xl tracking-tight text-gray-800">
-          Create a Password
+          {t("auth.setup.password.title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Set a secure password to protect your healthcare account
+          {t("auth.setup.password.subtitle")}
         </p>
       </div>
 
@@ -99,75 +101,75 @@ const PasswordPage = () => {
           <FormField
             control={form.control}
             name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <LockIcon className="h-4 w-4 text-muted-foreground" />
+                          render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("auth.setup.password.password")}</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <LockIcon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder={t("auth.setup.password.passwordPlaceholder")}
+                        className="pl-10 pr-10"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={toggleShowPassword}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                      >
+                        {showPassword ? (
+                          <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <EyeIcon className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
                     </div>
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="pl-10 pr-10"
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      onClick={toggleShowPassword}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
-                    >
-                      {showPassword ? (
-                        <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <EyeIcon className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
           />
 
           <FormField
             control={form.control}
             name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <LockIcon className="h-4 w-4 text-muted-foreground" />
+                          render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("auth.setup.password.confirmPassword")}</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <LockIcon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder={t("auth.setup.password.confirmPasswordPlaceholder")}
+                        className="pl-10 pr-10"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={toggleShowConfirmPassword}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <EyeIcon className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </button>
                     </div>
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      className="pl-10 pr-10"
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      onClick={toggleShowConfirmPassword}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <EyeIcon className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
           />
 
           <div className="space-y-2 rounded-lg bg-muted/50 p-4">
-            <p className="text-xs font-medium">Password requirements:</p>
+            <p className="text-xs font-medium">{t("auth.setup.password.requirements")}</p>
             <ul className="space-y-1 text-xs">
               <li className="flex items-center gap-1.5">
                 {passwordStrength.length ? (
@@ -175,7 +177,7 @@ const PasswordPage = () => {
                 ) : (
                   <XCircleIcon className="h-3.5 w-3.5 text-destructive" />
                 )}
-                At least 8 characters
+                {t("auth.setup.password.atLeast8Chars")}
               </li>
               <li className="flex items-center gap-1.5">
                 {passwordStrength.uppercase ? (
@@ -183,7 +185,7 @@ const PasswordPage = () => {
                 ) : (
                   <XCircleIcon className="h-3.5 w-3.5 text-destructive" />
                 )}
-                At least one uppercase letter
+                {t("auth.setup.password.atLeastOneUppercase")}
               </li>
               <li className="flex items-center gap-1.5">
                 {passwordStrength.lowercase ? (
@@ -191,7 +193,7 @@ const PasswordPage = () => {
                 ) : (
                   <XCircleIcon className="h-3.5 w-3.5 text-destructive" />
                 )}
-                At least one lowercase letter
+                {t("auth.setup.password.atLeastOneLowercase")}
               </li>
               <li className="flex items-center gap-1.5">
                 {passwordStrength.number ? (
@@ -199,7 +201,7 @@ const PasswordPage = () => {
                 ) : (
                   <XCircleIcon className="h-3.5 w-3.5 text-destructive" />
                 )}
-                At least one number
+                {t("auth.setup.password.atLeastOneNumber")}
               </li>
             </ul>
           </div>
@@ -209,7 +211,7 @@ const PasswordPage = () => {
             className="w-full py-5 mt-2 text-base font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary"
             disabled={isPending}
           >
-            {isPending ? "Setting Password..." : "Continue"}
+            {isPending ? t("auth.setup.password.settingPassword") : t("auth.setup.password.continue")}
           </Button>
         </form>
       </Form>

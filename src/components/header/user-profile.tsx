@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User, LayoutDashboard, Pill } from "lucide-react";
 import { UserProfile as UserProfileType } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 interface UserProfileProps {
   user: UserProfileType;
@@ -22,6 +23,7 @@ interface UserProfileProps {
 
 const UserProfile = ({ user }: UserProfileProps) => {
   const { logout } = useAuth();
+  const { t } = useTranslation();
   const isAdmin = user.role === "admin";
 
   // Get initials for avatar fallback
@@ -57,7 +59,7 @@ const UserProfile = ({ user }: UserProfileProps) => {
             </p>
             {isAdmin && (
               <p className="text-xs leading-none text-muted-foreground mt-1">
-                Admin
+                {t("navigation.userProfile.admin")}
               </p>
             )}
           </div>
@@ -67,7 +69,7 @@ const UserProfile = ({ user }: UserProfileProps) => {
           <DropdownMenuItem asChild>
             <Link href="/admin" className="flex w-full items-center">
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>Admin Dashboard</span>
+              <span>{t("navigation.userProfile.adminDashboard")}</span>
             </Link>
           </DropdownMenuItem>
         )}
@@ -75,26 +77,26 @@ const UserProfile = ({ user }: UserProfileProps) => {
           <DropdownMenuItem asChild>
             <Link href="/doctor/dashboard" className="flex w-full items-center">
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>Doctor Dashboard</span>
+              <span>{t("navigation.userProfile.doctorDashboard")}</span>
             </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
           <Link href="/profile" className="flex w-full items-center">
             <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <span>{t("navigation.userProfile.profile")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/prescriptions" className="flex w-full items-center">
             <Pill className="mr-2 h-4 w-4" />
-            <span>My Prescriptions</span>
+            <span>{t("navigation.userProfile.myPrescriptions")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>{t("navigation.userProfile.logOut")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

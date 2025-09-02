@@ -18,6 +18,7 @@ import {
   Clock,
   CreditCard
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Import services for entity resolution
 import { specialtyService } from "@/services/specialties.service";
@@ -44,6 +45,7 @@ interface PathConfig {
 export function AutoBreadcrumb() {
   const params = useParams();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const [dynamicNames, setDynamicNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
@@ -133,40 +135,40 @@ export function AutoBreadcrumb() {
   // Memoize path configuration to prevent unnecessary re-renders
   const pathConfig = useMemo<Record<string, PathConfig>>(() => ({
     // Main sections
-    "consultations": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Consultations" },
-    "specialties": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: "Medical Specialties" },
-    "blogs": { icon: <BookOpen className="h-3.5 w-3.5" />, label: "Health Blogs" },
-    "set-up": { icon: <Settings className="h-3.5 w-3.5" />, label: "Setup" },
-    "information": { icon: <FileText className="h-3.5 w-3.5" />, label: "Your Information" },
-    "password": { icon: <Settings className="h-3.5 w-3.5" />, label: "Create Password" },
-    "dashboard": { icon: <Home className="h-3.5 w-3.5" />, label: "Dashboard" },
-    "schedules": { icon: <Calendar className="h-3.5 w-3.5" />, label: "My Schedules" },
-    "prescriptions": { icon: <Pill className="h-3.5 w-3.5" />, label: "My Prescriptions" },
-    "profiles": { icon: <Users className="h-3.5 w-3.5" />, label: "Profiles" },
-    "doctors": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: "Find Doctors" },
-    "book-doctor": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Book Doctor" },
-    "tests": { icon: <FileText className="h-3.5 w-3.5" />, label: "Medical Services" },
-    "pharmacy": { icon: <Pill className="h-3.5 w-3.5" />, label: "Pharmacy" },
-    "health-packages": { icon: <Package className="h-3.5 w-3.5" />, label: "Health Packages" },
-    "health-blog": { icon: <BookOpen className="h-3.5 w-3.5" />, label: "Health Blog" },
-    "faqs": { icon: <HelpCircle className="h-3.5 w-3.5" />, label: "FAQs" },
-    "settings": { icon: <Settings className="h-3.5 w-3.5" />, label: "Settings" },
-    "sign-in": { icon: <User className="h-3.5 w-3.5" />, label: "Sign In", hideFromBreadcrumb: true },
-    "sign-up": { icon: <User className="h-3.5 w-3.5" />, label: "Sign Up", hideFromBreadcrumb: true },
-    "account": { icon: <CircleUser className="h-3.5 w-3.5" />, label: "My Account" },
-    "booking": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Booking" },
+    "consultations": { icon: <Calendar className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.consultations") },
+    "specialties": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.medicalSpecialties") },
+    "blogs": { icon: <BookOpen className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.healthBlogs") },
+    "set-up": { icon: <Settings className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.setup") },
+    "information": { icon: <FileText className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.yourInformation") },
+    "password": { icon: <Settings className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.createPassword") },
+    "dashboard": { icon: <Home className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.dashboard") },
+    "schedules": { icon: <Calendar className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.mySchedules") },
+    "prescriptions": { icon: <Pill className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.myPrescriptions") },
+    "profiles": { icon: <Users className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.profiles") },
+    "doctors": { icon: <Stethoscope className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.findDoctors") },
+    "book-doctor": { icon: <Calendar className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.bookDoctor") },
+    "tests": { icon: <FileText className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.medicalServices") },
+    "pharmacy": { icon: <Pill className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.pharmacy") },
+    "health-packages": { icon: <Package className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.healthPackages") },
+    "health-blog": { icon: <BookOpen className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.healthBlog") },
+    "faqs": { icon: <HelpCircle className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.faqs") },
+    "settings": { icon: <Settings className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.settings") },
+    "sign-in": { icon: <User className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.signIn"), hideFromBreadcrumb: true },
+    "sign-up": { icon: <User className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.signUp"), hideFromBreadcrumb: true },
+    "account": { icon: <CircleUser className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.myAccount") },
+    "booking": { icon: <Calendar className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.booking") },
     
     // Sub-sections
-    "profile": { icon: <User className="h-3.5 w-3.5" />, label: "Profile" },
-    "details": { icon: <FileText className="h-3.5 w-3.5" />, label: "Details" },
-    "history": { icon: <Clock className="h-3.5 w-3.5" />, label: "History" },
-    "billing": { icon: <CreditCard className="h-3.5 w-3.5" />, label: "Billing" },
-    "preferences": { icon: <Settings className="h-3.5 w-3.5" />, label: "Preferences" },
-    "schedule": { icon: <Calendar className="h-3.5 w-3.5" />, label: "Schedule" },
-    "edit": { icon: <FileText className="h-3.5 w-3.5" />, label: "Edit" },
-    "create": { icon: <FileText className="h-3.5 w-3.5" />, label: "Create" },
-    "view": { icon: <FileText className="h-3.5 w-3.5" />, label: "View" },
-  }), []);
+    "profile": { icon: <User className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.profile") },
+    "details": { icon: <FileText className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.details") },
+    "history": { icon: <Clock className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.history") },
+    "billing": { icon: <CreditCard className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.billing") },
+    "preferences": { icon: <Settings className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.preferences") },
+    "schedule": { icon: <Calendar className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.schedule") },
+    "edit": { icon: <FileText className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.edit") },
+    "create": { icon: <FileText className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.create") },
+    "view": { icon: <FileText className="h-3.5 w-3.5" />, label: t("navigation.breadcrumb.view") },
+  }), [t]);
 
   // Memoize paths to exclude from breadcrumb navigation
   const excludePaths = useMemo(() => [

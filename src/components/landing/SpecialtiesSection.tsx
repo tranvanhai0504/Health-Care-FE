@@ -8,6 +8,7 @@ import { Specialty } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 
 // Define specialty icons mapping (mapping first letter to an icon)
 const specialtyIcons: Record<string, React.ReactNode> = {
@@ -16,6 +17,7 @@ const specialtyIcons: Record<string, React.ReactNode> = {
 };
 
 export function SpecialtiesSection() {
+  const { t } = useTranslation();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,19 +52,19 @@ export function SpecialtiesSection() {
         } else {
           console.error("No valid specialty data found");
           setSpecialties([]);
-          setError("No specialty data available");
+          setError(t("landing.specialties.noDataAvailable"));
         }
       } catch (error) {
         console.error("Failed to fetch specialties:", error);
         setSpecialties([]);
-        setError("Failed to load specialties");
+        setError(t("landing.specialties.failedToLoad"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchSpecialties();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return <SpecialtiesSkeleton />;
@@ -82,11 +84,10 @@ export function SpecialtiesSection() {
             <Activity className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Our Medical Specialties
+            {t("landing.specialties.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Explore our wide range of medical specialties with expert doctors
-            and comprehensive care options for your needs.
+            {t("landing.specialties.description")}
           </p>
         </div>
 
@@ -95,9 +96,9 @@ export function SpecialtiesSection() {
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
               <Activity className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium mb-2">No specialties available</h3>
+            <h3 className="text-lg font-medium mb-2">{t("landing.specialties.noSpecialtiesAvailable")}</h3>
             <p className="text-muted-foreground">
-              Specialty information will be available soon.
+              {t("landing.specialties.checkBackSoon")}
             </p>
           </div>
         ) : (
@@ -117,7 +118,7 @@ export function SpecialtiesSection() {
                           <div className="text-primary text-xl font-semibold">
                             <Image
                               src={`/icons/specialties/${specialty._id}.svg`}
-                              alt={specialty.name || "Specialty"}
+                              alt={specialty.name || t("landing.specialties.specialty")}
                               width={50}
                               height={50}
                               onError={(e) => {
@@ -134,14 +135,14 @@ export function SpecialtiesSection() {
                         )}
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-primary transition-colors">
-                        {specialty.name || "Unknown Specialty"}
+                        {specialty.name || t("landing.specialties.unknownSpecialty")}
                       </h3>
                       <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
-                        {specialty.description || "No description available"}
+                        {specialty.description || t("landing.specialties.noDescriptionAvailable")}
                       </p>
                       <div className="mt-auto inline-flex items-center text-primary text-sm font-medium">
                         <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          View details
+                          {t("landing.specialties.viewDetails")}
                         </span>
                         <ArrowRight className="ml-2 h-4 w-4 transform translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
                       </div>
@@ -160,7 +161,7 @@ export function SpecialtiesSection() {
                   className="shadow-md hover:shadow-lg transition-shadow px-6 group"
                 >
                   <Link href="/specialties" className="flex items-center gap-2">
-                    <span>View All Specialties</span>
+                    <span>{t("landing.specialties.viewAllSpecialties")}</span>
                     <ExternalLink className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>

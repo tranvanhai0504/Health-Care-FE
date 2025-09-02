@@ -16,8 +16,10 @@ import { useServiceListSafe } from '@/hooks/useServiceListSafe';
 import { ServiceListItem } from '@/stores/service-list';
 import { useRouter } from 'next/navigation';
 import { formatCurrency, formatDuration } from '@/utils';
+import { useTranslation } from 'react-i18next';
 
 export function ServiceListDrawer() {
+  const { t } = useTranslation();
   const {
     items,
     isOpen,
@@ -42,13 +44,13 @@ export function ServiceListDrawer() {
         <SheetHeader className="p-6 pb-4">
           <SheetTitle className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
-            My Services List
+            {t('servicesList.drawer.title')}
             <Badge variant="secondary" className="ml-auto">
-              {getTotalServices()} {getTotalServices() === 1 ? 'service' : 'services'}
+              {getTotalServices()} {getTotalServices() === 1 ? t('servicesList.drawer.service') : t('servicesList.drawer.services')}
             </Badge>
           </SheetTitle>
           <SheetDescription>
-            Review and manage your selected consultation services
+            {t('servicesList.drawer.description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -58,17 +60,17 @@ export function ServiceListDrawer() {
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                Loading services...
+                {t('servicesList.drawer.loadingServices')}
               </h3>
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                Your services list is empty
+                {t('servicesList.drawer.emptyList')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Add consultation services to get started
+                {t('servicesList.drawer.emptyListDescription')}
               </p>
             </div>
           ) : (
@@ -115,11 +117,11 @@ export function ServiceListDrawer() {
           <div className="border-t bg-background p-6 space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-base font-medium">Total Services:</span>
+                <span className="text-base font-medium">{t('servicesList.drawer.totalServices')}:</span>
                 <span className="font-medium">{getTotalServices()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">Total Price:</span>
+                <span className="text-lg font-semibold">{t('servicesList.drawer.totalPrice')}:</span>
                 <span className="text-lg font-bold text-primary">
                   {formatCurrency(getTotalPrice())}
                 </span>
@@ -134,14 +136,14 @@ export function ServiceListDrawer() {
                 onClick={clearList}
                 className="flex-1"
               >
-                Clear All
+                {t('servicesList.drawer.clearAll')}
               </Button>
               <Button
                 onClick={handleBookNow}
                 className="flex-1 bg-primary hover:bg-primary/90"
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                Book Now
+                {t('servicesList.drawer.bookNow')}
               </Button>
             </div>
           </div>

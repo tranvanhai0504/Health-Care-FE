@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -86,13 +87,14 @@ const Badge = ({
 };
 
 // Helper function to get time period description
-const getTimePeriodDescription = (timeOffset: 0 | 1): string => {
+const getTimePeriodDescription = (timeOffset: 0 | 1, t: (key: string) => string): string => {
   return timeOffset === 0
-    ? "Morning (08:00 - 12:00)"
-    : "Afternoon (13:30 - 17:30)";
+    ? t("dashboard.schedules.timePeriods.morning")
+    : t("dashboard.schedules.timePeriods.afternoon");
 };
 
 const SchedulesPage = () => {
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState<ScheduleWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [, startTransition] = useTransition();
@@ -260,18 +262,18 @@ const SchedulesPage = () => {
         <div className="bg-white border-b px-0 md:px-6 py-3 md:py-4">
           <div className="flex flex-col gap-2 lg:gap-0 lg:flex-row lg:items-center justify-between">
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Schedule</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">{t("dashboard.schedules.title")}</h1>
               <p className="text-gray-600 mt-1 text-sm md:text-base">
-                Manage your appointments and sessions
+                {t("dashboard.schedules.subtitle")}
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-3">
               <Button variant="outline" size="sm" onClick={goToToday}>
-                Today
+                {t("dashboard.schedules.today")}
               </Button>
               <Button size="sm" onClick={() => router.push("/booking")}>
                 <Calendar className="h-4 w-4 mr-2" />
-                New Schedule
+                {t("dashboard.schedules.newSchedule")}
               </Button>
               <Button
                 variant="outline"
@@ -279,7 +281,7 @@ const SchedulesPage = () => {
                 className="md:hidden"
                 onClick={() => setShowSidebarMobile((s) => !s)}
               >
-                {showSidebarMobile ? "Hide Details" : "Day Details"}
+                {showSidebarMobile ? t("dashboard.schedules.hideDetails") : t("dashboard.schedules.dayDetails")}
               </Button>
             </div>
           </div>
@@ -304,23 +306,22 @@ const SchedulesPage = () => {
                 <div className="hidden md:flex items-center gap-4 mt-1 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-500 to-green-700 border border-green-400"></div>
-                    <span>Today</span>
+                    <span>{t("dashboard.schedules.today")}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 border border-blue-300"></div>
-                    <span>1-2 schedules</span>
+                    <span>{t("dashboard.schedules.legend.oneToTwo")}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 border border-orange-300"></div>
-                    <span>3+ schedules</span>
+                    <span>{t("dashboard.schedules.legend.threePlus")}</span>
                   </div>
                 </div>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2 text-sm text-gray-600">
               <span>
-                {selectedDateSchedules.length} schedule
-                {selectedDateSchedules.length !== 1 ? "s" : ""} on{" "}
+                {selectedDateSchedules.length} {selectedDateSchedules.length !== 1 ? t("dashboard.schedules.schedules") : t("dashboard.schedules.schedule")} {t("dashboard.schedules.on")}{" "}
                 {format(selectedDate, "MMM d, yyyy")}
               </span>
               {selectedDateSchedules.length > 0 && (
@@ -333,10 +334,10 @@ const SchedulesPage = () => {
                   )}
                 >
                   {selectedDateSchedules.length >= 5
-                    ? "High"
+                    ? t("dashboard.schedules.status.high")
                     : selectedDateSchedules.length >= 3
-                    ? "Busy"
-                    : "Normal"}
+                    ? t("dashboard.schedules.status.busy")
+                    : t("dashboard.schedules.status.normal")}
                 </div>
               )}
             </div>
@@ -348,7 +349,7 @@ const SchedulesPage = () => {
           <div className="py-4 md:p-6 overflow-x-auto md:overflow-visible">
             {/* Day headers */}
             <div className="grid grid-cols-7 gap-1 mb-2 w-full md:min-w-0">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              {[t("dashboard.schedules.days.sun"), t("dashboard.schedules.days.mon"), t("dashboard.schedules.days.tue"), t("dashboard.schedules.days.wed"), t("dashboard.schedules.days.thu"), t("dashboard.schedules.days.fri"), t("dashboard.schedules.days.sat")].map((day) => (
                 <div
                   key={day}
                   className="p-2 text-xs md:text-sm font-medium text-gray-500 text-center"
@@ -462,7 +463,7 @@ const SchedulesPage = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search schedules..."
+                placeholder={t("dashboard.schedules.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-9"
@@ -471,24 +472,24 @@ const SchedulesPage = () => {
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="h-9">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t("dashboard.schedules.filterByStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t("dashboard.schedules.status.all")}</SelectItem>
                 <SelectItem value={ScheduleStatus.CONFIRMED}>
-                  Confirmed
+                  {t("dashboard.schedules.status.confirmed")}
                 </SelectItem>
                 <SelectItem value={ScheduleStatus.CHECKEDIN}>
-                  Checked In
+                  {t("dashboard.schedules.status.checkedIn")}
                 </SelectItem>
                 <SelectItem value={ScheduleStatus.SERVING}>
-                  In Progress
+                  {t("dashboard.schedules.status.inProgress")}
                 </SelectItem>
                 <SelectItem value={ScheduleStatus.CANCELLED}>
-                  Cancelled
+                  {t("dashboard.schedules.status.cancelled")}
                 </SelectItem>
                 <SelectItem value={ScheduleStatus.COMPLETED}>
-                  Completed
+                  {t("dashboard.schedules.status.completed")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -508,7 +509,7 @@ const SchedulesPage = () => {
           ) : selectedDateSchedules.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
               <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-sm">No schedules for this date</p>
+              <p className="text-sm">{t("dashboard.schedules.noSchedulesForDate")}</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -516,7 +517,7 @@ const SchedulesPage = () => {
                 onClick={() => router.push("/booking")}
               >
                 <Calendar className="h-4 w-4 mr-1" />
-                Add Schedule
+                {t("dashboard.schedules.addSchedule")}
                 
               </Button>
             </div>
@@ -535,11 +536,11 @@ const SchedulesPage = () => {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h4 className="font-medium text-sm mb-1">
-                            {schedule.packageName || "Medical Consultation"}
+                            {schedule.packageName || t("dashboard.schedules.medicalConsultation")}
                           </h4>
                           <div className="flex items-center text-xs text-gray-500 mb-2">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {getTimePeriodDescription(schedule.timeOffset)}
+                            {getTimePeriodDescription(schedule.timeOffset, t)}
                           </div>
                         </div>
                         {getStatusBadge(schedule.status)}
@@ -556,7 +557,7 @@ const SchedulesPage = () => {
                             className="h-7 text-xs"
                             onClick={() => handleViewSchedule(schedule)}
                           >
-                            View
+                            {t("dashboard.schedules.view")}
                           </Button>
 
                         </div>
@@ -571,19 +572,18 @@ const SchedulesPage = () => {
         {/* Sidebar Footer */}
         <div className="border-t p-4">
           <div className="text-xs text-gray-500 mb-3">
-            Total: {getFilteredSchedules().length} schedule
-            {getFilteredSchedules().length !== 1 ? "s" : ""}
+            {t("dashboard.schedules.total")}: {getFilteredSchedules().length} {getFilteredSchedules().length !== 1 ? t("dashboard.schedules.schedules") : t("dashboard.schedules.schedule")}
           </div>
           <Button
             variant="outline"
             className="w-full"
             onClick={() => router.push("/schedules")}
           >
-            View All Schedules
+            {t("dashboard.schedules.viewAllSchedules")}
           </Button>
           <div className="md:hidden mt-3">
             <Button variant="ghost" className="w-full" onClick={() => setShowSidebarMobile(false)}>
-              Close
+              {t("dashboard.schedules.close")}
             </Button>
           </div>
         </div>
