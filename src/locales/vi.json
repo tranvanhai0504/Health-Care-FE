@@ -49,7 +49,23 @@
       "confirmSchedule": "Xác nhận lịch hẹn",
       "confirming": "Đang xác nhận...",
       "details": "Chi tiết",
-      "confirmed": "Tôi đã xác nhận lịch hẹn {{type}} của bạn vào ngày {{date}}."
+      "confirmed": "Tôi đã xác nhận lịch hẹn {{type}} của bạn vào ngày {{date}}.",
+      "alreadyConfirmed": "Lịch hẹn này đã được xác nhận rồi."
+    },
+    "floatingButton": {
+      "closeChat": "Đóng trò chuyện"
+    },
+    "popup": {
+      "aiAssistant": "Trợ lý AI",
+      "messages": "Tin nhắn",
+      "clearConversation": "Xóa cuộc trò chuyện",
+      "closeChat": "Đóng trò chuyện"
+    },
+    "messageInput": {
+      "attachImage": "Đính kèm hình ảnh",
+      "placeholder": "Nhập tin nhắn của bạn...",
+      "sendMessage": "Gửi tin nhắn",
+      "sendInstructions": "Gửi hướng dẫn"
     }
   },
   "navigation": {
