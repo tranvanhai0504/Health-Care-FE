@@ -49,7 +49,23 @@
       "confirmSchedule": "Confirm Schedule",
       "confirming": "Confirming...",
       "details": "Details",
-      "confirmed": "I've confirmed your schedule for {{type}} on {{date}}."
+      "confirmed": "I've confirmed your schedule for {{type}} on {{date}}.",
+      "alreadyConfirmed": "This schedule has already been confirmed."
+    },
+    "floatingButton": {
+      "closeChat": "Close Chat"
+    },
+    "popup": {
+      "aiAssistant": "AI Assistant",
+      "messages": "Messages",
+      "clearConversation": "Clear Conversation",
+      "closeChat": "Close Chat"
+    },
+    "messageInput": {
+      "attachImage": "Attach Image",
+      "placeholder": "Type your message here...",
+      "sendMessage": "Send Message",
+      "sendInstructions": "Send Instructions"
     }
   },
   "navigation": {
