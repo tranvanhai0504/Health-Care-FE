@@ -2,16 +2,19 @@
 
 import React from 'react';
 import { Bot, User, AlertCircle, Clock, CheckCircle } from 'lucide-react';
-import { ChatMessage, ChatRole, MessageStatus } from '@/types/chat';
+import { ChatMessage, ChatRole, MessageStatus, ScheduleFormData } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { ScheduleConfirmation } from './schedule-confirmation';
+import Image from 'next/image';
 
 interface MessageItemProps {
   message: ChatMessage;
   onRetry?: (messageId: string) => void;
+  onScheduleConfirm: (formData: ScheduleFormData) => void;
 }
 
-export function MessageItem({ message, onRetry }: MessageItemProps) {
+export function MessageItem({ message, onRetry, onScheduleConfirm }: MessageItemProps) {
   const isUser = message.role === ChatRole.USER;
   const isFailed = message.status === MessageStatus.FAILED;
   const isSending = message.status === MessageStatus.SENDING;
@@ -79,7 +82,31 @@ export function MessageItem({ message, onRetry }: MessageItemProps) {
           isFailed && "bg-destructive/10 border border-destructive/20",
           isSending && "opacity-70"
         )}>
+          {message.imageUrl && (
+            <div className={cn("mb-2", isUser ? "-mx-1" : "-mx-1")}>
+              <Image
+                src={message.imageUrl}
+                width={100}
+                height={100}
+                alt="User attachment"
+                className={cn(
+                  "rounded border",
+                  isUser ? "max-h-52" : "max-h-52"
+                )}
+              />
+            </div>
+          )}
           {message.content}
+          
+          {/* Form response for schedule confirmation */}
+          {!isUser && message.formResponse && message.formResponse.type === "form" && (
+            <div className="mt-3">
+              <ScheduleConfirmation
+                formData={message.formResponse.data}
+                onConfirm={onScheduleConfirm}
+              />
+            </div>
+          )}
           
           {/* Error message */}
           {isFailed && message.error && (

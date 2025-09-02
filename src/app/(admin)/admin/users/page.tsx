@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   Plus,
@@ -48,6 +49,7 @@ import { PaginationInfo } from "@/types/api";
 import { useToast } from "@/hooks/useToast";
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -223,15 +225,15 @@ export default function UsersPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
-                <Users className="h-5 w-5" /> User Management
+                <Users className="h-5 w-5" /> {t("admin.users.title")}
               </CardTitle>
               <CardTitle className="text-sm text-muted-foreground mt-1">
-                Manage all users across the system
+                {t("admin.users.subtitle")}
               </CardTitle>
             </div>
             <Button className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
-              Add New User
+              {t("admin.users.addNewUser")}
             </Button>
           </div>
         </CardHeader>
@@ -241,7 +243,7 @@ export default function UsersPage() {
             <div className="relative w-full lg:max-w-xs">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search by name, email, or phone..."
+                placeholder={t("admin.users.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-full"
@@ -251,13 +253,13 @@ export default function UsersPage() {
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="All Roles" />
+                  <SelectValue placeholder={t("admin.users.allRoles")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="all">{t("admin.users.allRoles")}</SelectItem>
+                  <SelectItem value="admin">{t("admin.users.admin")}</SelectItem>
+                  <SelectItem value="doctor">{t("admin.users.doctor")}</SelectItem>
+                  <SelectItem value="user">{t("admin.users.user")}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -268,7 +270,7 @@ export default function UsersPage() {
                 className="w-full sm:w-auto"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reset
+                {t("admin.users.reset")}
               </Button>
             </div>
           </div>
@@ -278,15 +280,15 @@ export default function UsersPage() {
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                 <Users className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No users found</h3>
+              <h3 className="text-lg font-medium mb-2">{t("admin.users.noUsersFound")}</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery || roleFilter !== "all"
-                  ? "No users match your current filters."
-                  : "No users have been created yet."}
+                  ? t("admin.users.noUsersMatchFilters")
+                  : t("admin.users.noUsersCreated")}
               </p>
               {searchQuery || roleFilter !== "all" ? (
                 <Button variant="outline" onClick={resetFilters}>
-                  Clear filters
+                  {t("admin.users.clearFilters")}
                 </Button>
               ) : null}
             </div>
@@ -296,12 +298,12 @@ export default function UsersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone Number</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("admin.users.name")}</TableHead>
+                      <TableHead>{t("admin.users.email")}</TableHead>
+                      <TableHead>{t("admin.users.phoneNumber")}</TableHead>
+                      <TableHead>{t("admin.users.role")}</TableHead>
+                      <TableHead>{t("admin.users.joined")}</TableHead>
+                      <TableHead className="text-right">{t("admin.users.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -332,15 +334,15 @@ export default function UsersPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t("admin.users.openMenu")}</span>
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>{t("admin.users.actions")}</DropdownMenuLabel>
                               <DropdownMenuItem>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Edit User
+                                {t("admin.users.editUser")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -348,7 +350,7 @@ export default function UsersPage() {
                                 onClick={() => handleDeleteUser(user._id)}
                               >
                                 <Trash className="mr-2 h-4 w-4" />
-                                Delete User
+                                {t("admin.users.deleteUser")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -383,13 +385,13 @@ export default function UsersPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {[
           {
-            label: "Total Users",
+            label: t("admin.users.totalUsers"),
             count: users.length,
             color: "text-blue-600",
             icon: <Users className="h-4 w-4" />,
           },
           {
-            label: "Admins",
+            label: t("admin.users.admins"),
             count: users.filter(
               (u) => u.role && u.role.trim() !== "" && u.role === "admin"
             ).length,
@@ -397,7 +399,7 @@ export default function UsersPage() {
             icon: <Shield className="h-4 w-4" />,
           },
           {
-            label: "Doctors",
+            label: t("admin.users.doctors"),
             count: users.filter(
               (u) => u.role && u.role.trim() !== "" && u.role === "doctor"
             ).length,
@@ -405,7 +407,7 @@ export default function UsersPage() {
             icon: <UserCheck className="h-4 w-4" />,
           },
           {
-            label: "Regular Users",
+            label: t("admin.users.regularUsers"),
             count: users.filter(
               (u) => u.role && u.role.trim() !== "" && u.role === "user"
             ).length,

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
@@ -36,6 +37,7 @@ import { consultationServiceApi } from "@/services/consultationService.service";
 import { ConsultationService } from "@/types";
 
 const HealthPackageDetailsPage = () => {
+  const { t } = useTranslation();
   const params = useParams();
   const id = params.id as string;
   const [packageData, setPackageData] = useState<ConsultationPackage | null>(
@@ -169,10 +171,10 @@ const HealthPackageDetailsPage = () => {
         <div className="bg-red-50 dark:bg-red-950/30 p-12 rounded-full mb-6">
           <AlertCircle className="w-16 h-16 text-red-500 dark:text-red-400" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">Oops, something went wrong</h1>
+        <h1 className="text-2xl font-bold mb-2">{t("dashboard.healthPackages.details.errorTitle")}</h1>
         <p className="text-muted-foreground mb-6 text-center max-w-md">
           {error ||
-            "Package not found. Please try again or select a different package."}
+            t("dashboard.healthPackages.details.errorDescription")}
         </p>
         <Button
           onClick={() => window.history.back()}
@@ -180,7 +182,7 @@ const HealthPackageDetailsPage = () => {
           className="gap-2"
         >
           <ChevronRight className="w-4 h-4 rotate-180" />
-          Go Back
+          {t("dashboard.healthPackages.details.goBack")}
         </Button>
       </div>
     );
@@ -201,7 +203,7 @@ const HealthPackageDetailsPage = () => {
               <div className="relative w-2/3 mx-auto">
                 <Image
                   src={packageData.titleImage}
-                  alt={`${packageData.title} package image`}
+                  alt={t("dashboard.healthPackages.details.packageImageAlt", { title: packageData.title })}
                   width={800}
                   height={320}
                   className="w-full h-64 md:h-80 object-cover rounded-lg border shadow-md"
@@ -236,14 +238,14 @@ const HealthPackageDetailsPage = () => {
             />
             <div className="mt-4 p-4 bg-primary/10 rounded-lg">
               <p className="text-lg font-semibold text-primary">
-                Price:{" "}
+                {t("dashboard.healthPackages.details.price")}{" "}
                 {packageData.price === 0
-                  ? "Free"
+                  ? t("dashboard.healthPackages.details.free")
                   : formatCurrency(packageData.price)}
               </p>
               {packageData.maxSlotPerPeriod && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  Max slots per period: {packageData.maxSlotPerPeriod}
+                  {t("dashboard.healthPackages.details.maxSlotsPerPeriod", { slots: packageData.maxSlotPerPeriod })}
                 </p>
               )}
             </div>
@@ -255,10 +257,10 @@ const HealthPackageDetailsPage = () => {
             <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-transparent rounded-t-lg">
               <CardTitle className="flex items-center">
                 <Clock className="mr-2 h-5 w-5 text-primary" />
-                Package Options
+                {t("dashboard.healthPackages.details.packageOptions")}
               </CardTitle>
               <CardDescription>
-                Select the package tier that fits your needs
+                {t("dashboard.healthPackages.details.selectPackageTier")}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-5">
@@ -285,7 +287,7 @@ const HealthPackageDetailsPage = () => {
                             </div>
                             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                               <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                              <span>{option.testsIncluded} tests included</span>
+                              <span>{option.testsIncluded} {t("dashboard.healthPackages.details.testsIncluded")}</span>
                             </div>
                           </div>
                           <p className="text-xl font-bold text-primary">
@@ -298,15 +300,15 @@ const HealthPackageDetailsPage = () => {
                 ) : (
                   <div className="border rounded-lg p-4 bg-primary/5">
                     <div className="text-center">
-                      <h3 className="font-medium mb-2">Package Price</h3>
+                      <h3 className="font-medium mb-2">{t("dashboard.healthPackages.details.packagePrice")}</h3>
                       <p className="text-2xl font-bold text-primary">
                         {packageData.price === 0
-                          ? "Free"
+                          ? t("dashboard.healthPackages.details.free")
                           : formatCurrency(packageData.price)}
                       </p>
                       {packageData.bookingOption && (
                         <p className="text-sm text-muted-foreground mt-2">
-                          Booking Type: {packageData.bookingOption}
+                          {t("dashboard.healthPackages.details.bookingType")}: {packageData.bookingOption}
                         </p>
                       )}
                     </div>
@@ -319,7 +321,7 @@ const HealthPackageDetailsPage = () => {
                 packageId={id}
                 size="lg"
                 className="gap-2 min-w-40 h-12 bg-primary hover:bg-primary/90 shadow-sm"
-                label="Book Online Now"
+                label={t("dashboard.healthPackages.details.bookOnlineNow")}
               >
                 <Calendar className="h-5 w-5" />
               </BookPackageButton>
@@ -362,14 +364,14 @@ const HealthPackageDetailsPage = () => {
             className="px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Tests
+            {t("dashboard.healthPackages.details.includedTests")}
           </TabsTrigger>
           <TabsTrigger
             value="faq"
             className="px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
           >
             <HelpCircle className="h-4 w-4 mr-2" />
-            FAQ
+            {t("dashboard.healthPackages.details.faq")}
           </TabsTrigger>
         </TabsList>
 
@@ -378,11 +380,10 @@ const HealthPackageDetailsPage = () => {
             <CardHeader className="pb-4 bg-gradient-to-r from-primary/10 to-transparent">
               <CardTitle className="flex items-center">
                 <CheckCircle className="mr-2 h-5 w-5 text-primary" />
-                Included Tests
+                {t("dashboard.healthPackages.details.includedTests")}
               </CardTitle>
               <CardDescription>
-                Tests and examinations included in the {selectedOption?.tier}{" "}
-                package
+                {t("dashboard.healthPackages.details.testsInPackage", { tier: selectedOption?.tier })}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -452,9 +453,9 @@ const HealthPackageDetailsPage = () => {
                             <CheckCircle className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <p className="font-medium">Test {index + 1}</p>
+                            <p className="font-medium">{t("dashboard.healthPackages.details.testNumber", { number: index + 1 })}</p>
                             <p className="text-sm text-muted-foreground">
-                              ID: {test}
+                              {t("dashboard.healthPackages.details.testId", { id: test })}
                             </p>
                           </div>
                         </div>
@@ -464,7 +465,7 @@ const HealthPackageDetailsPage = () => {
                 <div className="text-center py-12 bg-muted/10 rounded-lg">
                   <X className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-40" />
                   <p className="text-muted-foreground">
-                    No tests information available for this package
+                    {t("dashboard.healthPackages.details.noTestsAvailable")}
                   </p>
                 </div>
               )}
@@ -477,10 +478,10 @@ const HealthPackageDetailsPage = () => {
             <CardHeader className="pb-4 bg-gradient-to-r from-primary/10 to-transparent">
               <CardTitle className="flex items-center">
                 <HelpCircle className="mr-2 h-5 w-5 text-primary" />
-                Frequently Asked Questions
+                {t("dashboard.healthPackages.details.frequentlyAskedQuestions")}
               </CardTitle>
               <CardDescription>
-                Common questions about the {packageData.title} package
+                {t("dashboard.healthPackages.details.faqDescription", { title: packageData.title })}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -505,7 +506,7 @@ const HealthPackageDetailsPage = () => {
                 <div className="text-center py-12 bg-muted/10 rounded-lg">
                   <X className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-40" />
                   <p className="text-muted-foreground">
-                    No FAQs available for this package
+                    {t("dashboard.healthPackages.details.noFaqAvailable")}
                   </p>
                 </div>
               )}
@@ -514,48 +515,7 @@ const HealthPackageDetailsPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Booking CTA */}
-      <div className="mt-16 p-8 bg-gradient-to-r from-primary/15 via-primary/10 to-primary/5 rounded-xl border border-primary/20 text-center shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Ready to book this package?</h2>
-        <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Take the first step towards better health by booking this package
-          today. Our team of medical professionals is ready to assist you.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <BookPackageButton
-            packageId={id}
-            size="lg"
-            className="gap-2 min-w-40 h-12 bg-primary hover:bg-primary/90 shadow-sm"
-            label="Book Online Now"
-          >
-            <Calendar className="h-5 w-5" />
-          </BookPackageButton>
-
-          {packageData.bookingOptions &&
-            packageData.bookingOptions.map((option, index) => (
-              <Button
-                key={index}
-                size="lg"
-                variant="outline"
-                className="h-12 min-w-40 gap-2 border-primary/20 hover:border-primary/30 hover:bg-primary/5"
-                asChild
-              >
-                <a
-                  href={`${option.actionUrl}?package=${id}&tier=${selectedPriceOption}`}
-                >
-                  {option.type === "Branch" ? (
-                    <Stethoscope className="h-5 w-5" />
-                  ) : (
-                    <Calendar className="h-5 w-5" />
-                  )}
-                  {option.type === "Branch"
-                    ? "Book at Clinic"
-                    : "Book Home Visit"}
-                </a>
-              </Button>
-            ))}
-        </div>
-      </div>
+      
     </div>
   );
 };

@@ -12,63 +12,67 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
-// Sample data for marketing images using placeholder service
-const marketingImages = [
+// Function to get marketing images with translations
+const getMarketingImages = (t: (key: string) => string) => [
   {
     id: 1,
     src: "/images/hero/7f94bf88-c3ad-403b-b959-9e46359c379f.jpg",
-    alt: "Healthcare Service 1",
-    description: "Advanced diagnostic services with state-of-the-art equipment",
-    tag: "Diagnostics",
+    alt: t("landing.slider.healthcareService1"),
+    description: t("landing.slider.diagnosticsDescription"),
+    tag: t("landing.slider.diagnostics"),
   },
   {
     id: 2,
     src: "/images/hero/17badcdb-03e6-4e81-9dc7-a1b1899cd8d7.jpg",
-    alt: "Healthcare Service 2",
-    description: "Professional consultation with specialists in various fields",
-    tag: "Consultation",
+    alt: t("landing.slider.healthcareService2"),
+    description: t("landing.slider.consultationDescription"),
+    tag: t("landing.slider.consultation"),
   },
   {
     id: 3,
     src: "/images/hero/60cc6a24-91a2-4615-a225-b8d9271c04d6.jpg",
-    alt: "Healthcare Service 3",
-    description: "Personalized treatment plans tailored to your needs",
-    tag: "Treatment",
+    alt: t("landing.slider.healthcareService3"),
+    description: t("landing.slider.treatmentDescription"),
+    tag: t("landing.slider.treatment"),
   },
   {
     id: 4,
     src: "/images/hero/3781e3b3-20f0-4ec0-a44b-235150d8085e.jpg",
-    alt: "Healthcare Service 4",
-    description: "24/7 support and care for all patients",
-    tag: "Support",
+    alt: t("landing.slider.healthcareService4"),
+    description: t("landing.slider.supportDescription"),
+    tag: t("landing.slider.support"),
   },
   {
     id: 5,
     src: "/images/hero/bf1409bb-aa40-457b-be8a-e0f110652cc6.jpg",
-    alt: "Healthcare Service 5",
-    description: "Modern facilities with comfortable recovery environments",
-    tag: "Facilities",
+    alt: t("landing.slider.healthcareService5"),
+    description: t("landing.slider.facilitiesDescription"),
+    tag: t("landing.slider.facilities"),
   },
   {
     id: 6,
     src: "/images/hero/d1d48006-50d0-4ffb-9d22-da7081bed23a.jpg",
-    alt: "Healthcare Service 6",
-    description: "Preventative care programs for long-term health",
-    tag: "Prevention",
+    alt: t("landing.slider.healthcareService6"),
+    description: t("landing.slider.preventionDescription"),
+    tag: t("landing.slider.prevention"),
   },
   {
     id: 7,
     src: "/images/hero/debaff88-6cf7-4c2c-8803-f2c062c3e79c.jpg",
-    alt: "Healthcare Service 7",
-    description: "Family-focused health services for all ages",
-    tag: "Family Care",
+    alt: t("landing.slider.healthcareService7"),
+    description: t("landing.slider.familyCareDescription"),
+    tag: t("landing.slider.familyCare"),
   },
 ];
 
 export function Slider() {
+  const { t } = useTranslation();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  
+  const marketingImages = getMarketingImages(t);
 
   // Handle carousel API changes
   const onApiChange = (api: CarouselApi) => {

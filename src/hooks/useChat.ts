@@ -28,9 +28,9 @@ export function useChat(): UseChatReturn {
   const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
 
   // Safe action wrappers that only work after hydration
-  const sendMessage = useCallback(async (message: string) => {
+  const sendMessage = useCallback(async (message: string, imageFile?: File | null) => {
     if (!isClient) return;
-    return chatStore.sendMessage(message);
+    return chatStore.sendMessage(message, imageFile);
   }, [chatStore, isClient]);
 
   const toggleChat = useCallback(() => {

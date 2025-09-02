@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import "react-day-picker/dist/style.css";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 // Define time period type
 type TimePeriod = {
@@ -49,6 +50,7 @@ export function ScheduleCard({
   onContinue,
   onCancel,
 }: ScheduleCardProps) {
+  const { t } = useTranslation();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -57,10 +59,10 @@ export function ScheduleCard({
       <CardHeader className="pb-4 bg-gradient-to-r from-primary/10 to-transparent rounded-t-lg">
         <CardTitle className="flex items-center gap-2">
           <CalendarCheck className="h-5 w-5 text-primary" />
-          Schedule Your Session
+          {t("booking.schedule.title")}
         </CardTitle>
         <CardDescription>
-          Choose your preferred date and time period
+          {t("booking.schedule.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-5">
@@ -68,7 +70,7 @@ export function ScheduleCard({
           {/* Calendar */}
           <div className="flex flex-col">
             <Label className="mb-3 flex items-center text-base font-medium">
-              <Calendar className="w-4 h-4 mr-2 text-primary" /> Select Date
+              <Calendar className="w-4 h-4 mr-2 text-primary" /> {t("booking.schedule.selectDate")}
             </Label>
             <div className="border border-border/60 rounded-lg p-4 shadow-sm bg-background flex justify-center">
               <DayPicker
@@ -96,7 +98,7 @@ export function ScheduleCard({
                 }}
                 footer={
                   <div className="mt-3 text-xs text-muted-foreground text-center">
-                    Showing 30 days from today
+                    {t("booking.schedule.showing30Days")}
                   </div>
                 }
               />
@@ -106,7 +108,7 @@ export function ScheduleCard({
           {/* Time Periods */}
           <div className="flex flex-col h-full">
             <Label className="mb-3 flex items-center text-base font-medium">
-              <Clock className="w-4 h-4 mr-2 text-primary" /> Select Time Period
+              <Clock className="w-4 h-4 mr-2 text-primary" /> {t("booking.schedule.selectTimePeriod")}
             </Label>
             <div className="border border-border/60 rounded-lg p-4 flex-1 shadow-sm bg-background flex flex-col">
               <div className="flex flex-col gap-4 flex-1 min-h-0">
@@ -159,7 +161,7 @@ export function ScheduleCard({
                 ))}
               </div>
               <div className="text-xs text-center text-muted-foreground mt-4 pt-3 border-t border-border/40 flex-shrink-0">
-                All times are in local time
+                {t("booking.schedule.allTimesLocal")}
               </div>
             </div>
           </div>
@@ -170,11 +172,11 @@ export function ScheduleCard({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckCircle className="h-4 w-4 text-primary" />
               <span>
-                You selected{" "}
+                {t("booking.schedule.youSelected")}{" "}
                 <span className="font-medium text-foreground">
                   {format(selectedDate, "EEEE, MMMM d, yyyy")}
                 </span>{" "}
-                in the{" "}
+                {t("booking.schedule.inThe")}{" "}
                 <span className="font-medium text-foreground">
                   {selectedTimeSlot.label} ({selectedTimeSlot.description})
                 </span>
@@ -189,14 +191,14 @@ export function ScheduleCard({
           onClick={onCancel}
           className="border-border/60"
         >
-          Cancel
+          {t("booking.schedule.cancel")}
         </Button>
         <Button
           disabled={!selectedDate || !selectedTimeSlot}
           onClick={onContinue}
           className="gap-2 bg-primary hover:bg-primary/90 shadow-sm"
         >
-          Continue to Booking <ArrowRightIcon className="h-4 w-4" />
+          {t("booking.schedule.continueToBooking")} <ArrowRightIcon className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>

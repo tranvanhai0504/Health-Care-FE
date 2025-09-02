@@ -1,20 +1,25 @@
+"use client";
+
 import { Suspense } from "react";
 import SignInForm from "@/components/auth/signin-form";
+import { useTranslation } from "react-i18next";
 
 function SignInFormWrapper() {
   return <SignInForm />;
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex h-full flex-col items-center justify-center py-12">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] md:w-[450px]">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">
-            Welcome back
+            {t("auth.login.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Enter your credentials to sign in to your account
+            {t("auth.login.subtitle")}
           </p>
         </div>
 

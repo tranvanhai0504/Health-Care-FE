@@ -7,6 +7,7 @@ import { Notifications } from "@/components/header/notifications";
 import { ScheduleButton } from "@/components/header/schedule-button";
 import { UserProfile } from "@/components/header/user-profile";
 import { AuthButtons } from "@/components/header/auth-buttons";
+import { LanguageSelector } from "@/components/header/language-selector";
 import { useAuth } from "@/hooks/useAuth";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,9 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Language Selector */}
+          <LanguageSelector />
+
           {isAuthenticated && user ? (
             <>
               {/* Notifications */}

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { format } from "date-fns";
 import {
@@ -12,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, UserIcon, Package, Settings, Clock } from "lucide-react";
 import { ConsultationPackage, ConsultationService, UserProfile } from "@/types";
 import { formatDuration } from "@/utils";
+import { useTranslation } from "react-i18next";
 
 interface BookingConfirmationDialogProps {
   open: boolean;
@@ -54,11 +57,13 @@ export function BookingConfirmationDialog({
   bookingInProgress,
   user,
 }: BookingConfirmationDialogProps) {
+  const { t } = useTranslation();
+  
   const getBookingTitle = () => {
     if (bookingType === 'package' && packageData) return packageData.title;
     if (bookingType === 'service' && serviceData) return serviceData.name;
-    if (bookingType === 'services' && servicesData) return `${servicesData.length} Selected Services`;
-    return 'Booking Confirmation';
+    if (bookingType === 'services' && servicesData) return `${servicesData.length} ${t("dialogs.bookingConfirmation.selectedServices")}`;
+    return t("dialogs.bookingConfirmation.title");
   };
 
   const getBookingIcon = () => {
@@ -73,10 +78,10 @@ export function BookingConfirmationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-primary" />
-            Confirm Your Booking
+            {t("dialogs.bookingConfirmation.confirmYourBooking")}
           </DialogTitle>
           <DialogDescription>
-            Please review your schedule details before confirming.
+            {t("dialogs.bookingConfirmation.reviewDetails")}
           </DialogDescription>
         </DialogHeader>
 
@@ -85,7 +90,7 @@ export function BookingConfirmationDialog({
             <div className="flex justify-between items-center pb-3 mb-3 border-b border-border/40">
               <span className="font-medium flex items-center gap-2">
                 {getBookingIcon()}
-                {bookingType === 'package' ? 'Package:' : bookingType === 'service' ? 'Service:' : 'Services:'}
+                {bookingType === 'package' ? t("dialogs.bookingConfirmation.package") : bookingType === 'service' ? t("dialogs.bookingConfirmation.service") : t("dialogs.bookingConfirmation.services")}
               </span>
               <span className="font-semibold text-right">{getBookingTitle()}</span>
             </div>
@@ -95,7 +100,7 @@ export function BookingConfirmationDialog({
               <>
                 {packageData.priceOptions && packageData.priceOptions.length > 0 && (
                   <div className="flex justify-between items-center py-2">
-                    <span className="font-medium">Plan:</span>
+                    <span className="font-medium">{t("dialogs.bookingConfirmation.plan")}:</span>
                     <span className="text-right">
                       {packageData.priceOptions.find(
                         (option) =>
@@ -113,7 +118,7 @@ export function BookingConfirmationDialog({
               <div className="flex justify-between items-center py-2">
                 <span className="font-medium flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  Duration:
+                  {t("dialogs.bookingConfirmation.duration")}:
                 </span>
                 <span className="text-right">{formatDuration(serviceData.duration)}</span>
               </div>
@@ -123,7 +128,7 @@ export function BookingConfirmationDialog({
             {bookingType === 'services' && servicesData && servicesData.length > 0 && (
               <div className="space-y-2">
                 <div className="flex justify-between items-center py-2">
-                  <span className="font-medium">Total Services:</span>
+                  <span className="font-medium">{t("dialogs.bookingConfirmation.totalServices")}:</span>
                   <span className="text-right">{servicesData.length}</span>
                 </div>
                 <div className="max-h-32 overflow-y-auto space-y-1">
@@ -142,19 +147,19 @@ export function BookingConfirmationDialog({
             )}
 
             <div className="flex justify-between items-center py-2 border-t border-border/40 mt-3 pt-3">
-              <span className="font-medium">Total Price:</span>
+              <span className="font-medium">{t("dialogs.bookingConfirmation.totalPrice")}:</span>
               <span className="text-primary font-bold text-right">
                 {formatCurrency(totalPrice)}
               </span>
             </div>
             <div className="flex justify-between items-center py-2">
-              <span className="font-medium">Date:</span>
+              <span className="font-medium">{t("dialogs.bookingConfirmation.date")}:</span>
               <span className="text-right">
                 {selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : ""}
               </span>
             </div>
             <div className="flex justify-between items-center py-2">
-              <span className="font-medium">Time Period:</span>
+              <span className="font-medium">{t("dialogs.bookingConfirmation.timePeriod")}:</span>
               <span className="text-right">
                 {selectedTimeSlot
                   ? `${selectedTimeSlot.label} (${selectedTimeSlot.description})`
@@ -169,11 +174,11 @@ export function BookingConfirmationDialog({
           <span className="text-sm">
             {user ? (
               <span className="text-green-600">
-                Logged in as <span className="font-medium">{user.name || user.phoneNumber}</span>
+                {t("dialogs.bookingConfirmation.loggedInAs")} <span className="font-medium">{user.name || user.phoneNumber}</span>
               </span>
             ) : (
               <span className="text-amber-600">
-                You&apos;ll need to login before booking
+                {t("dialogs.bookingConfirmation.needToLogin")}
               </span>
             )}
           </span>
@@ -186,7 +191,7 @@ export function BookingConfirmationDialog({
             disabled={bookingInProgress}
             className="border-border/60"
           >
-            Go Back
+            {t("dialogs.bookingConfirmation.goBack")}
           </Button>
           <Button 
             onClick={onConfirm} 
@@ -196,10 +201,10 @@ export function BookingConfirmationDialog({
             {bookingInProgress ? (
               <>
                 <div className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Processing...
+                {t("dialogs.bookingConfirmation.processing")}
               </>
             ) : (
-              "Confirm Booking"
+              t("dialogs.bookingConfirmation.confirmBooking")
             )}
           </Button>
         </DialogFooter>

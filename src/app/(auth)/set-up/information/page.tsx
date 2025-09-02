@@ -23,6 +23,7 @@ import {
 import { useSetupStore } from "@/stores/setup";
 import { userService } from "@/services/user.service";
 import { useAuthStore } from "@/stores/auth";
+import { useTranslation } from "react-i18next";
 
 const InformationPage = () => {
   const router = useRouter();
@@ -31,6 +32,7 @@ const InformationPage = () => {
   const userInfo = useSetupStore((state) => state.userInfo);
   const resetSetup = useSetupStore((state) => state.reset);
   const { fetchProfile } = useAuthStore();
+  const { t } = useTranslation();
   
   const form = useForm<InformationFormValues>({
     resolver: zodResolver(informationFormSchema),
@@ -65,14 +67,14 @@ const InformationPage = () => {
 
         await fetchProfile();
 
-        toast.success("Information saved successfully!");
+        toast.success(t("auth.setup.information.informationSaved"));
         // Clear the setup store
         resetSetup();
         // Redirect to login or dashboard
         router.push("/");
       } catch (error) {
         console.error(error);
-        toast.error("Failed to save information. Please try again.");
+        toast.error(t("auth.setup.information.informationSaveFailed"));
       }
     });
   }
@@ -81,11 +83,10 @@ const InformationPage = () => {
     <>
       <div className="space-y-2 text-center">
         <h1 className="font-bold text-2xl md:text-3xl tracking-tight text-gray-800">
-          Complete Your Profile
+          {t("auth.setup.information.title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Please provide your personal information to help us personalize your
-          healthcare experience
+          {t("auth.setup.information.subtitle")}
         </p>
       </div>
 
@@ -94,24 +95,24 @@ const InformationPage = () => {
           <FormField
             control={form.control}
             name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Full Name</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <UserIcon className="h-4 w-4 text-muted-foreground" />
+                          render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("auth.setup.information.fullName")}</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <UserIcon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <Input
+                        placeholder={t("auth.setup.information.fullNamePlaceholder")}
+                        className="pl-10"
+                        {...field}
+                      />
                     </div>
-                    <Input
-                      placeholder="Enter your full name"
-                      className="pl-10"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -120,7 +121,7 @@ const InformationPage = () => {
               name="dateOfBirth"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date of Birth</FormLabel>
+                  <FormLabel>{t("auth.setup.information.dateOfBirth")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -146,7 +147,7 @@ const InformationPage = () => {
               name="gender"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Gender</FormLabel>
+                  <FormLabel>{t("auth.setup.information.gender")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -158,13 +159,13 @@ const InformationPage = () => {
                         value={field.value}
                       >
                         <option value="" disabled>
-                          Select your gender
+                          {t("auth.setup.information.selectGender")}
                         </option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
+                        <option value="male">{t("auth.setup.information.male")}</option>
+                        <option value="female">{t("auth.setup.information.female")}</option>
+                        <option value="other">{t("auth.setup.information.other")}</option>
                         <option value="prefer_not_to_say">
-                          Prefer not to say
+                          {t("auth.setup.information.preferNotToSay")}
                         </option>
                       </select>
                     </div>
@@ -178,24 +179,24 @@ const InformationPage = () => {
           <FormField
             control={form.control}
             name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <MapPinIcon className="h-4 w-4 text-muted-foreground" />
+                          render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("auth.setup.information.address")}</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <MapPinIcon className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <Input
+                        placeholder={t("auth.setup.information.addressPlaceholder")}
+                        className="pl-10"
+                        {...field}
+                      />
                     </div>
-                    <Input
-                      placeholder="Enter your address"
-                      className="pl-10"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
           />
 
           <Button
@@ -203,7 +204,7 @@ const InformationPage = () => {
             className="w-full py-5 mt-2 text-base font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary"
             disabled={isPending}
           >
-            {isPending ? "Saving..." : "Save Information"}
+            {isPending ? t("auth.setup.information.saving") : t("auth.setup.information.saveInformation")}
           </Button>
         </form>
       </Form>

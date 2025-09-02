@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 import {
   User,
   Edit,
@@ -38,6 +39,7 @@ import { roomService } from "@/services/room.service";
 import { Room } from "@/types";
 
 export default function DoctorProfilePage() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [doctorData, setDoctorData] = useState<DoctorWithPopulatedData | null>(
     null
@@ -310,7 +312,7 @@ export default function DoctorProfilePage() {
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    {isSaving ? "Saving..." : "Save Changes"}
+                    {isSaving ? t("doctor.profile.saving") : t("doctor.profile.saveChanges")}
                   </Button>
                   <Button
                     variant="outline"
@@ -318,13 +320,13 @@ export default function DoctorProfilePage() {
                     disabled={isSaving}
                   >
                     <X className="w-4 h-4 mr-2" />
-                    Cancel
+                    {t("doctor.profile.cancel")}
                   </Button>
                 </>
               ) : (
                 <Button onClick={handleEditToggle}>
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit Professional Info
+                  {t("doctor.profile.editProfessionalInfo")}
                 </Button>
               )}
             </div>
@@ -342,7 +344,7 @@ export default function DoctorProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 text-base">
                   <Award className="w-4 h-4" />
-                  Professional Stats
+                  {t("doctor.profile.professionalStats")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -367,14 +369,14 @@ export default function DoctorProfilePage() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Years Experience
+                      {t("doctor.profile.yearsExperience")}
                     </div>
                   </div>
                   <div className="text-center p-4 bg-gray-50 rounded-lg">
                     <div className="text-xl font-bold text-gray-900">
                       {doctorData.averageRating.toFixed(1)}
                     </div>
-                    <div className="text-sm text-gray-600">Average Rating</div>
+                    <div className="text-sm text-gray-600">{t("doctor.profile.averageRating")}</div>
                   </div>
                   <div className="text-center p-4 bg-gray-50 rounded-lg">
                     <div className="text-lg font-bold text-gray-900">
@@ -396,7 +398,7 @@ export default function DoctorProfilePage() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600">
-                      Consultation Fee
+                      {t("doctor.profile.consultationFee")}
                     </div>
                   </div>
                 </div>
@@ -409,7 +411,7 @@ export default function DoctorProfilePage() {
                 <CardTitle className="flex items-center justify-between text-gray-900 text-base">
                   <div className="flex items-center gap-2">
                     <GraduationCap className="w-4 h-4" />
-                    Qualifications
+                    {t("doctor.profile.qualifications")}
                   </div>
                   {isEditing && (
                     <Button
@@ -418,7 +420,7 @@ export default function DoctorProfilePage() {
                       onClick={addQualification}
                     >
                       <Plus className="w-3 h-3 mr-1" />
-                      Add
+                      {t("doctor.profile.add")}
                     </Button>
                   )}
                 </CardTitle>
@@ -433,7 +435,7 @@ export default function DoctorProfilePage() {
                           onChange={(e) =>
                             updateQualification(index, e.target.value)
                           }
-                          placeholder="Enter qualification"
+                          placeholder={t("doctor.profile.enterQualification")}
                           className="flex-1"
                         />
                         <Button
@@ -600,19 +602,19 @@ export default function DoctorProfilePage() {
                           bio: e.target.value,
                         }))
                       }
-                      placeholder="Tell us about yourself, your experience, and expertise..."
+                      placeholder={t("doctor.profile.bioPlaceholder")}
                       className="min-h-[100px] resize-y"
                     />
                   ) : (
                     <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
-                      {doctorData.bio || "No biography added yet"}
+                      {doctorData.bio || t("doctor.profile.noBiographyAdded")}
                     </p>
                   )}
                 </div>
 
                 <div>
                   <Label className="text-sm font-medium text-gray-600 mb-2 block">
-                    Specialization
+                    {t("doctor.profile.specialization")}
                   </Label>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -620,7 +622,7 @@ export default function DoctorProfilePage() {
                         {doctorData.specialization.name}
                       </Badge>
                       <span className="text-xs text-gray-500">
-                        (Cannot be edited)
+                        ({t("doctor.profile.cannotBeEdited")})
                       </span>
                     </div>
                     {doctorData.specialization.description && (

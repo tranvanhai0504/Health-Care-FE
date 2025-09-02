@@ -21,10 +21,12 @@ import { SignUpVerifyModal } from "@/components/dialogs/sign-up-verify";
 import { authService } from "@/services";
 import { toast } from "sonner";
 import { PhoneIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const SignUpPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof signUpFormSchema>>({
     resolver: zodResolver(signUpFormSchema),
@@ -39,10 +41,10 @@ const SignUpPage = () => {
         const response = await authService.register(data);
         console.log(response);
         setIsOpen(true);
-        toast.success("Registration initiated. Please verify your OTP.");
+        toast.success(t("auth.register.registrationInitiated"));
       } catch (error) {
         console.error(error);
-        toast.error("Failed to register. Please try again.");
+        toast.error(t("auth.register.registrationFailed"));
       }
     });
   }
@@ -66,10 +68,10 @@ const SignUpPage = () => {
 
           <div className="space-y-3 text-center lg:text-left">
             <h1 className="font-bold text-3xl tracking-tight">
-              Create your account
+              {t("auth.register.title")}
             </h1>
             <p className="text-muted-foreground">
-              Join thousands of patients managing their health with us
+              {t("auth.register.subtitle")}
             </p>
           </div>
 
@@ -84,14 +86,14 @@ const SignUpPage = () => {
                   name="phoneNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base">Phone Number</FormLabel>
+                      <FormLabel className="text-base">{t("auth.register.phoneNumber")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <PhoneIcon className="h-4 w-4 text-muted-foreground" />
                           </div>
                           <Input
-                            placeholder="Enter your phone number"
+                            placeholder={t("auth.register.phonePlaceholder")}
                             className="pl-10"
                             {...field}
                           />
@@ -106,7 +108,7 @@ const SignUpPage = () => {
                   className="w-full py-6 text-base font-medium"
                   disabled={isPending}
                 >
-                  {isPending ? "Processing..." : "Continue"}
+                  {isPending ? t("auth.register.processing") : t("auth.register.continue")}
                 </Button>
               </form>
             </Form>
@@ -118,7 +120,7 @@ const SignUpPage = () => {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-card text-muted-foreground">
-                    Or continue with
+                    {t("auth.register.orContinueWith")}
                   </span>
                 </div>
               </div>
@@ -131,18 +133,18 @@ const SignUpPage = () => {
                   height={20}
                   className="mr-2"
                 />
-                Google
+                {t("auth.register.google")}
               </Button>
             </div>
           </div>
 
           <div className="flex justify-center text-sm space-x-1">
-            <p className="text-muted-foreground">Already have an account?</p>
+            <p className="text-muted-foreground">{t("auth.register.alreadyHaveAccount")}</p>
             <Link
               href="/login"
               className="font-semibold text-primary hover:underline"
             >
-              Sign in
+              {t("auth.register.signIn")}
             </Link>
           </div>
         </div>
@@ -159,8 +161,7 @@ const SignUpPage = () => {
         <div className="absolute inset-0 bg-black/25 rounded-3xl flex flex-col justify-end p-12">
           <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
             <blockquote className="text-white font-medium text-lg mb-4">
-              &ldquo;The HealthCare app has transformed how I manage my medical
-              needs. Booking schedules is now effortless.&rdquo;
+              &ldquo;{t("auth.register.testimonial")}&rdquo;
             </blockquote>
             <footer className="flex items-center space-x-4">
               <div className="rounded-full bg-primary/20 p-1">
@@ -173,8 +174,8 @@ const SignUpPage = () => {
                 />
               </div>
               <div>
-                <p className="text-white font-semibold">Sarah Johnson</p>
-                <p className="text-white/80 text-sm">Patient since 2022</p>
+                <p className="text-white font-semibold">{t("auth.register.testimonialAuthor")}</p>
+                <p className="text-white/80 text-sm">{t("auth.register.testimonialRole")}</p>
               </div>
             </footer>
           </div>

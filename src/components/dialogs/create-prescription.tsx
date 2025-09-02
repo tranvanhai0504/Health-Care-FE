@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -63,6 +64,7 @@ export function CreatePrescriptionDialog({
   patientName,
   trigger,
 }: CreatePrescriptionDialogProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     patient: patientId,
     diagnosis: "",
@@ -297,15 +299,15 @@ export function CreatePrescriptionDialog({
             {formData.medications.length === 0 && (
               <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                 <Pill className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 mb-2">No medications added yet</p>
-                <p className="text-xs text-gray-400">Click &quot;Add Medication&quot; to start creating the prescription</p>
+                <p className="text-sm text-gray-500 mb-2">{t("dialogs.createPrescription.noMedicationsAdded")}</p>
+                <p className="text-xs text-gray-400">{t("dialogs.createPrescription.clickAddMedication")}</p>
               </div>
             )}
 
             {formData.medications.map((medication, index) => (
               <div key={index} className="border rounded-lg p-4 space-y-4 bg-gray-50/50">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-lg">Medication {index + 1}</h4>
+                  <h4 className="font-medium text-lg">{t("dialogs.createPrescription.medication")} {index + 1}</h4>
                   <Button
                     type="button"
                     variant="ghost"
@@ -319,20 +321,20 @@ export function CreatePrescriptionDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="">
-                    <Label htmlFor={`medicine-${index}`}>Select Medicine *</Label>
+                    <Label htmlFor={`medicine-${index}`}>{t("dialogs.createPrescription.selectMedicine")} *</Label>
                     <Select
                       onValueChange={(value) => handleMedicineSelect(index, value)}
                       value={medication.medicineId || ""}
                     >
                       <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Choose a medicine" />
+                        <SelectValue placeholder={t("dialogs.createPrescription.chooseMedicine")} />
                       </SelectTrigger>
                       <SelectContent>
                         <div className="p-2">
                           <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                              placeholder="Search medicines..."
+                              placeholder={t("dialogs.createPrescription.searchMedicines")}
                               value={searchTerm}
                               onChange={(e) => handleSearch(e.target.value)}
                               className="pl-8"
@@ -341,11 +343,11 @@ export function CreatePrescriptionDialog({
                         </div>
                         {isLoadingMedicines ? (
                           <div className="p-4 text-center text-sm text-muted-foreground">
-                            Loading medicines...
+                            {t("dialogs.createPrescription.loadingMedicines")}
                           </div>
                         ) : medicines.length === 0 ? (
                           <div className="p-4 text-center text-sm text-muted-foreground">
-                            No medicines found
+                            {t("dialogs.createPrescription.noMedicinesFound")}
                           </div>
                         ) : (
                           medicines.map((medicine) => (
@@ -362,56 +364,56 @@ export function CreatePrescriptionDialog({
                       </SelectContent>
                     </Select>
                     {medication.medicineId ? (
-                      <p className="text-xs text-green-600 mt-2">✓ Medicine selected</p>
+                      <p className="text-xs text-green-600 mt-2">✓ {t("dialogs.createPrescription.medicineSelected")}</p>
                     ) : (
-                      <p className="text-xs text-red-500 mt-2">Please select a medicine</p>
+                      <p className="text-xs text-red-500 mt-2">{t("dialogs.createPrescription.pleaseSelectMedicine")}</p>
                     )}
                   </div>
 
                   <div className="mt-1">
-                    <Label htmlFor={`dosage-${index}`}>Dosage *</Label>
+                    <Label htmlFor={`dosage-${index}`}>{t("dialogs.createPrescription.dosage")} *</Label>
                     <Input
                       id={`dosage-${index}`}
                       value={medication.dosage}
                       onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
-                      placeholder="e.g., 500mg"
+                      placeholder={t("dialogs.createPrescription.dosagePlaceholder")}
                       required
                       className="mt-2"
                     />
                   </div>
 
                   <div className="mt-2">
-                    <Label htmlFor={`frequency-${index}`}>Frequency *</Label>
+                    <Label htmlFor={`frequency-${index}`}>{t("dialogs.createPrescription.frequency")} *</Label>
                     <Input
                       id={`frequency-${index}`}
                       value={medication.frequency}
                       onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
-                      placeholder="e.g., 3 times daily"
+                      placeholder={t("dialogs.createPrescription.frequencyPlaceholder")}
                       required
                       className="mt-2"
                     />
                   </div>
 
                   <div className="mt-2">
-                    <Label htmlFor={`duration-${index}`}>Duration *</Label>
+                    <Label htmlFor={`duration-${index}`}>{t("dialogs.createPrescription.duration")} *</Label>
                     <Input
                       id={`duration-${index}`}
                       value={medication.duration}
                       onChange={(e) => updateMedication(index, 'duration', e.target.value)}
-                      placeholder="e.g., 7 days"
+                      placeholder={t("dialogs.createPrescription.durationPlaceholder")}
                       required
                       className="mt-2"
                     />
                   </div>
 
                   <div className="mt-2">
-                    <Label htmlFor={`quantity-${index}`}>Quantity *</Label>
+                    <Label htmlFor={`quantity-${index}`}>{t("dialogs.createPrescription.quantity")} *</Label>
                     <Input
                       id={`quantity-${index}`}
                       type="number"
                       value={medication.quantity}
                       onChange={(e) => updateMedication(index, 'quantity', parseInt(e.target.value) || 1)}
-                      placeholder="e.g., 10"
+                      placeholder={t("dialogs.createPrescription.quantityPlaceholder")}
                       required
                       className="mt-2"
                       min="1"
@@ -420,12 +422,12 @@ export function CreatePrescriptionDialog({
                 </div>
 
                 <div className="mt-4">
-                  <Label htmlFor={`instructions-${index}`}>Instructions *</Label>
+                  <Label htmlFor={`instructions-${index}`}>{t("dialogs.createPrescription.instructions")} *</Label>
                   <Textarea
                     id={`instructions-${index}`}
                     value={medication.instructions}
                     onChange={(e) => updateMedication(index, 'instructions', e.target.value)}
-                    placeholder="e.g., Take with food, avoid dairy products"
+                    placeholder={t("dialogs.createPrescription.instructionsPlaceholder")}
                     required
                     className="mt-2"
                     rows={2}
@@ -437,12 +439,12 @@ export function CreatePrescriptionDialog({
 
           {/* Diagnosis Section */}
           <div className="space-y-4">
-            <Label htmlFor="diagnosis" className="text-base font-semibold">Diagnosis *</Label>
+            <Label htmlFor="diagnosis" className="text-base font-semibold">{t("dialogs.createPrescription.diagnosis")} *</Label>
             <Textarea
               id="diagnosis"
               value={formData.diagnosis}
               onChange={(e) => setFormData(prev => ({ ...prev, diagnosis: e.target.value }))}
-              placeholder="Enter the patient's diagnosis..."
+              placeholder={t("dialogs.createPrescription.diagnosisPlaceholder")}
               required
               rows={3}
             />
@@ -450,12 +452,12 @@ export function CreatePrescriptionDialog({
 
           {/* Notes Section */}
           <div className="space-y-4">
-            <Label htmlFor="notes" className="text-base font-semibold">Additional Notes</Label>
+            <Label htmlFor="notes" className="text-base font-semibold">{t("dialogs.createPrescription.additionalNotes")}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Enter additional notes, follow-up instructions, or special considerations..."
+              placeholder={t("dialogs.createPrescription.additionalNotesPlaceholder")}
               rows={3}
             />
           </div>
@@ -468,7 +470,7 @@ export function CreatePrescriptionDialog({
                 onClick={handleCancel}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t("dialogs.createPrescription.cancel")}
               </Button>
             </DialogClose>
             <Button
@@ -477,7 +479,7 @@ export function CreatePrescriptionDialog({
                 formData.medications.some(med => !med.medicineId)}
               className="min-w-[120px]"
             >
-              {isSubmitting ? "Creating..." : "Create Prescription"}
+              {isSubmitting ? t("dialogs.createPrescription.creating") : t("dialogs.createPrescription.createPrescription")}
             </Button>
           </DialogFooter>
         </form>

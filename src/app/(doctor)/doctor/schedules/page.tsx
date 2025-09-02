@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { useTranslation } from "react-i18next";
 import {
   ScheduleHeader,
   ScheduleFilters,
@@ -45,6 +46,7 @@ function mapScheduleStatusToAppointmentStatus(
 }
 
 export default function DoctorSchedules() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState<"today" | "week">("today");
@@ -116,7 +118,7 @@ export default function DoctorSchedules() {
 
         return {
           id: schedule._id || "",
-          patientName: user?.name || `Patient ${userId || "Unknown"}`,
+          patientName: user?.name || `${t("doctor.schedules.patient")} ${userId || t("doctor.schedules.unknown")}`,
           patientPhone: user?.phoneNumber || "N/A",
           patientEmail: user?.email || "N/A",
           patientAddress: user?.address || "N/A",
@@ -124,11 +126,11 @@ export default function DoctorSchedules() {
           date: getScheduleDate(schedule.weekPeriod, schedule.dayOffset)
             .toISOString()
             .split("T")[0],
-          type: schedule.type === "services" ? "Services" : "Package",
+          type: schedule.type === "services" ? t("doctor.schedules.services") : t("doctor.schedules.package"),
           status: mapScheduleStatusToAppointmentStatus(schedule.status),
           notes: schedule.packageId
-            ? `Package: ${schedule.packageId}`
-            : "Services appointment",
+            ? `${t("doctor.schedules.package")}: ${schedule.packageId}`
+            : t("doctor.schedules.servicesAppointment"),
           duration: "N/A", // Not available in schedule data
           symptoms: "",
           previousVisits: 0, // Not available in schedule data
@@ -300,7 +302,7 @@ export default function DoctorSchedules() {
               <div className="absolute top-4 right-4 z-10">
                 <div className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-md flex items-center gap-1">
                   <div className="animate-spin h-3 w-3 border border-blue-600 border-t-transparent rounded-full"></div>
-                  Loading patient details...
+                  {t("doctor.schedules.loadingPatientDetails")}
                 </div>
               </div>
             )}

@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useTransition, use } from "react";
+import { useTranslation } from "react-i18next";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { doctorService } from "@/services/doctor.service";
 import { roomService } from "@/services/room.service";
@@ -36,84 +37,87 @@ import {
 import { AddToListButton } from "@/components/services-list";
 import { formatPrice, formatDuration } from "@/utils";
 
-// Static data constants
-const INCLUDED_ITEMS = [
-  "Comprehensive medical assessment",
-  "Detailed discussion of symptoms and concerns", 
-  "Professional medical examination",
-  "Personalized treatment recommendations"
+// Type for translation function
+type TranslationFunction = (key: string, options?: Record<string, string | number>) => string;
+
+// Helper functions to get translated data
+const getIncludedItems = (t: TranslationFunction) => [
+  t("dashboard.medicalServices.details.comprehensiveAssessment"),
+  t("dashboard.medicalServices.details.detailedDiscussion"), 
+  t("dashboard.medicalServices.details.professionalExamination"),
+  t("dashboard.medicalServices.details.personalizedRecommendations")
 ];
 
-const PREPARATION_ITEMS = [
-  "Bring your medical history and current medications",
-                "Arrive 15 minutes before your schedule",
-  "Bring any relevant test results or reports", 
-  "Wear comfortable, easily removable clothing"
+const getPreparationItems = (t: TranslationFunction) => [
+  t("dashboard.medicalServices.details.bringMedicalHistory"),
+  t("dashboard.medicalServices.details.arriveEarly"),
+  t("dashboard.medicalServices.details.bringTestResults"), 
+  t("dashboard.medicalServices.details.wearComfortableClothing")
 ];
 
-const CONSULTATION_STEPS = [
+const getConsultationSteps = (t: TranslationFunction) => [
   {
     number: 1,
-    title: "Check-in & Registration",
-    description: "Complete your registration and provide necessary documents",
+    title: t("dashboard.medicalServices.details.checkInRegistration"),
+    description: t("dashboard.medicalServices.details.checkInDescription"),
     color: "blue"
   },
   {
     number: 2, 
-    title: "Initial Assessment",
-    description: "Discussion of your symptoms, concerns, and medical history",
+    title: t("dashboard.medicalServices.details.initialAssessment"),
+    description: t("dashboard.medicalServices.details.initialAssessmentDescription"),
     color: "green"
   },
   {
     number: 3,
-    title: "Medical Examination", 
-    description: "Comprehensive physical examination as needed",
+    title: t("dashboard.medicalServices.details.medicalExamination"), 
+    description: t("dashboard.medicalServices.details.medicalExaminationDescription"),
     color: "yellow"
   },
   {
     number: 4,
-    title: "Treatment Plan",
-    description: "Receive personalized recommendations and follow-up care",
+    title: t("dashboard.medicalServices.details.treatmentPlan"),
+    description: t("dashboard.medicalServices.details.treatmentPlanDescription"),
     color: "purple"
   }
 ];
 
-const PROFESSIONAL_CARE_FEATURES = [
-  "Board-certified specialists",
-  "Modern facilities & equipment", 
-  "Personalized treatment approach"
+const getProfessionalCareFeatures = (t: TranslationFunction) => [
+  t("dashboard.medicalServices.details.boardCertifiedSpecialists"),
+  t("dashboard.medicalServices.details.modernFacilities"), 
+  t("dashboard.medicalServices.details.personalizedTreatment")
 ];
 
-const QUICK_ACTIONS = [
+const getQuickActions = (t: TranslationFunction) => [
   {
     icon: Heart,
-    text: "View Health Packages",
+    text: t("dashboard.medicalServices.details.viewHealthPackages"),
     path: "/health-packages",
     color: "text-red-500"
   },
   {
     icon: Calendar,
-                text: "My Schedules",
-            path: "/schedules",
+    text: t("dashboard.medicalServices.details.mySchedules"),
+    path: "/schedules",
     color: "text-blue-500"
   },
   {
     icon: Stethoscope,
-    text: "Browse All Services",
+    text: t("dashboard.medicalServices.details.browseAllServices"),
     path: "/consultations", 
     color: "text-green-500"
   }
 ];
 
-const SUPPORT_OPTIONS = [
+const getSupportOptions = (t: TranslationFunction) => [
   {
     icon: Phone,
-    text: "Call Support",
+    text: t("dashboard.medicalServices.details.callSupport"),
     color: "text-green-600"
   },
   {
     icon: Mail,
-    text: "Email Us",
+    text: t("dashboard.medicalServices.details.emailUs"),
     color: "text-blue-600"
   }
 ];
@@ -133,7 +137,8 @@ const HeroSection = ({
   room, 
   formatPrice, 
   formatDuration, 
-  router 
+  router,
+  t
 }: {
   service: ConsultationService;
   specialty: Specialty | null;
@@ -141,6 +146,7 @@ const HeroSection = ({
   formatPrice: (price: number) => string;
   formatDuration: (duration: number) => string;
   router: ReturnType<typeof useRouter>;
+  t: TranslationFunction;
 }) => (
   <div className="mb-8">
     <div className="p-8">
@@ -183,7 +189,7 @@ const HeroSection = ({
             )}
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="h-5 w-5 text-primary" />
-              <span className="font-medium">Professional consultation</span>
+              <span className="font-medium">{t("dashboard.medicalServices.details.professionalConsultation")}</span>
             </div>
           </div>
         </div>
@@ -195,7 +201,7 @@ const HeroSection = ({
             onClick={() => router.push(`/booking?type=service&serviceId=${service._id}`)}
           >
             <Calendar className="h-5 w-5 mr-2" />
-                                  Book Schedule
+            {t("dashboard.medicalServices.details.bookSchedule")}
           </Button>
           <AddToListButton
             service={service}
@@ -213,11 +219,13 @@ const HeroSection = ({
 const DoctorInfo = ({ 
   doctor, 
   formatPrice, 
-  router 
+  router,
+  t
 }: {
   doctor: Doctor;
   formatPrice: (price: number) => string;
   router: ReturnType<typeof useRouter>;
+  t: TranslationFunction;
 }) => (
   <div className="xl:w-80 p-6 border rounded-lg">
     <div className="text-center pb-4">
@@ -236,11 +244,11 @@ const DoctorInfo = ({
     <div className="space-y-4">
       <div className="border rounded-lg p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-muted-foreground">Experience</span>
+          <span className="text-sm text-muted-foreground">{t("dashboard.medicalServices.details.experience")}</span>
           <span className="font-bold text-primary">{doctor.experience} years</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-muted-foreground">Consultation Fee</span>
+          <span className="text-sm text-muted-foreground">{t("dashboard.medicalServices.details.consultationFee")}</span>
           <span className="font-bold text-green-600">{formatPrice(doctor.consultationFee)}</span>
         </div>
       </div>
@@ -248,7 +256,7 @@ const DoctorInfo = ({
       <div>
         <h4 className="font-semibold mb-3 flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
-          Qualifications
+          {t("dashboard.medicalServices.details.qualifications")}
         </h4>
         <ul className="text-sm space-y-2">
           {doctor.qualifications.slice(0, 3).map((qualification, index) => (
@@ -258,7 +266,7 @@ const DoctorInfo = ({
             </li>
           ))}
           {doctor.qualifications.length > 3 && (
-            <li className="text-muted-foreground text-xs pl-5">+ {doctor.qualifications.length - 3} more qualifications</li>
+            <li className="text-muted-foreground text-xs pl-5">+ {doctor.qualifications.length - 3} {t("dashboard.medicalServices.details.moreQualifications")}</li>
           )}
         </ul>
       </div>
@@ -270,24 +278,24 @@ const DoctorInfo = ({
         className="w-full"
         onClick={() => router.push(`/doctors/${doctor._id}`)}
       >
-        View Full Profile
+        {t("dashboard.medicalServices.details.viewFullProfile")}
       </Button>
     </div>
   </div>
 );
 
 // Component for professional care fallback
-const ProfessionalCareInfo = () => (
+const ProfessionalCareInfo = ({ t }: { t: TranslationFunction }) => (
   <div className="xl:w-80 p-6 border rounded-lg">
     <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
       <Shield className="h-5 w-5 text-primary" />
-      Professional Care
+      {t("dashboard.medicalServices.details.professionalCare")}
     </h3>
     <p className="text-muted-foreground mb-4">
-      This consultation service is provided by our team of qualified healthcare professionals.
+      {t("dashboard.medicalServices.details.professionalCareDescription")}
     </p>
     <div className="space-y-3">
-      {PROFESSIONAL_CARE_FEATURES.map((feature, index) => (
+      {getProfessionalCareFeatures(t).map((feature, index) => (
         <div key={index} className="flex items-center gap-2">
           <CheckCircle className="h-4 w-4 text-green-500" />
           <span className="text-sm">{feature}</span>
@@ -298,20 +306,20 @@ const ProfessionalCareInfo = () => (
 );
 
 // Component for service details
-const ServiceDetails = () => (
+const ServiceDetails = ({ t }: { t: TranslationFunction }) => (
   <div className="flex-1 p-6 border rounded-lg">
     <h2 className="text-xl font-semibold flex items-center gap-2 mb-6">
       <Activity className="h-5 w-5 text-primary" />
-      What&apos;s Included & How to Prepare
+      {t("dashboard.medicalServices.details.whatsIncluded")}
     </h2>
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-green-600">
           <CheckCircle className="h-5 w-5" />
-          What&apos;s Included
+          {t("dashboard.medicalServices.details.whatsIncludedTitle")}
         </h3>
         <ul className="space-y-3">
-          {INCLUDED_ITEMS.map((item, index) => (
+          {getIncludedItems(t).map((item, index) => (
             <li key={index} className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
               <span className="text-sm">{item}</span>
@@ -323,10 +331,10 @@ const ServiceDetails = () => (
       <div className="flex-1">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-600">
           <Shield className="h-5 w-5" />
-          How to Prepare
+          {t("dashboard.medicalServices.details.howToPrepare")}
         </h3>
         <ul className="space-y-3">
-          {PREPARATION_ITEMS.map((item, index) => (
+          {getPreparationItems(t).map((item, index) => (
             <li key={index} className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
               <span className="text-sm">{item}</span>
@@ -339,19 +347,19 @@ const ServiceDetails = () => (
 );
 
 // Component for consultation steps
-const ConsultationSteps = ({ serviceName }: { serviceName: string }) => (
+const ConsultationSteps = ({ serviceName, t }: { serviceName: string; t: TranslationFunction }) => (
   <div className="p-6 border rounded-lg">
     <div className="mb-6">
       <h2 className="text-xl font-semibold flex items-center gap-2">
         <Heart className="h-5 w-5 text-primary" />
-        Your Consultation Journey
+        {t("dashboard.medicalServices.details.consultationJourney")}
       </h2>
       <p className="text-muted-foreground mt-2">
-        Here&apos;s what you can expect during your {serviceName.toLowerCase()} consultation
+        {t("dashboard.medicalServices.details.consultationJourneyDescription", { serviceName: serviceName.toLowerCase() })}
       </p>
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {CONSULTATION_STEPS.map((step) => (
+      {getConsultationSteps(t).map((step) => (
         <div key={step.number} className="text-center">
           <div className="mb-4">
             <div className={`h-16 w-16 rounded-full bg-${step.color}-100 dark:bg-${step.color}-900 flex items-center justify-center mx-auto`}>
@@ -372,22 +380,24 @@ const RelatedServices = ({
   specialty, 
   formatPrice, 
   formatDuration, 
-  router 
+  router,
+  t
 }: {
   relatedServices: ConsultationService[];
   specialty: Specialty | null;
   formatPrice: (price: number) => string;
   formatDuration: (duration: number) => string;
   router: ReturnType<typeof useRouter>;
+  t: TranslationFunction;
 }) => (
   <div className="p-6 border rounded-lg">
     <div className="mb-6">
       <h2 className="text-xl font-semibold flex items-center gap-2">
         <Stethoscope className="h-5 w-5 text-primary" />
-        Related Services
+        {t("dashboard.medicalServices.details.relatedServices")}
       </h2>
       <p className="text-muted-foreground mt-2">
-        Other consultation services in {specialty?.name || 'this specialty'}
+        {t("dashboard.medicalServices.details.relatedServicesDescription", { specialty: specialty?.name || 'this specialty' })}
       </p>
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -419,19 +429,19 @@ const RelatedServices = ({
 );
 
 // Component for quick actions
-const QuickActions = ({ router }: { router: ReturnType<typeof useRouter> }) => (
+const QuickActions = ({ router, t }: { router: ReturnType<typeof useRouter>; t: TranslationFunction }) => (
   <div className="rounded-lg">
     <div className="mb-6">
       <h2 className="text-xl font-semibold flex items-center gap-2">
         <Zap className="h-5 w-5 text-primary" />
-        Quick Actions
+        {t("dashboard.medicalServices.details.quickActions")}
       </h2>
       <p className="text-muted-foreground mt-2">
-        Explore more health services and manage your care
+        {t("dashboard.medicalServices.details.quickActionsDescription")}
       </p>
     </div>
     <div className="flex flex-col sm:flex-row gap-3">
-      {QUICK_ACTIONS.map((action, index) => {
+      {getQuickActions(t).map((action, index) => {
         const IconComponent = action.icon;
         return (
           <Button 
@@ -450,19 +460,19 @@ const QuickActions = ({ router }: { router: ReturnType<typeof useRouter> }) => (
 );
 
 // Component for contact support
-const ContactSupport = () => (
+const ContactSupport = ({ t }: { t: TranslationFunction }) => (
   <div className="rounded-lg">
     <div className="mb-6">
       <h2 className="text-lg font-semibold flex items-center gap-2">
         <Phone className="h-5 w-5 text-green-600" />
-        Need Help?
+        {t("dashboard.medicalServices.details.needHelp")}
       </h2>
       <p className="text-muted-foreground mt-2">
-        Get assistance with booking or service questions
+        {t("dashboard.medicalServices.details.needHelpDescription")}
       </p>
     </div>
     <div className="space-y-3 flex gap-3">
-      {SUPPORT_OPTIONS.map((option, index) => {
+      {getSupportOptions(t).map((option, index) => {
         const IconComponent = option.icon;
         return (
           <Button 
@@ -481,6 +491,7 @@ const ContactSupport = () => (
 );
 
 const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
+  const { t } = useTranslation();
   // Use React.use() to unwrap the params Promise
   const { id } = use(params);
   
@@ -576,13 +587,13 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
         // Handle different types of errors more gracefully
         const error = err as { code?: string; response?: { status?: number } };
         if (error.code === 'ECONNABORTED') {
-          setError("Request timed out. Please check your connection and try again.");
+          setError(t("dashboard.medicalServices.details.requestTimeout"));
         } else if (error.response?.status === 404) {
-          setError("Service not found. It may have been removed or the link is incorrect.");
+          setError(t("dashboard.medicalServices.details.serviceNotFoundError"));
         } else if (error.response?.status && error.response.status >= 500) {
-          setError("Server error. Please try again in a few moments.");
+          setError(t("dashboard.medicalServices.details.serverError"));
         } else {
-          setError("Failed to load service details. Please try again later.");
+          setError(t("dashboard.medicalServices.details.failedToLoad"));
         }
         setLoading(false);
       }
@@ -591,7 +602,7 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
     startTransition(() => {
       fetchServiceDetails();
     });
-  }, [id]);
+  }, [id, t]);
 
 
 
@@ -639,14 +650,14 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
       <div className="min-h-screen flex flex-col justify-center items-center px-4">
         <div className="text-center">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("dashboard.medicalServices.details.somethingWentWrong")}</h1>
           <p className="text-gray-600 mb-6 max-w-md">{error}</p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => window.location.reload()}>
-              Try Again
+              {t("dashboard.medicalServices.details.tryAgain")}
             </Button>
             <Button onClick={() => router.push('/consultations')}>
-              Back to Services
+              {t("dashboard.medicalServices.details.backToServices")}
             </Button>
           </div>
         </div>
@@ -659,12 +670,12 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
       <div className="min-h-screen flex flex-col justify-center items-center px-4">
         <div className="text-center">
           <Stethoscope className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Service not found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("dashboard.medicalServices.details.serviceNotFound")}</h1>
           <p className="text-gray-600 mb-6 max-w-md">
-            The consultation service you&apos;re looking for doesn&apos;t exist or has been removed.
+            {t("dashboard.medicalServices.details.serviceNotFoundDescription")}
           </p>
           <Button onClick={() => router.push('/consultations')}>
-            Browse All Services
+            {t("dashboard.medicalServices.details.browseAllServices")}
           </Button>
         </div>
       </div>
@@ -681,6 +692,7 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
           formatPrice={formatPrice}
           formatDuration={formatDuration}
           router={router}
+          t={t}
         />
 
         <div className="space-y-8">
@@ -690,14 +702,15 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
                 doctor={doctor}
                 formatPrice={formatPrice}
                 router={router}
+                t={t}
               />
             ) : (
-              <ProfessionalCareInfo />
+              <ProfessionalCareInfo t={t} />
             )}
-            <ServiceDetails />
+            <ServiceDetails t={t} />
           </div>
 
-          <ConsultationSteps serviceName={service.name} />
+          <ConsultationSteps serviceName={service.name} t={t} />
 
           {relatedServices.length > 0 && (
             <RelatedServices 
@@ -706,12 +719,13 @@ const ServiceDetailPage = ({ params }: ServiceDetailPageProps) => {
               formatPrice={formatPrice}
               formatDuration={formatDuration}
               router={router}
+              t={t}
             />
           )}
 
-          <QuickActions router={router} />
+          <QuickActions router={router} t={t} />
 
-          <ContactSupport />
+          <ContactSupport t={t} />
         </div>
       </div>
     </div>

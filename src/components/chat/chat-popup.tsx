@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { useChat } from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
 import { MessageList, MessageInput } from '.';
+import { useTranslation } from 'react-i18next';
 
 export function ChatPopup() {
+  const { t } = useTranslation();
   const {
     isOpen,
     closeChat,
@@ -39,7 +41,7 @@ export function ChatPopup() {
   }
 
   const handleClearChat = () => {
-    if (window.confirm('Are you sure you want to clear this conversation? This action cannot be undone.')) {
+    if (window.confirm(t('chat.popup.clearConversationConfirm'))) {
       clearConversation();
     }
   };
@@ -52,7 +54,7 @@ export function ChatPopup() {
           "w-96 h-[500px] max-h-[80vh]",
           "flex flex-col",
           "animate-in slide-in-from-bottom-4 duration-300",
-          "sm:w-80 sm:h-[450px]"
+          "sm:w-96 sm:h-[450px]"
         )}
       >
         {/* Header */}
@@ -62,9 +64,9 @@ export function ChatPopup() {
               <Bot size={16} className="text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm">AI Assistant</h3>
+              <h3 className="font-semibold text-sm">{t('chat.popup.aiAssistant')}</h3>
               <p className="text-xs text-muted-foreground">
-                {currentConversation?.messages.length || 0} messages
+                {currentConversation?.messages.length || 0} {t('chat.popup.messages')}
               </p>
             </div>
           </div>
@@ -77,7 +79,7 @@ export function ChatPopup() {
                 size="icon"
                 onClick={handleClearChat}
                 className="size-8 hover:bg-destructive/10 hover:text-destructive"
-                aria-label="Clear conversation"
+                aria-label={t('chat.popup.clearConversation')}
               >
                 <Trash2 size={14} />
               </Button>
@@ -89,7 +91,7 @@ export function ChatPopup() {
               size="icon"
               onClick={closeChat}
               className="size-8"
-              aria-label="Close chat"
+              aria-label={t('chat.popup.closeChat')}
             >
               <X size={14} />
             </Button>

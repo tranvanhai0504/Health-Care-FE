@@ -24,9 +24,13 @@ export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
+  // Optional image attachment URL
+  imageUrl?: string;
   timestamp: Date;
   status: MessageStatus;
   error?: string;
+  // Optional form response for interactive actions
+  formResponse?: FormResponse;
 }
 
 /**
@@ -46,6 +50,7 @@ export interface ChatConversation {
  */
 export interface ChatRequest {
   message: string;
+  image?: File; // optional image file to send with the message
   conversationId?: string;
   context?: {
     userInfo?: {
@@ -56,6 +61,31 @@ export interface ChatRequest {
     currentPage?: string;
     previousMessages?: ChatMessage[];
   };
+}
+
+/**
+ * Schedule form data structure
+ */
+export interface ScheduleFormData {
+  dayOffset: number;
+  packageId: string;
+  status: string;
+  timeOffset: number;
+  type: string;
+  weekPeriod: {
+    from: string;
+    to: string;
+  };
+}
+
+/**
+ * Special form response structure
+ */
+export interface FormResponse {
+  type: "form";
+  data: ScheduleFormData;
+  action: "POST" | "PUT" | "PATCH" | "DELETE";
+  endpoint: string;
 }
 
 /**
@@ -72,6 +102,8 @@ export interface ChatResponse {
     tokensUsed?: number;
     processingTime?: number;
   };
+  // Special form response for interactive actions
+  formResponse?: FormResponse;
 }
 
 /**
@@ -110,7 +142,7 @@ export interface ChatState {
   ui: ChatUIState;
   
   // Actions
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string, imageFile?: File | null) => Promise<void>;
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
   updateMessage: (messageId: string, updates: Partial<ChatMessage>) => void;
   deleteMessage: (messageId: string) => void;
@@ -149,7 +181,7 @@ export interface UseChatReturn {
   isClient: boolean;
   
   // Actions
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (message: string, imageFile?: File | null) => Promise<void>;
   toggleChat: () => void;
   openChat: () => void;
   closeChat: () => void;

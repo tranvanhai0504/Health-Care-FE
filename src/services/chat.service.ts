@@ -1,11 +1,6 @@
 import BaseService from "./base.service";
 import api from "@/lib/axios";
-import {
-  ChatRequest,
-  ChatResponse,
-  ChatError,
-  ApiResponse,
-} from "@/types";
+import { ChatRequest, ChatResponse, ChatError, ApiResponse } from "@/types";
 
 export class ChatService extends BaseService<ChatResponse> {
   private endpoints = ["/api/v1/chat", "/chat", "/api/chat", "/api/v1/ai/chat"];
@@ -27,29 +22,80 @@ export class ChatService extends BaseService<ChatResponse> {
     for (let i = 0; i < this.endpoints.length; i++) {
       const endpoint = this.endpoints[i];
       try {
-        console.log(`Trying chat endpoint (${i + 1}/${this.endpoints.length}):`, endpoint);
-        console.log('Request payload:', { message: request.message });
+        let data: FormData | Record<string, unknown>;
+        let config: Record<string, unknown> | undefined;
+
+        if (request.image && request.image instanceof File) {
+          const formData = new FormData();
+
+          // Handle each field properly
+          formData.append('message', request.message);
+          
+          if (request.conversationId) {
+            formData.append('conversationId', request.conversationId);
+          }
+          
+          if (request.context) {
+            formData.append('context', JSON.stringify(request.context));
+          }
+          
+          formData.append('image', request.image);
+         
+          data = formData;
+          config = { headers: { "Content-Type": "multipart/form-data" } };
+        } else {
+          data = {
+            message: request.message,
+            conversationId: request.conversationId,
+            context: request.context,
+          };
+        }
 
         const response = await api.post<ApiResponse<ChatResponse>>(
           endpoint,
-          { message: request.message }
+          data,
+          config
         );
-
-        console.log('Chat response received:', response.data);
 
         // If successful, update the base path for future requests
         this.basePath = endpoint;
         this.currentEndpointIndex = i;
 
-        return response.data.data;
+        const responseData = response.data.data;
+        
+        // Check if the response contains a special form JSON structure
+        if (responseData.reply) {
+          try {
+            // Try to parse the reply as JSON to check for form data
+            const parsedReply = JSON.parse(responseData.reply);
+            if (parsedReply.type === "form" && parsedReply.data && parsedReply.action && parsedReply.endpoint) {
+              // This is a special form response, extract the form data
+              return {
+                ...responseData,
+                reply: "I've prepared a schedule for you. Please review and confirm the details below.",
+                formResponse: parsedReply
+              };
+            }
+          } catch {
+            // Not JSON, continue with normal response
+          }
+        }
+
+        return responseData;
       } catch (error) {
         console.error(`Chat endpoint ${endpoint} failed:`, error);
         lastError = error;
 
         // If it's a 404, try the next endpoint
-        if (error && typeof error === 'object' && 'response' in error &&
-            error.response && typeof error.response === 'object' && 'status' in error.response &&
-            error.response.status === 404) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "response" in error &&
+          error.response &&
+          typeof error.response === "object" &&
+          "status" in error.response &&
+          error.response.status === 404
+        ) {
           continue;
         }
 
@@ -59,13 +105,17 @@ export class ChatService extends BaseService<ChatResponse> {
     }
 
     // All endpoints failed, throw a more helpful error
-    console.error('All chat endpoints failed. Tried:', this.endpoints);
+    console.error("All chat endpoints failed. Tried:", this.endpoints);
 
     const chatError: ChatError = {
-      code: 'ENDPOINT_NOT_FOUND',
-      message: `Chat service is not available. Tried endpoints: ${this.endpoints.join(', ')}. Please contact support.`,
+      code: "ENDPOINT_NOT_FOUND",
+      message: `Chat service is not available. Tried endpoints: ${this.endpoints.join(
+        ", "
+      )}. Please contact support.`,
       retryable: false,
-      details: `Last error: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`
+      details: `Last error: ${
+        lastError instanceof Error ? lastError.message : "Unknown error"
+      }`,
     };
 
     throw chatError;
@@ -86,19 +136,19 @@ export class ChatService extends BaseService<ChatResponse> {
         `${this.basePath}/stream`,
         request,
         {
-          responseType: 'stream',
+          responseType: "stream",
           onDownloadProgress: (progressEvent) => {
             if (onChunk && progressEvent.event?.target?.response) {
               const chunk = progressEvent.event.target.response;
               onChunk(chunk);
             }
-          }
+          },
         }
       );
       return response.data.data;
     } catch (error) {
       // Fall back to regular message sending if streaming fails
-      console.warn('Streaming failed, falling back to regular message:', error);
+      console.warn("Streaming failed, falling back to regular message:", error);
       return this.sendMessage(request);
     }
   }
@@ -138,21 +188,25 @@ export class ChatService extends BaseService<ChatResponse> {
    * Get user's conversation list
    * @returns Promise with array of conversation summaries
    */
-  async getConversations(): Promise<Array<{
-    id: string;
-    title: string;
-    lastMessage: string;
-    updatedAt: string;
-  }>> {
+  async getConversations(): Promise<
+    Array<{
+      id: string;
+      title: string;
+      lastMessage: string;
+      updatedAt: string;
+    }>
+  > {
     try {
-      const response = await api.get<ApiResponse<Array<{
-        id: string;
-        title: string;
-        lastMessage: string;
-        updatedAt: string;
-      }>>>(
-        `${this.basePath}/conversations`
-      );
+      const response = await api.get<
+        ApiResponse<
+          Array<{
+            id: string;
+            title: string;
+            lastMessage: string;
+            updatedAt: string;
+          }>
+        >
+      >(`${this.basePath}/conversations`);
       return response.data.data;
     } catch (error) {
       throw this.transformError(error);
@@ -196,7 +250,7 @@ export class ChatService extends BaseService<ChatResponse> {
       return response.data.data;
     } catch (error) {
       // Return empty array if suggestions fail - not critical
-      console.warn('Failed to get chat suggestions:', error);
+      console.warn("Failed to get chat suggestions:", error);
       return [];
     }
   }
@@ -209,65 +263,84 @@ export class ChatService extends BaseService<ChatResponse> {
   private transformError(error: unknown): ChatError {
     // Default error
     let chatError: ChatError = {
-      code: 'UNKNOWN_ERROR',
-      message: 'An unexpected error occurred. Please try again.',
-      retryable: true
+      code: "UNKNOWN_ERROR",
+      message: "An unexpected error occurred. Please try again.",
+      retryable: true,
     };
 
-    if (error && typeof error === 'object' && 'response' in error && error.response && typeof error.response === 'object' && 'data' in error.response) {
-      const { status, data } = error.response as { status: number; data: { message?: string } };
-      
+    if (
+      error &&
+      typeof error === "object" &&
+      "response" in error &&
+      error.response &&
+      typeof error.response === "object" &&
+      "data" in error.response
+    ) {
+      const { status, data } = error.response as {
+        status: number;
+        data: { message?: string };
+      };
+
       switch (status) {
         case 400:
           chatError = {
-            code: 'BAD_REQUEST',
-            message: data.message || 'Invalid request. Please check your message.',
-            retryable: false
+            code: "BAD_REQUEST",
+            message:
+              data.message || "Invalid request. Please check your message.",
+            retryable: false,
           };
           break;
         case 401:
           chatError = {
-            code: 'UNAUTHORIZED',
-            message: 'Please sign in to continue chatting.',
-            retryable: false
+            code: "UNAUTHORIZED",
+            message: "Please sign in to continue chatting.",
+            retryable: false,
           };
           break;
         case 403:
           chatError = {
-            code: 'FORBIDDEN',
-            message: 'You do not have permission to use the chat feature.',
-            retryable: false
+            code: "FORBIDDEN",
+            message: "You do not have permission to use the chat feature.",
+            retryable: false,
           };
           break;
         case 404:
           chatError = {
-            code: 'ENDPOINT_NOT_FOUND',
-            message: 'Chat service is not available. Please contact support.',
-            retryable: false
+            code: "ENDPOINT_NOT_FOUND",
+            message: "Chat service is not available. Please contact support.",
+            retryable: false,
           };
           break;
         case 429:
           chatError = {
-            code: 'RATE_LIMITED',
-            message: 'Too many messages. Please wait a moment before sending another.',
-            retryable: true
+            code: "RATE_LIMITED",
+            message:
+              "Too many messages. Please wait a moment before sending another.",
+            retryable: true,
           };
           break;
         case 500:
           chatError = {
-            code: 'SERVER_ERROR',
-            message: 'AI service is temporarily unavailable. Please try again later.',
-            retryable: true
+            code: "SERVER_ERROR",
+            message:
+              "AI service is temporarily unavailable. Please try again later.",
+            retryable: true,
           };
           break;
         default:
           chatError.message = data.message || chatError.message;
       }
-    } else if (error && typeof error === 'object' && 'code' in error && error.code === 'NETWORK_ERROR') {
+    } else if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "NETWORK_ERROR"
+    ) {
       chatError = {
-        code: 'NETWORK_ERROR',
-        message: 'Network connection failed. Please check your internet connection.',
-        retryable: true
+        code: "NETWORK_ERROR",
+        message:
+          "Network connection failed. Please check your internet connection.",
+        retryable: true,
       };
     }
 

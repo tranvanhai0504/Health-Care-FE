@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "@uidotdev/usehooks";
+import { useTranslation } from "react-i18next";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import { specialtyService } from "@/services";
 import { ConsultationService, PaginationInfo, Specialty } from "@/types";
@@ -73,6 +74,7 @@ import {
 } from "@/components/ui/select";
 
 export default function AdminHealthServicesPage() {
+  const { t } = useTranslation();
   const [services, setServices] = useState<ConsultationService[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
@@ -368,14 +370,14 @@ export default function AdminHealthServicesPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
-                <Stethoscope className="h-5 w-5" /> Health Services Management
+                <Stethoscope className="h-5 w-5" /> {t("admin.healthServices.title")}
               </CardTitle>
               <CardDescription className="mt-1.5">
-                Manage all consultation services available to users
+                {t("admin.healthServices.subtitle")}
               </CardDescription>
             </div>
             <Button onClick={handleCreateService} className="w-full md:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Create New Service
+              <Plus className="mr-2 h-4 w-4" /> {t("admin.healthServices.createNewService")}
             </Button>
           </div>
         </CardHeader>
@@ -386,7 +388,7 @@ export default function AdminHealthServicesPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder={
-                  isSearching ? "Searching..." : "Search services..."
+                  isSearching ? t("admin.healthServices.searching") : t("admin.healthServices.searchServices")
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -420,12 +422,12 @@ export default function AdminHealthServicesPage() {
                   <Filter className="w-4 h-4" />
                   <SelectValue
                     placeholder={
-                      isLoadingFilters ? "Loading..." : "Specialization"
+                      isLoadingFilters ? t("admin.healthServices.loading") : t("admin.healthServices.specialization")
                     }
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Specializations</SelectItem>
+                  <SelectItem value="all">{t("admin.healthServices.allSpecializations")}</SelectItem>
                   {allSpecialties.map((specialty) => (
                     <SelectItem
                       key={specialty._id}
@@ -454,11 +456,11 @@ export default function AdminHealthServicesPage() {
                 <SelectTrigger className="w-full lg:w-[180px]">
                   <User className="w-4 h-4" />
                   <SelectValue
-                    placeholder={isLoadingFilters ? "Loading..." : "Doctor"}
+                    placeholder={isLoadingFilters ? t("admin.healthServices.loading") : t("admin.healthServices.doctor")}
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Doctors</SelectItem>
+                  <SelectItem value="all">{t("admin.healthServices.allDoctors")}</SelectItem>
                   {allDoctors.map((doctor) => (
                     <SelectItem key={doctor} value={doctor}>
                       {doctor}
@@ -471,7 +473,7 @@ export default function AdminHealthServicesPage() {
               <div className="relative">
                 <Timer className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Duration (min)"
+                  placeholder={t("admin.healthServices.durationMin")}
                   value={durationFilter}
                   onChange={(e) => setDurationFilter(e.target.value)}
                   className="pl-10 w-[140px]"
@@ -485,7 +487,7 @@ export default function AdminHealthServicesPage() {
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Min price"
+                    placeholder={t("admin.healthServices.minPrice")}
                     value={minPriceFilter}
                     onChange={(e) => setMinPriceFilter(e.target.value)}
                     className="pl-10 w-[120px]"
@@ -496,7 +498,7 @@ export default function AdminHealthServicesPage() {
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Max price"
+                    placeholder={t("admin.healthServices.maxPrice")}
                     value={maxPriceFilter}
                     onChange={(e) => setMaxPriceFilter(e.target.value)}
                     className="pl-10 w-[120px]"
@@ -521,7 +523,7 @@ export default function AdminHealthServicesPage() {
                 disabled={isSearching}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reset All
+                {t("admin.healthServices.resetAll")}
               </Button>
             </div>
           </div>
@@ -535,7 +537,7 @@ export default function AdminHealthServicesPage() {
             maxPriceFilter) && (
             <div className="flex items-center gap-2 mb-4 p-3 bg-muted/50 rounded-lg flex-wrap">
               <span className="text-sm text-muted-foreground">
-                Active filters:
+                {t("admin.healthServices.activeFilters")}:
               </span>
               {searchQuery && (
                 <Badge variant="secondary" className="gap-1">
@@ -643,7 +645,7 @@ export default function AdminHealthServicesPage() {
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                 <Stethoscope className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No services found</h3>
+              <h3 className="text-lg font-medium mb-2">{t("admin.healthServices.noServicesFound")}</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery ||
                 specializationFilter !== "all" ||
@@ -651,8 +653,8 @@ export default function AdminHealthServicesPage() {
                 durationFilter ||
                 minPriceFilter ||
                 maxPriceFilter
-                  ? "No services match your current filters."
-                  : "No health services have been created yet."}
+                  ? t("admin.healthServices.noServicesMatchFilters")
+                  : t("admin.healthServices.noServicesCreated")}
               </p>
               {searchQuery ||
               specializationFilter !== "all" ||
@@ -671,12 +673,12 @@ export default function AdminHealthServicesPage() {
                     setMaxPriceFilter("");
                   }}
                 >
-                  Clear filters
+                  {t("admin.healthServices.clearFilters")}
                 </Button>
               ) : (
                 <Button onClick={handleCreateService}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create your first service
+                  {t("admin.healthServices.createFirstService")}
                 </Button>
               )}
             </div>
@@ -686,12 +688,12 @@ export default function AdminHealthServicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[300px]">Service Name</TableHead>
-                      <TableHead>Specialization</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="w-[300px]">{t("admin.healthServices.serviceName")}</TableHead>
+                      <TableHead>{t("admin.healthServices.specialization")}</TableHead>
+                      <TableHead>{t("admin.healthServices.duration")}</TableHead>
+                      <TableHead>{t("admin.healthServices.price")}</TableHead>
+                      <TableHead>{t("admin.healthServices.created")}</TableHead>
+                      <TableHead className="text-right">{t("admin.healthServices.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -705,7 +707,7 @@ export default function AdminHealthServicesPage() {
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                               {service.description
                                 ? service.description.substring(0, 80) + "..."
-                                : "No description"}
+                                : t("admin.healthServices.noDescription")}
                             </p>
                           </div>
                         </TableCell>
@@ -713,7 +715,7 @@ export default function AdminHealthServicesPage() {
                           <Badge variant="outline" className="capitalize">
                             {typeof service.specialization === "string"
                               ? service.specialization
-                              : service.specialization?.name || "General"}
+                              : service.specialization?.name || t("admin.healthServices.general")}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -725,7 +727,7 @@ export default function AdminHealthServicesPage() {
                         <TableCell>
                           <span className="font-medium text-primary">
                             {service.price === 0
-                              ? "Free"
+                              ? t("admin.healthServices.free")
                               : formatCurrency(service.price)}
                           </span>
                         </TableCell>
@@ -741,23 +743,23 @@ export default function AdminHealthServicesPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t("admin.healthServices.openMenu")}</span>
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>{t("admin.healthServices.actions")}</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => handleViewService(service._id)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
-                                View
+                                {t("admin.healthServices.view")}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleEditService(service._id)}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                                {t("admin.healthServices.edit")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -765,7 +767,7 @@ export default function AdminHealthServicesPage() {
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                {t("admin.healthServices.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -786,7 +788,7 @@ export default function AdminHealthServicesPage() {
                     disabled={!canGoPrevious}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {t("admin.healthServices.previous")}
                   </Button>
 
                   <div className="flex items-center gap-1">

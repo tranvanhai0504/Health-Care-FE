@@ -1,8 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import { ArrowRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export function HeroSection() {
+  const { t } = useTranslation();
+  
   return (
     <section className="flex h-screen justify-center items-center relative overflow-hidden bg-gradient-to-br from-primary/10 via-white to-white pt-16">
       {/* Background decorative elements */}
@@ -14,21 +19,21 @@ export function HeroSection() {
           <div className="text-left lg:pr-8">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <span className="animate-pulse mr-2">●</span> 
-              Your Health, Our Priority
+              {t("landing.hero.badge")}
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
-              Modern Healthcare <span className="text-primary">Solutions</span>
+            <h1 className="text-4xl md:text-4xl lg:text-5xl font-bold mb-6 text-gray-900 leading-tight">
+              {t("landing.hero.title")}
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Providing quality healthcare services to improve your wellbeing and quality of life with cutting-edge medical technology and expert care.
+            <p className=" text-gray-600 mb-8 leading-relaxed">
+              {t("landing.hero.subtitle")}
             </p>
             <div className="flex flex-wrap gap-4">
               <Button size="lg" className="gap-2 shadow-md">
                 <Calendar className="h-5 w-5" />
-                                  Book Schedule
+                {t("landing.hero.bookSchedule")}
               </Button>
               <Button size="lg" variant="outline" className="group">
-                Learn More
+                {t("landing.hero.learnMore")}
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -48,8 +53,8 @@ export function HeroSection() {
                 ))}
               </div>
               <div>
-                <div className="font-semibold text-gray-900">500+ Patients</div>
-                <div className="text-sm text-gray-500">Trust our services</div>
+                <div className="font-semibold text-gray-900">500+ {t("landing.hero.stats.patients")}</div>
+                <div className="text-sm text-gray-500">{t("landing.hero.trustOurServices")}</div>
               </div>
             </div>
           </div>
@@ -59,7 +64,7 @@ export function HeroSection() {
             <div className="absolute inset-2 overflow-hidden rounded-tl-[90px] rounded-br-[90px] shadow-xl">
               <Image 
                 src="/images/sign-in-background.png" 
-                alt="Doctor with patient" 
+                alt={t("landing.hero.doctorWithPatient")} 
                 fill
                 className="object-cover"
               />
@@ -70,8 +75,8 @@ export function HeroSection() {
                   <Calendar className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">Next Available</div>
-                  <div className="font-medium">Today, 3:00 PM</div>
+                  <div className="text-xs text-gray-500">{t("landing.hero.nextAvailable")}</div>
+                  <div className="font-medium">{t("landing.hero.todayAppointment")}</div>
                 </div>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import { 
   Calendar, 
   Users, 
@@ -23,6 +24,7 @@ interface DashboardStats {
 }
 
 export default function DoctorDashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     todayAppointments: 0,
     pendingPrescriptions: 0,
@@ -54,29 +56,29 @@ export default function DoctorDashboard() {
 
   const quickActions = [
     {
-      title: "View Today's Schedule",
-      description: "Check your appointments for today",
+      title: t("doctor.dashboard.quickActions.viewSchedule"),
+      description: t("doctor.dashboard.quickActions.viewScheduleDesc"),
       href: "/doctor/schedules",
       icon: <Calendar className="h-6 w-6" />,
       color: "bg-blue-500"
     },
     {
-      title: "Create Prescription",
-      description: "Write a new prescription for a patient",
+      title: t("doctor.dashboard.quickActions.createPrescription"),
+      description: t("doctor.dashboard.quickActions.createPrescriptionDesc"),
       href: "/doctor/prescriptions/create",
       icon: <PillIcon className="h-6 w-6" />,
       color: "bg-green-500"
     },
     {
-      title: "Medical Examination",
-      description: "Record new medical examination",
+      title: t("doctor.dashboard.quickActions.medicalExamination"),
+      description: t("doctor.dashboard.quickActions.medicalExaminationDesc"),
       href: "/doctor/examinations/create",
       icon: <Stethoscope className="h-6 w-6" />,
       color: "bg-purple-500"
     },
     {
-      title: "Patient Records",
-      description: "View and manage patient information",
+      title: t("doctor.dashboard.quickActions.patientRecords"),
+      description: t("doctor.dashboard.quickActions.patientRecordsDesc"),
       href: "/doctor/patients",
       icon: <Users className="h-6 w-6" />,
       color: "bg-orange-500"
@@ -86,60 +88,60 @@ export default function DoctorDashboard() {
   return (
     <div className="space-y-6 p-4">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back! Here&apos;s your daily overview.</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t("doctor.dashboard.title")}</h1>
+        <p className="text-gray-600 mt-2">{t("doctor.dashboard.subtitle")}</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today&apos;s Appointments</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.dashboard.stats.todayAppointments")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.todayAppointments}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+2</span> from yesterday
+              <span className="text-green-600">+2</span> {t("doctor.dashboard.stats.fromYesterday")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Prescriptions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.dashboard.stats.pendingPrescriptions")}</CardTitle>
             <PillIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.pendingPrescriptions}</div>
             <p className="text-xs text-muted-foreground">
-              Require your attention
+              {t("doctor.dashboard.stats.requireAttention")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.dashboard.stats.totalPatients")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.totalPatients}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12</span> this month
+              <span className="text-green-600">+12</span> {t("doctor.dashboard.stats.thisMonth")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Examinations</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.dashboard.stats.examinations")}</CardTitle>
             <Stethoscope className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.completedExaminations}</div>
             <p className="text-xs text-muted-foreground">
-              This month
+              {t("doctor.dashboard.stats.thisMonth")}
             </p>
           </CardContent>
         </Card>
@@ -150,7 +152,7 @@ export default function DoctorDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Quick Actions
+            {t("doctor.dashboard.quickActions.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -184,7 +186,7 @@ export default function DoctorDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Recent Appointments
+              {t("doctor.dashboard.recentAppointments")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -210,7 +212,7 @@ export default function DoctorDashboard() {
               ))}
             </div>
             <Button variant="outline" className="w-full mt-4" asChild>
-              <Link href="/doctor/schedules">View All Appointments</Link>
+              <Link href="/doctor/schedules">{t("doctor.dashboard.viewAllAppointments")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -219,7 +221,7 @@ export default function DoctorDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
-              Urgent Tasks
+              {t("doctor.dashboard.urgentTasks")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -235,13 +237,13 @@ export default function DoctorDashboard() {
                   }`} />
                   <div className="flex-1">
                     <p className="text-sm">{task.task}</p>
-                    <p className="text-xs text-gray-500 capitalize">{task.priority} priority</p>
+                    <p className="text-xs text-gray-500 capitalize">{task.priority} {t("doctor.dashboard.priority")}</p>
                   </div>
                 </div>
               ))}
             </div>
             <Button variant="outline" className="w-full mt-4" asChild>
-              <Link href="/doctor/tasks">View All Tasks</Link>
+              <Link href="/doctor/tasks">{t("doctor.dashboard.viewAllTasks")}</Link>
             </Button>
           </CardContent>
         </Card>

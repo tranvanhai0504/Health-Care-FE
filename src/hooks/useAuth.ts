@@ -11,7 +11,7 @@ export function useAuth() {
   const router = useRouter();
   const { toast } = useToast();
   const { openModal } = useLoginModal();
-  
+
   const {
     user,
     isAuthenticated,
@@ -20,7 +20,7 @@ export function useAuth() {
     signin,
     signout,
     createUser,
-    fetchProfile
+    fetchProfile,
   } = useAuthStore();
 
   // Fetch profile if we have a token but no user data
@@ -39,15 +39,11 @@ export function useAuth() {
           description: "Welcome back!",
           type: "success",
         });
-        
+
         // Return success and user data for immediate use
         return { success: true, user: useAuthStore.getState().user };
       } catch (error) {
-        toast({
-          title: "Login failed",
-          description: error instanceof Error ? error.message : "Please check your credentials",
-          type: "error",
-        });
+        console.error("Login failed:", error);
         return { success: false, user: null };
       }
     },
@@ -66,15 +62,18 @@ export function useAuth() {
   }, [signout, toast, router]);
 
   // Function to check if user is authenticated and show login modal if not
-  const authenticateAction = useCallback((callback: () => void) => {
-    if (isAuthenticated) {
-      callback();
-    } else {
-      openModal({
-        afterLogin: callback
-      });
-    }
-  }, [isAuthenticated, openModal]);
+  const authenticateAction = useCallback(
+    (callback: () => void) => {
+      if (isAuthenticated) {
+        callback();
+      } else {
+        openModal({
+          afterLogin: callback,
+        });
+      }
+    },
+    [isAuthenticated, openModal]
+  );
 
   return {
     user,
@@ -85,6 +84,6 @@ export function useAuth() {
     logout,
     createUser,
     refreshProfile: fetchProfile,
-    authenticateAction
+    authenticateAction,
   };
-} 
+}
