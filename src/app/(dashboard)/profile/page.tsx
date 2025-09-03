@@ -55,6 +55,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
 import { ChangePasswordDialog } from "@/components/dialogs/change-password-dialog";
+import { useTranslation } from "react-i18next";
 
 // Form validation schema
 const profileFormSchema = z.object({
@@ -78,6 +79,7 @@ const profileFormSchema = z.object({
 });
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -125,7 +127,7 @@ export default function ProfilePage() {
         });
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
-        toast.error("Failed to load profile information");
+        toast.error(t("dashboard.profile.errors.loadProfileFailed"));
       } finally {
         setLoading(false);
       }
@@ -149,13 +151,13 @@ export default function ProfilePage() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file");
+        toast.error(t("dashboard.profile.errors.selectValidImage"));
         return;
       }
 
       // Validate file size (e.g., max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
+        toast.error(t("dashboard.profile.errors.imageSizeLimit"));
         return;
       }
 
@@ -194,10 +196,10 @@ export default function ProfilePage() {
         removeSelectedAvatar();
       }
 
-      toast.success("Profile updated successfully");
+      toast.success(t("dashboard.profile.success.profileUpdated"));
     } catch (error) {
       console.error("Failed to update profile:", error);
-      toast.error("Failed to update profile information");
+      toast.error(t("dashboard.profile.errors.updateProfileFailed"));
     } finally {
       setSaving(false);
     }
@@ -255,10 +257,10 @@ export default function ProfilePage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-gradient-to-r from-primary/10 to-transparent p-6 rounded-xl">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Account Settings
+              {t("dashboard.profile.title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Manage your account settings and profile information
+              {t("dashboard.profile.subtitle")}
             </p>
           </div>
 
@@ -314,7 +316,7 @@ export default function ProfilePage() {
               )}
             >
               <UserIcon className="h-4 w-4" />
-              <span>General</span>
+              <span>{t("dashboard.profile.general")}</span>
             </TabsTrigger>
             <TabsTrigger
               value="security"
@@ -324,7 +326,7 @@ export default function ProfilePage() {
               )}
             >
               <ShieldCheck className="h-4 w-4" />
-              <span>Security</span>
+              <span>{t("dashboard.profile.security")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -335,9 +337,9 @@ export default function ProfilePage() {
                 <CardHeader className="pb-3 bg-muted/30 rounded-t-lg">
                   <CardTitle className="flex items-center text-lg">
                     <UserCircle className="mr-2 h-5 w-5 text-primary" />
-                    User Profile
+                    {t("dashboard.profile.userProfile")}
                   </CardTitle>
-                  <CardDescription>Your account information</CardDescription>
+                  <CardDescription>{t("dashboard.profile.accountInfo")}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 pb-7">
                   <div className="flex flex-col items-center space-y-6">
@@ -361,7 +363,7 @@ export default function ProfilePage() {
                         <div className="text-white text-center">
                           <Camera className="h-6 w-6 mx-auto mb-1" />
                           <span className="text-xs font-medium">
-                            Change Photo
+                            {t("dashboard.profile.changePhoto")}
                           </span>
                         </div>
                       </div>
@@ -394,7 +396,7 @@ export default function ProfilePage() {
                           onClick={removeSelectedAvatar}
                           disabled={saving}
                         >
-                          Cancel
+                          {t("dashboard.profile.cancel")}
                         </Button>
                         <Button
                           type="button"
@@ -408,7 +410,7 @@ export default function ProfilePage() {
                           disabled={saving}
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          Choose Different
+                          {t("dashboard.profile.chooseDifferent")}
                         </Button>
                       </div>
                     )}
@@ -416,7 +418,7 @@ export default function ProfilePage() {
                     <div className="w-full pt-6 space-y-5 divide-y divide-border/60">
                       <div className="pb-2">
                         <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                          Account Info
+                          {t("dashboard.profile.accountInfo")}
                         </h3>
                         <div className="space-y-4">
                           <div className="flex items-center gap-3 text-sm">
@@ -425,7 +427,7 @@ export default function ProfilePage() {
                             </div>
                             <div>
                               <span className="text-xs text-muted-foreground block">
-                                User ID
+                                {t("dashboard.profile.userId")}
                               </span>
                               <span className="font-mono text-xs">
                                 {user?._id?.substring(0, 12)}...
@@ -439,9 +441,9 @@ export default function ProfilePage() {
                             </div>
                             <div>
                               <span className="text-xs text-muted-foreground block">
-                                Email
+                                {t("dashboard.profile.email")}
                               </span>
-                              <span>{user?.email || "Not provided"}</span>
+                              <span>{user?.email || t("dashboard.profile.notProvided")}</span>
                             </div>
                           </div>
 
@@ -451,9 +453,9 @@ export default function ProfilePage() {
                             </div>
                             <div>
                               <span className="text-xs text-muted-foreground block">
-                                Phone
+                                {t("dashboard.profile.phone")}
                               </span>
-                              <span>{user?.phoneNumber || "Not provided"}</span>
+                              <span>{user?.phoneNumber || t("dashboard.profile.notProvided")}</span>
                             </div>
                           </div>
                         </div>
@@ -461,7 +463,7 @@ export default function ProfilePage() {
 
                       <div className="pt-4">
                         <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                          Account History
+                          {t("dashboard.profile.accountHistory")}
                         </h3>
                         <div className="space-y-4">
                           <div className="flex items-center gap-3 text-sm">
@@ -470,7 +472,7 @@ export default function ProfilePage() {
                             </div>
                             <div>
                               <span className="text-xs text-muted-foreground block">
-                                Member since
+                                {t("dashboard.profile.memberSince")}
                               </span>
                               <span>
                                 {new Date(
@@ -490,7 +492,7 @@ export default function ProfilePage() {
                             </div>
                             <div>
                               <span className="text-xs text-muted-foreground block">
-                                Last updated
+                                {t("dashboard.profile.lastUpdated")}
                               </span>
                               <span>
                                 {new Date(
@@ -515,10 +517,10 @@ export default function ProfilePage() {
                 <CardHeader className="pb-4 bg-muted/30 rounded-t-lg">
                   <CardTitle className="flex items-center">
                     <UserIcon className="mr-2 h-5 w-5 text-primary" />
-                    Personal Information
+                    {t("dashboard.profile.personalInformation")}
                   </CardTitle>
                   <CardDescription>
-                    Update your personal details and contact information
+                    {t("dashboard.profile.updatePersonalDetails")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -535,11 +537,11 @@ export default function ProfilePage() {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                                 <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                Full Name
+                                {t("dashboard.profile.fullName")}
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter your full name"
+                                  placeholder={t("dashboard.profile.enterFullName")}
                                   {...field}
                                   className="h-11"
                                 />
@@ -556,11 +558,11 @@ export default function ProfilePage() {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                                 <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                                Email Address
+                                {t("dashboard.profile.emailAddress")}
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter your email"
+                                  placeholder={t("dashboard.profile.enterEmail")}
                                   {...field}
                                   className="h-11"
                                 />
@@ -577,11 +579,11 @@ export default function ProfilePage() {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                                 <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                                Phone Number
+                                {t("dashboard.profile.phoneNumber")}
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter your phone number"
+                                  placeholder={t("dashboard.profile.enterPhoneNumber")}
                                   {...field}
                                   className="h-11"
                                 />
@@ -598,7 +600,7 @@ export default function ProfilePage() {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                                Date of Birth
+                                {t("dashboard.profile.dateOfBirth")}
                               </FormLabel>
                               <FormControl>
                                 <Input
@@ -619,7 +621,7 @@ export default function ProfilePage() {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                                 <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                Gender
+                                {t("dashboard.profile.gender")}
                               </FormLabel>
                               <Select
                                 onValueChange={field.onChange}
@@ -627,13 +629,13 @@ export default function ProfilePage() {
                               >
                                 <FormControl>
                                   <SelectTrigger className="h-11">
-                                    <SelectValue placeholder="Select your gender" />
+                                    <SelectValue placeholder={t("dashboard.profile.selectGender")} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="male">Male</SelectItem>
-                                  <SelectItem value="female">Female</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
+                                  <SelectItem value="male">{t("dashboard.profile.male")}</SelectItem>
+                                  <SelectItem value="female">{t("dashboard.profile.female")}</SelectItem>
+                                  <SelectItem value="other">{t("dashboard.profile.other")}</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -648,11 +650,11 @@ export default function ProfilePage() {
                             <FormItem>
                               <FormLabel className="flex items-center gap-2 text-sm font-medium">
                                 <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
-                                Occupation
+                                {t("dashboard.profile.occupation")}
                               </FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Enter your occupation"
+                                  placeholder={t("dashboard.profile.enterOccupation")}
                                   {...field}
                                   className="h-11"
                                 />
@@ -670,11 +672,11 @@ export default function ProfilePage() {
                           <FormItem>
                             <FormLabel className="flex items-center gap-2 text-sm font-medium">
                               <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                              Address
+                              {t("dashboard.profile.address")}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter your address"
+                                placeholder={t("dashboard.profile.enterAddress")}
                                 {...field}
                                 className="h-11"
                               />
@@ -686,7 +688,7 @@ export default function ProfilePage() {
 
                       <CardFooter className="px-0 pt-4 pb-0 flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="text-sm text-muted-foreground italic">
-                          Last updated:{" "}
+                          {t("dashboard.profile.lastUpdated")}:{" "}
                           {new Date(user?.updatedAt || "").toLocaleDateString()}
                         </div>
                         <Button
@@ -697,15 +699,15 @@ export default function ProfilePage() {
                           {saving ? (
                             <span className="flex items-center">
                               <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
-                              Saving changes...
+                              {t("dashboard.profile.savingChanges")}
                             </span>
                           ) : (
                             <span className="flex items-center">
                               <Save className="mr-2 h-4 w-4" />
-                              Save Changes
+                              {t("dashboard.profile.saveChanges")}
                               {selectedAvatarFile && (
                                 <span className="ml-1 text-xs bg-primary/20 px-2 py-0.5 rounded-full">
-                                  +Avatar
+                                  {t("dashboard.profile.avatar")}
                                 </span>
                               )}
                             </span>
@@ -724,10 +726,10 @@ export default function ProfilePage() {
               <CardHeader className="pb-4 bg-muted/30 rounded-t-lg">
                 <CardTitle className="flex items-center">
                   <Lock className="mr-2 h-5 w-5 text-primary" />
-                  Security Settings
+                  {t("dashboard.profile.securitySettings")}
                 </CardTitle>
                 <CardDescription>
-                  Manage your password and security preferences
+                  {t("dashboard.profile.managePassword")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6 space-y-5">
@@ -738,9 +740,9 @@ export default function ProfilePage() {
                         <Lock className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="text-base font-medium">Password</h3>
+                        <h3 className="text-base font-medium">{t("dashboard.profile.password")}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Update your account password
+                          {t("dashboard.profile.updatePassword")}
                         </p>
                       </div>
                     </div>
@@ -750,7 +752,7 @@ export default function ProfilePage() {
                       onClick={() => setChangePasswordOpen(true)}
                     >
                       <Lock className="h-4 w-4" />
-                      Change Password
+                      {t("dashboard.profile.changePassword")}
                     </Button>
                   </div>
                 </div>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { blogService, specialtyService } from "@/services";
 import { Blog, Specialty, PaginationInfo } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +26,7 @@ interface BlogWithSpecialties extends Blog {
 }
 
 const BlogsPage = () => {
+  const { t } = useTranslation();
   const [blogs, setBlogs] = useState<BlogWithSpecialties[]>([]);
   const [allBlogs, setAllBlogs] = useState<BlogWithSpecialties[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
@@ -93,7 +95,7 @@ const BlogsPage = () => {
         setError(null);
       } catch (err) {
         console.error("Error fetching initial data:", err);
-        setError("Failed to load blogs. Please try again later.");
+        setError(t("dashboard.blogs.failedToLoadBlog"));
       } finally {
         setLoading(false);
       }
@@ -205,11 +207,10 @@ const BlogsPage = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="max-w-3xl">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Health & Wellness Blog
+              {t("dashboard.blogs.page.title")}
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Expert insights, wellness tips, and the latest medical research to
-              help you live healthier
+              {t("dashboard.blogs.page.subtitle")}
             </p>
           </div>
         </div>
@@ -224,7 +225,7 @@ const BlogsPage = () => {
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <Input
-              placeholder="Search articles..."
+              placeholder={t("dashboard.blogs.page.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10 h-10 text-sm border-gray-300 focus:border-primary rounded-lg"
@@ -241,7 +242,7 @@ const BlogsPage = () => {
 
           {/* Scrollable Specialty Filter */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-sm text-gray-500 flex-shrink-0">Filter:</span>
+            <span className="text-sm text-gray-500 flex-shrink-0">{t("dashboard.blogs.page.filterLabel")}</span>
             <div
               className="flex gap-1.5 overflow-x-auto py-2 scroll-horizontal"
               style={{
@@ -258,7 +259,7 @@ const BlogsPage = () => {
                 }`}
                 onClick={() => setSelectedSpecialty(null)}
               >
-                All
+                {t("dashboard.blogs.page.allSpecialties")}
               </Badge>
               {specialties.map((specialty) => (
                 <Badge
@@ -288,7 +289,7 @@ const BlogsPage = () => {
               className="h-10 px-3 text-sm text-gray-600 hover:text-gray-800 flex-shrink-0"
             >
               <X className="h-3 w-3 mr-1" />
-              Clear
+              {t("dashboard.blogs.page.clearFilter")}
             </Button>
           )}
         </div>
@@ -331,14 +332,14 @@ const BlogsPage = () => {
               <X className="h-8 w-8 text-red-600" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Something went wrong
+              {t("dashboard.blogs.page.somethingWentWrong")}
             </h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">{error}</p>
             <Button
               onClick={() => window.location.reload()}
               className="bg-primary hover:bg-primary/90"
             >
-              Try Again
+              {t("dashboard.blogs.page.tryAgain")}
             </Button>
           </div>
         ) : allBlogs.length === 0 ? (
@@ -347,11 +348,10 @@ const BlogsPage = () => {
               <BookOpen className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              No articles yet
+              {t("dashboard.blogs.page.noArticlesYet")}
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              We&apos;re working hard to bring you quality health content. Check
-              back soon for the latest articles and insights.
+              {t("dashboard.blogs.page.noArticlesYetDescription")}
             </p>
           </div>
         ) : (
@@ -375,7 +375,7 @@ const BlogsPage = () => {
                     />
                     <div className="absolute top-6 left-6 z-20">
                       <span className="bg-primary text-white text-sm font-semibold py-2 px-4 rounded-full shadow-lg">
-                        Featured Article
+                        {t("dashboard.blogs.page.featuredArticle")}
                       </span>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-8 z-20 text-white">
@@ -386,7 +386,7 @@ const BlogsPage = () => {
                             {formatDate(featuredBlog.createdAt)}
                           </span>
                           <span className="text-white/80 text-sm flex items-center">
-                            <Clock className="h-4 w-4 mr-2" />5 min read
+                            <Clock className="h-4 w-4 mr-2" />5 {t("dashboard.blogs.page.readTime")}
                           </span>
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
@@ -416,7 +416,7 @@ const BlogsPage = () => {
                             href={`/blogs/${featuredBlog._id}`}
                             className="inline-flex items-center"
                           >
-                            Read Full Article
+                            {t("dashboard.blogs.page.readFullArticle")}
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
@@ -431,19 +431,18 @@ const BlogsPage = () => {
             <div className="mb-12">
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Latest Articles
+                  {t("dashboard.blogs.page.latestArticles")}
                 </h2>
                 {paginationInfo && (
                   <p className="text-gray-600">
-                    Showing{" "}
+                    {t("dashboard.blogs.page.showingResults")}{" "}
                     {(paginationInfo.page - 1) * paginationInfo.limit + 1}-
                     {Math.min(
                       paginationInfo.page * paginationInfo.limit,
                       paginationInfo.total
                     )}{" "}
-                    of {paginationInfo.total} article
-                    {paginationInfo.total !== 1 ? "s" : ""}
-                    {selectedSpecialty ? " in selected specialty" : ""}
+                    {t("dashboard.blogs.page.of")} {paginationInfo.total} {paginationInfo.total !== 1 ? t("dashboard.blogs.page.articles") : t("dashboard.blogs.page.article")}
+                    {selectedSpecialty ? ` ${t("dashboard.blogs.page.inSelectedSpecialty")}` : ""}
                   </p>
                 )}
               </div>
@@ -454,16 +453,16 @@ const BlogsPage = () => {
                     <Search className="h-8 w-8 text-gray-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No articles found
+                    {t("dashboard.blogs.page.noArticlesFound")}
                   </h3>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
                     {searchQuery && selectedSpecialty
-                      ? `No articles found matching "${searchQuery}" in the selected specialty.`
+                      ? t("dashboard.blogs.page.noArticlesFoundDescription.searchAndSpecialty", { searchQuery })
                       : searchQuery
-                      ? `No articles found matching "${searchQuery}".`
+                      ? t("dashboard.blogs.page.noArticlesFoundDescription.searchOnly", { searchQuery })
                       : selectedSpecialty
-                      ? "No articles found in the selected specialty."
-                      : "No articles available."}
+                      ? t("dashboard.blogs.page.noArticlesFoundDescription.specialtyOnly")
+                      : t("dashboard.blogs.page.noArticlesFoundDescription.default")}
                   </p>
                   <Button
                     variant="outline"
@@ -472,7 +471,7 @@ const BlogsPage = () => {
                       setSelectedSpecialty(null);
                     }}
                   >
-                    Clear all filters
+                    {t("dashboard.blogs.page.clearAllFilters")}
                   </Button>
                 </div>
               ) : (
@@ -533,7 +532,7 @@ const BlogsPage = () => {
                                     variant="secondary"
                                     className="bg-primary/10 text-primary text-xs rounded-full"
                                   >
-                                    Healthcare
+                                    {t("dashboard.blogs.page.healthcare")}
                                   </Badge>
                                 )}
                               </div>
@@ -546,11 +545,11 @@ const BlogsPage = () => {
                               {/* Meta Info */}
                               <div className="flex items-center text-sm text-gray-500 mb-4 space-x-4">
                                 <span className="flex items-center">
-                                  <Clock className="h-4 w-4 mr-1" />5 min read
+                                  <Clock className="h-4 w-4 mr-1" />5 {t("dashboard.blogs.page.readTime")}
                                 </span>
                                 <span className="flex items-center">
                                   <Eye className="h-4 w-4 mr-1" />
-                                  1.2k views
+                                  1.2k {t("dashboard.blogs.page.views")}
                                 </span>
                               </div>
 
@@ -564,7 +563,7 @@ const BlogsPage = () => {
                                     href={`/blogs/${blog._id}`}
                                     className="inline-flex items-center"
                                   >
-                                    Read Article
+                                    {t("dashboard.blogs.page.readArticle")}
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                   </Link>
                                 </Button>
@@ -584,7 +583,7 @@ const BlogsPage = () => {
                     itemsPerPage={itemsPerPage}
                     onPageChange={handlePageChange}
                     onItemsPerPageChange={handleItemsPerPageChange}
-                    itemName="article"
+                    itemName={t("dashboard.blogs.page.article")}
                     showItemsPerPage={true}
                     showJumpToPage={false}
                     itemsPerPageOptions={[6, 9, 12, 24]}

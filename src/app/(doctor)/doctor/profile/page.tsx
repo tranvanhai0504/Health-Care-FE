@@ -61,7 +61,7 @@ export default function DoctorProfilePage() {
   useEffect(() => {
     const fetchDoctorProfile = async () => {
       if (!isAuthenticated || !user?._id) {
-        setError("User not authenticated");
+        setError(t("doctor.profile.userNotAuthenticated"));
         setLoading(false);
         return;
       }
@@ -81,7 +81,7 @@ export default function DoctorProfilePage() {
         });
       } catch (err) {
         console.error("Failed to fetch doctor profile:", err);
-        setError("Failed to load doctor profile");
+        setError(t("doctor.profile.failedToLoadProfile"));
       } finally {
         setLoading(false);
       }
@@ -136,7 +136,7 @@ export default function DoctorProfilePage() {
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update doctor profile:", err);
-      setError("Failed to update profile");
+      setError(t("doctor.profile.failedToUpdateProfile"));
     } finally {
       setIsSaving(false);
     }

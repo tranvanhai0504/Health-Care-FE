@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import { 
   Calendar, 
   Clock, 
@@ -46,6 +47,7 @@ interface Appointment {
 }
 
 export default function ReceptionistAppointments() {
+  const { t } = useTranslation();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,48 +62,48 @@ export default function ReceptionistAppointments() {
         const mockAppointments: Appointment[] = [
           {
             id: "1",
-            patientName: "John Doe",
+            patientName: t("receptionist.appointments.sampleData.patients.johnDoe"),
             patientPhone: "+1234567890",
-            doctorName: "Dr. Smith",
-            specialty: "Cardiology",
+            doctorName: t("receptionist.appointments.sampleData.doctors.drSmith"),
+            specialty: t("receptionist.appointments.sampleData.specialties.cardiology"),
             time: "09:00 AM",
             date: "2024-01-15",
-            type: "Consultation",
+            type: t("receptionist.appointments.sampleData.types.consultation"),
             status: "scheduled",
-            notes: "Regular checkup"
+            notes: t("receptionist.appointments.sampleData.notes.regularCheckup")
           },
           {
             id: "2",
-            patientName: "Jane Smith",
+            patientName: t("receptionist.appointments.sampleData.patients.janeSmith"),
             patientPhone: "+1234567891",
-            doctorName: "Dr. Johnson",
-            specialty: "Pediatrics",
+            doctorName: t("receptionist.appointments.sampleData.doctors.drJohnson"),
+            specialty: t("receptionist.appointments.sampleData.specialties.pediatrics"),
             time: "10:30 AM",
             date: "2024-01-15",
-            type: "Follow-up",
+            type: t("receptionist.appointments.sampleData.types.followUp"),
             status: "checked-in"
           },
           {
             id: "3",
-            patientName: "Robert Johnson",
+            patientName: t("receptionist.appointments.sampleData.patients.robertJohnson"),
             patientPhone: "+1234567892",
-            doctorName: "Dr. Brown",
-            specialty: "Orthopedics",
+            doctorName: t("receptionist.appointments.sampleData.doctors.drBrown"),
+            specialty: t("receptionist.appointments.sampleData.specialties.orthopedics"),
             time: "02:00 PM",
             date: "2024-01-15",
-            type: "Emergency",
+            type: t("receptionist.appointments.sampleData.types.emergency"),
             status: "in-progress",
-            notes: "Knee injury"
+            notes: t("receptionist.appointments.sampleData.notes.kneeInjury")
           },
           {
             id: "4",
-            patientName: "Mary Wilson",
+            patientName: t("receptionist.appointments.sampleData.patients.maryWilson"),
             patientPhone: "+1234567893",
-            doctorName: "Dr. Davis",
-            specialty: "Dermatology",
+            doctorName: t("receptionist.appointments.sampleData.doctors.drDavis"),
+            specialty: t("receptionist.appointments.sampleData.specialties.dermatology"),
             time: "03:30 PM",
             date: "2024-01-15",
-            type: "Consultation",
+            type: t("receptionist.appointments.sampleData.types.consultation"),
             status: "completed"
           }
         ];
@@ -160,12 +162,12 @@ export default function ReceptionistAppointments() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
-          <p className="text-gray-600 mt-2">Manage all clinic appointments and patient visits</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t("receptionist.appointments.title")}</h1>
+          <p className="text-gray-600 mt-2">{t("receptionist.appointments.subtitle")}</p>
         </div>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          Schedule Appointment
+          {t("receptionist.appointments.scheduleAppointment")}
         </Button>
       </div>
 
@@ -176,7 +178,7 @@ export default function ReceptionistAppointments() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search patients or doctors..."
+                placeholder={t("receptionist.appointments.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -184,28 +186,28 @@ export default function ReceptionistAppointments() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t("receptionist.appointments.filterByStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="checked-in">Checked In</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-                <SelectItem value="no-show">No Show</SelectItem>
+                <SelectItem value="all">{t("receptionist.appointments.allStatus")}</SelectItem>
+                <SelectItem value="scheduled">{t("receptionist.appointments.status.scheduled")}</SelectItem>
+                <SelectItem value="checked-in">{t("receptionist.appointments.status.checkedIn")}</SelectItem>
+                <SelectItem value="in-progress">{t("receptionist.appointments.status.inProgress")}</SelectItem>
+                <SelectItem value="completed">{t("receptionist.appointments.status.completed")}</SelectItem>
+                <SelectItem value="cancelled">{t("receptionist.appointments.status.cancelled")}</SelectItem>
+                <SelectItem value="no-show">{t("receptionist.appointments.status.noShow")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={doctorFilter} onValueChange={setDoctorFilter}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Filter by doctor" />
+                <SelectValue placeholder={t("receptionist.appointments.filterByDoctor")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Doctors</SelectItem>
-                <SelectItem value="Dr. Smith">Dr. Smith</SelectItem>
-                <SelectItem value="Dr. Johnson">Dr. Johnson</SelectItem>
-                <SelectItem value="Dr. Brown">Dr. Brown</SelectItem>
-                <SelectItem value="Dr. Davis">Dr. Davis</SelectItem>
+                <SelectItem value="all">{t("receptionist.appointments.allDoctors")}</SelectItem>
+                <SelectItem value="Dr. Smith">{t("receptionist.appointments.sampleData.doctors.drSmith")}</SelectItem>
+                <SelectItem value="Dr. Johnson">{t("receptionist.appointments.sampleData.doctors.drJohnson")}</SelectItem>
+                <SelectItem value="Dr. Brown">{t("receptionist.appointments.sampleData.doctors.drBrown")}</SelectItem>
+                <SelectItem value="Dr. Davis">{t("receptionist.appointments.sampleData.doctors.drDavis")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -309,12 +311,12 @@ export default function ReceptionistAppointments() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: "Scheduled", count: appointments.filter(a => a.status === "scheduled").length, color: "text-blue-600" },
-          { label: "Checked In", count: appointments.filter(a => a.status === "checked-in").length, color: "text-green-600" },
-          { label: "In Progress", count: appointments.filter(a => a.status === "in-progress").length, color: "text-yellow-600" },
-          { label: "Completed", count: appointments.filter(a => a.status === "completed").length, color: "text-green-600" },
-          { label: "Cancelled", count: appointments.filter(a => a.status === "cancelled").length, color: "text-red-600" },
-          { label: "No Show", count: appointments.filter(a => a.status === "no-show").length, color: "text-gray-600" }
+          { label: t("receptionist.appointments.status.scheduled"), count: appointments.filter(a => a.status === "scheduled").length, color: "text-blue-600" },
+          { label: t("receptionist.appointments.status.checkedIn"), count: appointments.filter(a => a.status === "checked-in").length, color: "text-green-600" },
+          { label: t("receptionist.appointments.status.inProgress"), count: appointments.filter(a => a.status === "in-progress").length, color: "text-yellow-600" },
+          { label: t("receptionist.appointments.status.completed"), count: appointments.filter(a => a.status === "completed").length, color: "text-green-600" },
+          { label: t("receptionist.appointments.status.cancelled"), count: appointments.filter(a => a.status === "cancelled").length, color: "text-red-600" },
+          { label: t("receptionist.appointments.status.noShow"), count: appointments.filter(a => a.status === "no-show").length, color: "text-gray-600" }
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4 text-center">

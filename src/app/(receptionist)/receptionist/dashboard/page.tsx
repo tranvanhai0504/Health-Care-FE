@@ -13,6 +13,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 interface DashboardStats {
   todayAppointments: number;
@@ -22,6 +23,7 @@ interface DashboardStats {
 }
 
 export default function ReceptionistDashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     todayAppointments: 0,
     waitingPatients: 0,
@@ -53,29 +55,29 @@ export default function ReceptionistDashboard() {
 
   const quickActions = [
     {
-      title: "Schedule Appointment",
-      description: "Book a new appointment for a patient",
+      title: t("receptionist.dashboard.quickActions.scheduleAppointment"),
+      description: t("receptionist.dashboard.quickActions.scheduleAppointmentDesc"),
       href: "/receptionist/appointments/create",
       icon: <Calendar className="h-6 w-6" />,
       color: "bg-blue-500"
     },
     {
-      title: "Register Patient",
-      description: "Add a new patient to the system",
+      title: t("receptionist.dashboard.quickActions.registerPatient"),
+      description: t("receptionist.dashboard.quickActions.registerPatientDesc"),
       href: "/receptionist/patients/register",
       icon: <UserPlus className="h-6 w-6" />,
       color: "bg-green-500"
     },
     {
-      title: "Manage Queue",
-      description: "View and manage waiting patients",
+      title: t("receptionist.dashboard.quickActions.manageQueue"),
+      description: t("receptionist.dashboard.quickActions.manageQueueDesc"),
       href: "/receptionist/queue",
       icon: <Clock className="h-6 w-6" />,
       color: "bg-orange-500"
     },
     {
-      title: "Check-in Patient",
-      description: "Mark patient as arrived",
+      title: t("receptionist.dashboard.quickActions.checkInPatient"),
+      description: t("receptionist.dashboard.quickActions.checkInPatientDesc"),
       href: "/receptionist/check-in",
       icon: <CheckCircle className="h-6 w-6" />,
       color: "bg-purple-500"
@@ -85,60 +87,60 @@ export default function ReceptionistDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Reception Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back! Here&apos;s today&apos;s front desk overview.</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t("receptionist.dashboard.title")}</h1>
+        <p className="text-gray-600 mt-2">{t("receptionist.dashboard.subtitle")}</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today&apos;s Appointments</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("receptionist.dashboard.stats.todayAppointments")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.todayAppointments}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">{stats.completedAppointments}</span> completed
+              <span className="text-green-600">{stats.completedAppointments}</span> {t("receptionist.dashboard.stats.completed")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Waiting Patients</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("receptionist.dashboard.stats.waitingPatients")}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.waitingPatients}</div>
             <p className="text-xs text-muted-foreground">
-              In waiting room
+              {t("receptionist.dashboard.stats.inWaitingRoom")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Available Doctors</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("receptionist.dashboard.stats.availableDoctors")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.availableDoctors}</div>
             <p className="text-xs text-muted-foreground">
-              Out of 8 total doctors
+              {t("receptionist.dashboard.stats.doctorsAvailable")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Today</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("receptionist.dashboard.stats.completedAppointments")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.completedAppointments}</div>
             <p className="text-xs text-muted-foreground">
-              Appointments finished
+              {t("receptionist.dashboard.stats.appointmentsCompleted")}
             </p>
           </CardContent>
         </Card>
@@ -183,15 +185,15 @@ export default function ReceptionistDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Current Queue
+              {t("receptionist.dashboard.recentAppointments.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {[
-                { patient: "John Doe", doctor: "Dr. Smith", time: "10:30 AM", status: "waiting" },
-                { patient: "Jane Smith", doctor: "Dr. Johnson", time: "11:00 AM", status: "in-progress" },
-                { patient: "Robert Wilson", doctor: "Dr. Brown", time: "11:30 AM", status: "checked-in" }
+                { patient: t("receptionist.dashboard.sampleData.patients.johnDoe"), doctor: t("receptionist.dashboard.sampleData.doctors.drSmith"), time: "10:30 AM", status: "waiting" },
+                { patient: t("receptionist.dashboard.sampleData.patients.janeSmith"), doctor: t("receptionist.dashboard.sampleData.doctors.drJohnson"), time: "11:00 AM", status: "in-progress" },
+                { patient: t("receptionist.dashboard.sampleData.patients.robertWilson"), doctor: t("receptionist.dashboard.sampleData.doctors.drBrown"), time: "11:30 AM", status: "checked-in" }
               ].map((appointment, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                   <div>
@@ -203,13 +205,15 @@ export default function ReceptionistDashboard() {
                     appointment.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
                     'bg-green-100 text-green-800'
                   }`}>
-                    {appointment.status}
+                    {appointment.status === 'waiting' ? t("receptionist.dashboard.recentAppointments.waiting") :
+                     appointment.status === 'in-progress' ? t("receptionist.dashboard.recentAppointments.inProgress") :
+                     t("receptionist.dashboard.recentAppointments.checkedIn")}
                   </span>
                 </div>
               ))}
             </div>
             <Button variant="outline" className="w-full mt-4" asChild>
-              <Link href="/receptionist/queue">Manage Full Queue</Link>
+              <Link href="/receptionist/queue">{t("receptionist.dashboard.quickActions.manageQueue")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -218,15 +222,15 @@ export default function ReceptionistDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Urgent Notifications
+              {t("receptionist.dashboard.notifications.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {[
-                { message: "Dr. Smith is running 15 minutes late", type: "warning", time: "2 min ago" },
-                { message: "New patient registration needed approval", type: "info", time: "5 min ago" },
-                { message: "Emergency appointment requested", type: "urgent", time: "10 min ago" }
+                { message: t("receptionist.dashboard.notifications.doctorLate"), type: "warning", time: "2 " + t("receptionist.dashboard.notifications.minAgo") },
+                { message: t("receptionist.dashboard.notifications.newPatientApproval"), type: "info", time: "5 " + t("receptionist.dashboard.notifications.minAgo") },
+                { message: t("receptionist.dashboard.notifications.emergencyAppointment"), type: "urgent", time: "10 " + t("receptionist.dashboard.notifications.minAgo") }
               ].map((notification, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-md">
                   <div className={`w-2 h-2 rounded-full mt-2 ${
@@ -252,16 +256,16 @@ export default function ReceptionistDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Doctor Availability
+            {t("receptionist.dashboard.doctorStatus.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { name: "Dr. Smith", specialty: "Cardiology", status: "available", nextFree: "11:30 AM" },
-              { name: "Dr. Johnson", specialty: "Pediatrics", status: "busy", nextFree: "2:00 PM" },
-              { name: "Dr. Brown", specialty: "Orthopedics", status: "available", nextFree: "Now" },
-              { name: "Dr. Davis", specialty: "Dermatology", status: "break", nextFree: "1:00 PM" }
+              { name: t("receptionist.dashboard.sampleData.doctors.drSmith"), specialty: t("receptionist.dashboard.sampleData.specialties.cardiology"), status: "available", nextFree: "11:30 AM" },
+              { name: t("receptionist.dashboard.sampleData.doctors.drJohnson"), specialty: t("receptionist.dashboard.sampleData.specialties.pediatrics"), status: "busy", nextFree: "2:00 PM" },
+              { name: t("receptionist.dashboard.sampleData.doctors.drBrown"), specialty: t("receptionist.dashboard.sampleData.specialties.orthopedics"), status: "available", nextFree: "Now" },
+              { name: t("receptionist.dashboard.sampleData.doctors.drDavis"), specialty: t("receptionist.dashboard.sampleData.specialties.dermatology"), status: "break", nextFree: "1:00 PM" }
             ].map((doctor, index) => (
               <div key={index} className="p-3 border rounded-md">
                 <div className="flex items-center justify-between mb-2">
@@ -272,7 +276,12 @@ export default function ReceptionistDashboard() {
                   }`} />
                 </div>
                 <p className="text-xs text-gray-500 mb-1">{doctor.specialty}</p>
-                <p className="text-xs text-gray-600">Next: {doctor.nextFree}</p>
+                <p className="text-xs text-gray-600 mb-1">
+                  {doctor.status === 'available' ? t("receptionist.dashboard.doctorStatus.available") :
+                   doctor.status === 'busy' ? t("receptionist.dashboard.doctorStatus.busy") :
+                   t("receptionist.dashboard.doctorStatus.break")}
+                </p>
+                <p className="text-xs text-gray-600">{t("receptionist.dashboard.doctorStatus.nextFree")}: {doctor.nextFree}</p>
               </div>
             ))}
           </div>

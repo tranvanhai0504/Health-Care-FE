@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { BlogService } from "@/services/blogs.service";
 import { Blog } from "@/types";
 import {
@@ -23,6 +24,7 @@ import { useToast } from "@/hooks/useToast";
 const blogService = new BlogService();
 
 export default function EditBlogPage() {
+  const { t } = useTranslation();
   const [blog, setBlog] = useState<Blog | null>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -60,8 +62,8 @@ export default function EditBlogPage() {
       } catch (error) {
         console.error("Error fetching blog:", error);
         toast({
-          title: "Error",
-          description: "Failed to load blog data",
+          title: t("admin.blogs.edit.error"),
+          description: t("admin.blogs.edit.failedToLoadData"),
           type: "error",
         });
         router.push("/admin/blogs");
@@ -103,8 +105,8 @@ export default function EditBlogPage() {
     
     if (!formData.title.trim() || !formData.content.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Title and content are required",
+        title: t("admin.blogs.create.validationError"),
+        description: t("admin.blogs.create.titleContentRequired"),
         type: "error",
       });
       return;
@@ -122,8 +124,8 @@ export default function EditBlogPage() {
       });
 
       toast({
-        title: "Success",
-        description: "Blog updated successfully",
+        title: t("admin.blogs.create.success"),
+        description: t("admin.blogs.edit.blogUpdatedSuccessfully"),
         type: "success",
       });
 
@@ -131,8 +133,8 @@ export default function EditBlogPage() {
     } catch (error) {
       console.error("Error updating blog:", error);
       toast({
-        title: "Error",
-        description: "Failed to update blog",
+        title: t("admin.blogs.create.error"),
+        description: t("admin.blogs.edit.failedToUpdateBlog"),
         type: "error",
       });
     } finally {
@@ -150,7 +152,7 @@ export default function EditBlogPage() {
         <div className="mb-6">
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blogs
+            {t("admin.blogs.edit.backToBlogs")}
           </Button>
         </div>
 
@@ -175,13 +177,13 @@ export default function EditBlogPage() {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="text-center py-16">
-          <h3 className="text-lg font-medium mb-2">Blog not found</h3>
+          <h3 className="text-lg font-medium mb-2">{t("admin.blogs.edit.blogNotFound")}</h3>
           <p className="text-muted-foreground mb-6">
-            The blog you&apos;re looking for doesn&apos;t exist.
+            {t("admin.blogs.edit.blogNotFoundDescription")}
           </p>
           <Button onClick={handleCancel}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blogs
+            {t("admin.blogs.edit.backToBlogs")}
           </Button>
         </div>
       </div>
@@ -197,7 +199,7 @@ export default function EditBlogPage() {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blogs
+          {t("admin.blogs.edit.backToBlogs")}
         </Button>
       </div>
 
@@ -205,10 +207,10 @@ export default function EditBlogPage() {
         <CardHeader className="bg-muted/50 rounded-t-lg">
           <CardTitle className="text-2xl flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Edit Blog
+            {t("admin.blogs.edit.title")}
           </CardTitle>
           <CardDescription>
-            Modify the blog post details and content
+            {t("admin.blogs.edit.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -216,12 +218,12 @@ export default function EditBlogPage() {
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-medium">
-                Title *
+                {t("admin.blogs.create.form.title")} *
               </Label>
               <Input
                 id="title"
                 type="text"
-                placeholder="Enter blog title..."
+                placeholder={t("admin.blogs.create.form.titlePlaceholder")}
                 value={formData.title}
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 className="w-full"
@@ -346,14 +348,14 @@ export default function EditBlogPage() {
                 onClick={handleCancel}
                 disabled={saving}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={saving || !formData.title.trim() || !formData.content.trim()}
               >
                 <Save className="mr-2 h-4 w-4" />
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? t("admin.blogs.edit.saving") : t("admin.blogs.edit.saveChanges")}
               </Button>
             </div>
           </form>

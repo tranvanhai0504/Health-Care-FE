@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { blogService } from "@/services";
 import { Blog } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Calendar, ArrowLeft, User, Tag } from "lucide-react";
 import { convertMarkdown } from "@/utils/markdown";
 
 const BlogDetailPage = () => {
+  const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -25,7 +27,7 @@ const BlogDetailPage = () => {
       try {
         setLoading(true);
         if (!params.id) {
-          throw new Error("Blog ID is missing");
+          throw new Error(t("dashboard.blogs.blogIdMissing"));
         }
 
         const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -35,7 +37,7 @@ const BlogDetailPage = () => {
         setContent(await convertMarkdown(response.data.content));
       } catch (err) {
         console.error("Error fetching blog:", err);
-        setError("Failed to load blog. Please try again later.");
+        setError(t("dashboard.blogs.failedToLoadBlog"));
       } finally {
         setLoading(false);
       }
@@ -61,7 +63,7 @@ const BlogDetailPage = () => {
         onClick={() => router.back()}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Blogs
+{t("dashboard.blogs.backToBlogs")}
       </Button>
 
       {loading ? (
@@ -87,7 +89,7 @@ const BlogDetailPage = () => {
             variant="outline"
             className="mt-4"
           >
-            Go Back
+{t("dashboard.blogs.page.goBack")}
           </Button>
         </div>
       ) : blog ? (
@@ -99,7 +101,7 @@ const BlogDetailPage = () => {
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8 text-gray-600">
             <div className="flex items-center">
               <User className="h-5 w-5 mr-2" />
-              <span>{typeof blog.author === 'string' ? blog.author : blog.author?.name || "Unknown Author"}</span>
+              <span>{typeof blog.author === 'string' ? blog.author : blog.author?.name || t("dashboard.blogs.unknownAuthor")}</span>
             </div>
             <div className="flex items-center">
               <Calendar className="h-5 w-5 mr-2" />
@@ -130,7 +132,7 @@ const BlogDetailPage = () => {
             <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-lg font-semibold mb-2 flex items-center">
                 <Tag className="h-5 w-5 mr-2 text-primary" />
-                Topics
+                {t("dashboard.blogs.topics")}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {blog.specialties.map((specialty, index) => (
@@ -149,20 +151,20 @@ const BlogDetailPage = () => {
             <Button asChild>
               <Link href="/blogs">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to All Blogs
+                {t("dashboard.blogs.backToBlogs")}
               </Link>
             </Button>
           </div>
         </article>
       ) : (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">Blog post not found.</p>
+          <p className="text-gray-600">{t("dashboard.blogs.blogNotFound")}</p>
           <Button
             onClick={() => router.push("/blogs")}
             variant="outline"
             className="mt-4"
           >
-            Back to Blogs
+            {t("dashboard.blogs.backToBlogs")}
           </Button>
         </div>
       )}

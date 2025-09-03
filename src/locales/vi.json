@@ -150,10 +150,18 @@
         "service": "Chọn ngày và khung giờ ưa thích để tạo lịch hẹn dịch vụ của bạn",
         "services": "Chọn ngày và khung giờ ưa thích để tạo lịch hẹn các dịch vụ của bạn"
       },
+      "description": {
+        "package": "Chọn ngày, khung giờ và tùy chọn gói ưa thích để tạo lịch hẹn của bạn",
+        "service": "Chọn ngày và khung giờ ưa thích để tạo lịch hẹn dịch vụ của bạn",
+        "services": "Chọn ngày và khung giờ ưa thích để tạo lịch hẹn các dịch vụ của bạn"
+      },
       "backTo": {
         "packages": "Quay lại gói sức khỏe",
         "services": "Quay lại dịch vụ"
       },
+      "backToPackages": "Quay lại gói sức khỏe",
+      "backToServices": "Quay lại dịch vụ",
+      "services": "Dịch vụ",
       "timePeriods": {
         "morning": "Sáng",
         "afternoon": "Chiều"
@@ -162,15 +170,34 @@
         "noValidData": "Không tìm thấy dữ liệu đặt lịch hợp lệ. Vui lòng chọn gói hoặc dịch vụ để đặt lịch.",
         "loadFailed": "Không thể tải chi tiết đặt lịch. Vui lòng thử lại sau.",
         "selectDateAndTime": "Vui lòng chọn ngày và khung giờ cho lịch hẹn của bạn",
+        "selectDateTime": "Vui lòng chọn ngày và khung giờ cho lịch hẹn của bạn",
         "userInfoNotAvailable": "Thông tin người dùng không khả dụng",
         "packageDataNotAvailable": "Dữ liệu gói không khả dụng",
         "selectPackageOption": "Vui lòng chọn tùy chọn gói cho lịch hẹn của bạn",
         "serviceDataNotAvailable": "Dữ liệu dịch vụ không khả dụng",
         "noServicesSelected": "Không có dịch vụ nào được chọn để đặt lịch",
-        "invalidPriceOption": "Tùy chọn giá không hợp lệ"
+        "invalidPriceOption": "Tùy chọn giá không hợp lệ",
+        "bookingFailed": "Đặt lịch thất bại. Vui lòng thử lại."
       },
       "success": {
         "bookingCreated": "Đặt lịch thành công! Lịch hẹn của bạn đã được tạo."
+      },
+      "error": {
+        "title": "Không thể đặt lịch",
+        "description": "Chúng tôi không thể tải chi tiết đặt lịch của bạn",
+        "tryAgain": "Thử lại",
+        "goToHome": "Về trang chủ",
+        "goBack": "Quay lại",
+        "exploreServices": "Hoặc khám phá dịch vụ của chúng tôi",
+        "browseServices": "Duyệt qua các dịch vụ y tế và gói sức khỏe có sẵn",
+        "medicalServices": "Dịch vụ y tế",
+        "medicalServicesDesc": "Đặt lịch tư vấn và điều trị y tế cá nhân",
+        "browseServicesLink": "Duyệt dịch vụ",
+        "healthPackages": "Gói sức khỏe",
+        "healthPackagesDesc": "Gói sức khỏe toàn diện với nhiều dịch vụ",
+        "browsePackagesLink": "Duyệt gói",
+        "needHelp": "Cần hỗ trợ?",
+        "contactSupport": "Nếu vấn đề này vẫn tiếp diễn, vui lòng liên hệ đội ngũ hỗ trợ của chúng tôi để được hỗ trợ."
       },
       "errorPage": {
         "title": "Không thể đặt lịch",
@@ -199,7 +226,16 @@
         "price": "Giá:",
         "totalServices": "Tổng dịch vụ:",
         "totalPrice": "Tổng giá:"
-      }
+      },
+      "serviceDetails": "Chi tiết dịch vụ",
+      "servicesSummary": "Tóm tắt dịch vụ",
+      "selectedServices": "Dịch vụ đã chọn",
+      "manage": "Quản lý",
+      "noBookingDetails": "Không có chi tiết đặt lịch",
+      "duration": "Thời lượng:",
+      "price": "Giá:",
+      "totalServices": "Tổng dịch vụ:",
+      "totalPrice": "Tổng giá:"
     },
     "schedules": {
       "title": "Lịch hẹn của tôi",
@@ -219,6 +255,13 @@
         "busy": "Bận",
         "normal": "Bình thường"
       },
+      "legend": {
+        "oneToTwo": "1-2 lịch hẹn",
+        "threePlus": "3+ lịch hẹn"
+      },
+      "schedule": "lịch hẹn",
+      "schedules": "lịch hẹn",
+      "on": "vào",
       "filters": {
         "searchPlaceholder": "Tìm kiếm lịch hẹn...",
         "filterByStatus": "Lọc theo trạng thái",
@@ -229,6 +272,8 @@
         "cancelled": "Đã hủy",
         "completed": "Hoàn thành"
       },
+      "searchPlaceholder": "Tìm kiếm lịch hẹn...",
+      "filterByStatus": "Lọc theo trạng thái",
       "sidebar": {
         "noSchedules": "Không có lịch hẹn cho ngày này",
         "addSchedule": "Thêm lịch hẹn",
@@ -236,6 +281,13 @@
         "viewAllSchedules": "Xem tất cả lịch hẹn",
         "close": "Đóng"
       },
+      "noSchedulesForDate": "Không có lịch hẹn cho ngày này",
+      "addSchedule": "Thêm lịch hẹn",
+      "total": "Tổng:",
+      "viewAllSchedules": "Xem tất cả lịch hẹn",
+      "close": "Đóng",
+      "view": "Xem",
+      "medicalConsultation": "Tư vấn y tế",
       "timePeriods": {
         "morning": "Sáng (08:00 - 12:00)",
         "afternoon": "Chiều (13:30 - 17:30)"
@@ -245,32 +297,147 @@
         "checkedIn": "Đã check-in",
         "inProgress": "Đang thực hiện",
         "cancelled": "Đã hủy",
-        "completed": "Hoàn thành"
+        "completed": "Hoàn thành",
+        "all": "Tất cả trạng thái",
+        "high": "Cao",
+        "busy": "Bận",
+        "normal": "Bình thường"
       },
       "actions": {
         "view": "Xem"
+      },
+      "days": {
+        "sun": "CN",
+        "mon": "T2",
+        "tue": "T3",
+        "wed": "T4",
+        "thu": "T5",
+        "fri": "T6",
+        "sat": "T7"
+      }
+    },
+    "profile": {
+      "title": "Cài đặt tài khoản",
+      "subtitle": "Quản lý cài đặt tài khoản và thông tin hồ sơ của bạn",
+      "general": "Chung",
+      "security": "Bảo mật",
+      "userProfile": "Hồ sơ người dùng",
+      "accountInfo": "Thông tin tài khoản của bạn",
+      "personalInformation": "Thông tin cá nhân",
+      "updatePersonalDetails": "Cập nhật thông tin cá nhân và liên hệ của bạn",
+      "changePhoto": "Thay đổi ảnh",
+      "cancel": "Hủy",
+      "chooseDifferent": "Chọn khác",
+      "userId": "ID người dùng",
+      "email": "Email",
+      "phone": "Điện thoại",
+      "notProvided": "Chưa cung cấp",
+      "accountHistory": "Lịch sử tài khoản",
+      "memberSince": "Thành viên từ",
+      "lastUpdated": "Cập nhật lần cuối",
+      "fullName": "Họ và tên",
+      "enterFullName": "Nhập họ và tên của bạn",
+      "emailAddress": "Địa chỉ email",
+      "enterEmail": "Nhập email của bạn",
+      "phoneNumber": "Số điện thoại",
+      "enterPhoneNumber": "Nhập số điện thoại của bạn",
+      "dateOfBirth": "Ngày sinh",
+      "gender": "Giới tính",
+      "selectGender": "Chọn giới tính của bạn",
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác",
+      "occupation": "Nghề nghiệp",
+      "enterOccupation": "Nhập nghề nghiệp của bạn",
+      "address": "Địa chỉ",
+      "enterAddress": "Nhập địa chỉ của bạn",
+      "savingChanges": "Đang lưu thay đổi...",
+      "saveChanges": "Lưu thay đổi",
+      "avatar": "+Ảnh đại diện",
+      "securitySettings": "Cài đặt bảo mật",
+      "managePassword": "Quản lý mật khẩu và tùy chọn bảo mật của bạn",
+      "password": "Mật khẩu",
+      "updatePassword": "Cập nhật mật khẩu tài khoản của bạn",
+      "changePassword": "Thay đổi mật khẩu",
+      "errors": {
+        "selectValidImage": "Vui lòng chọn file ảnh hợp lệ",
+        "imageSizeLimit": "Kích thước ảnh phải nhỏ hơn 5MB",
+        "loadProfileFailed": "Không thể tải thông tin hồ sơ",
+        "updateProfileFailed": "Không thể cập nhật thông tin hồ sơ"
+      },
+      "success": {
+        "profileUpdated": "Cập nhật hồ sơ thành công"
+      }
+    },
+    "prescriptions": {
+      "title": "Đơn thuốc của tôi",
+      "subtitle": "Xem và tìm kiếm lịch sử đơn thuốc của bạn",
+      "accessTitle": "Truy cập đơn thuốc của bạn",
+      "accessDescription": "Vui lòng đăng nhập để xem và tìm kiếm lịch sử đơn thuốc của bạn",
+      "signIn": "Đăng nhập",
+      "createAccount": "Tạo tài khoản",
+      "searchPlaceholder": "Tìm kiếm theo chẩn đoán hoặc ghi chú...",
+      "noPrescriptionsFound": "Không tìm thấy đơn thuốc nào",
+      "noPrescriptionsYet": "Chưa có đơn thuốc nào",
+      "tryAdjustingSearch": "Thử điều chỉnh từ khóa tìm kiếm",
+      "prescriptionsWillAppear": "Đơn thuốc của bạn sẽ xuất hiện ở đây sau các cuộc tư vấn y tế",
+      "medications": "Thuốc",
+      "medicine": "Thuốc",
+      "quantity": "Số lượng",
+      "moreMedications": "thuốc khác",
+      "notes": "Ghi chú",
+      "totalCost": "Tổng chi phí",
+      "refreshPrescriptions": "Làm mới đơn thuốc",
+      "details": {
+        "title": "Chi tiết đơn thuốc",
+        "dateIssued": "Ngày cấp",
+        "totalCost": "Tổng chi phí",
+        "doctorInformation": "Thông tin bác sĩ",
+        "doctorId": "ID bác sĩ",
+        "loadingDoctor": "Đang tải thông tin bác sĩ...",
+        "name": "Tên",
+        "phone": "Điện thoại",
+        "unableToLoadDoctor": "Không thể tải thông tin bác sĩ",
+        "experience": "Kinh nghiệm",
+        "consultationFee": "Phí tư vấn",
+        "qualifications": "Trình độ chuyên môn",
+        "bio": "Tiểu sử",
+        "diagnosis": "Chẩn đoán",
+        "notes": "Ghi chú",
+        "medications": "Thuốc",
+        "loadingMedicines": "Đang tải thông tin thuốc...",
+        "medicine": "Thuốc",
+        "dosage": "Liều lượng",
+        "form": "Dạng",
+        "route": "Đường dùng",
+        "quantity": "Số lượng",
+        "frequency": "Tần suất",
+        "duration": "Thời gian",
+        "paymentStatus": "Trạng thái thanh toán",
+        "paid": "Đã thanh toán",
+        "pendingPayment": "Chờ thanh toán"
       }
     },
     "medicalServices": {
+      "general": "Tổng quát",
+      "unknown": "Không xác định",
       "title": "Dịch vụ tư vấn y tế",
       "subtitle": "Duyệt qua các dịch vụ y tế toàn diện được cung cấp bởi các chuyên gia chăm sóc sức khỏe",
       "backToHome": "Về trang chủ",
       "totalServices": "tổng dịch vụ",
       "searchPlaceholder": "Tìm kiếm dịch vụ theo tên hoặc mô tả...",
       "allSpecialties": "Tất cả chuyên khoa",
-      "sortBy": {
-        "name": "Sắp xếp theo tên",
-        "priceLow": "Giá: Thấp đến cao",
-        "priceHigh": "Giá: Cao đến thấp",
-        "duration": "Thời lượng"
-      },
-      "activeFilters": "Bộ lọc đang hoạt động:",
+      "sortByName": "Sắp xếp theo tên",
+      "priceLowToHigh": "Giá thấp đến cao",
+      "priceHighToLow": "Giá cao đến thấp",
+      "duration": "Thời gian",
+      "activeFilters": "Bộ lọc đang hoạt động",
       "search": "Tìm kiếm",
       "clearAll": "Xóa tất cả",
       "inList": "trong danh sách",
       "noServicesFound": "Không tìm thấy dịch vụ",
-      "noServicesMatchFilters": "Không có dịch vụ nào phù hợp với bộ lọc hiện tại của bạn. Hãy thử điều chỉnh tiêu chí tìm kiếm.",
-      "noServicesAvailable": "Hiện tại không có dịch vụ nào khả dụng.",
+      "noServicesMatchFilters": "Không có dịch vụ nào phù hợp với bộ lọc của bạn",
+      "noServicesAvailable": "Hiện tại không có dịch vụ nào có sẵn",
       "youHave": "Bạn có",
       "services": "dịch vụ",
       "service": "dịch vụ",
@@ -279,64 +446,101 @@
       "clearAllFilters": "Xóa tất cả bộ lọc",
       "viewDetails": "Xem chi tiết",
       "bookNow": "Đặt ngay",
-      "sortByName": "Sắp xếp theo tên",
-      "priceLowToHigh": "Giá: Thấp đến cao",
-      "priceHighToLow": "Giá: Cao đến thấp",
-      "duration": "Thời gian",
       "details": {
-        "bookSchedule": "Đặt lịch",
+        "comprehensiveAssessment": "Đánh giá toàn diện",
+        "detailedDiscussion": "Thảo luận chi tiết",
+        "professionalExamination": "Khám chuyên nghiệp",
+        "personalizedRecommendations": "Khuyến nghị cá nhân hóa",
+        "bringMedicalHistory": "Mang theo hồ sơ bệnh án",
+        "arriveEarly": "Đến sớm 15 phút",
+        "bringTestResults": "Mang theo kết quả xét nghiệm",
+        "wearComfortableClothing": "Mặc quần áo thoải mái",
+        "checkInRegistration": "Check-in & Đăng ký",
+        "checkInDescription": "Đến phòng khám và hoàn tất thủ tục đăng ký",
+        "initialAssessment": "Đánh giá ban đầu",
+        "initialAssessmentDescription": "Bác sĩ sẽ trao đổi về tình trạng sức khỏe của bạn",
+        "medicalExamination": "Khám bệnh",
+        "medicalExaminationDescription": "Thực hiện khám lâm sàng và các xét nghiệm cần thiết",
+        "treatmentPlan": "Kế hoạch điều trị",
+        "treatmentPlanDescription": "Đưa ra kế hoạch điều trị và lời khuyên chăm sóc sức khỏe",
+        "boardCertifiedSpecialists": "Chuyên gia được chứng nhận",
+        "modernFacilities": "Cơ sở vật chất hiện đại",
+        "personalizedTreatment": "Điều trị cá nhân hóa",
+        "viewHealthPackages": "Xem gói sức khỏe",
+        "mySchedules": "Lịch hẹn của tôi",
+        "browseAllServices": "Duyệt tất cả dịch vụ",
+        "callSupport": "Gọi hỗ trợ",
+        "emailUs": "Gửi email cho chúng tôi",
         "professionalConsultation": "Tư vấn chuyên nghiệp",
+        "bookSchedule": "Đặt lịch",
         "experience": "Kinh nghiệm",
         "consultationFee": "Phí tư vấn",
         "qualifications": "Trình độ chuyên môn",
-        "moreQualifications": "trình độ chuyên môn khác",
+        "moreQualifications": "trình độ khác",
         "viewFullProfile": "Xem hồ sơ đầy đủ",
         "professionalCare": "Chăm sóc chuyên nghiệp",
-        "professionalCareDescription": "Dịch vụ tư vấn này được cung cấp bởi đội ngũ chuyên gia y tế có trình độ của chúng tôi.",
-        "boardCertifiedSpecialists": "Chuyên gia được chứng nhận",
-        "modernFacilities": "Cơ sở vật chất & thiết bị hiện đại",
-        "personalizedTreatment": "Phương pháp điều trị cá nhân hóa",
-        "whatsIncluded": "Những gì bao gồm & Cách chuẩn bị",
-        "whatsIncludedTitle": "Những gì bao gồm",
+        "professionalCareDescription": "Đội ngũ bác sĩ giàu kinh nghiệm và cơ sở vật chất hiện đại",
+        "whatsIncluded": "Bao gồm những gì",
+        "whatsIncludedTitle": "Dịch vụ bao gồm",
         "howToPrepare": "Cách chuẩn bị",
-        "comprehensiveAssessment": "Đánh giá y tế toàn diện",
-        "detailedDiscussion": "Thảo luận chi tiết về các triệu chứng và mối quan tâm",
-        "professionalExamination": "Khám y tế chuyên nghiệp",
-        "personalizedRecommendations": "Khuyến nghị điều trị cá nhân hóa",
-        "bringMedicalHistory": "Mang theo tiền sử bệnh và thuốc hiện tại",
-        "arriveEarly": "Đến trước 15 phút so với lịch hẹn",
-        "bringTestResults": "Mang theo kết quả xét nghiệm hoặc báo cáo liên quan",
-        "wearComfortableClothing": "Mặc quần áo thoải mái, dễ cởi bỏ",
-        "consultationJourney": "Hành trình tư vấn của bạn",
-        "consultationJourneyDescription": "Đây là những gì bạn có thể mong đợi trong buổi tư vấn {{serviceName}}",
-        "checkInRegistration": "Đăng ký & Làm thủ tục",
-        "checkInDescription": "Hoàn thành đăng ký và cung cấp các tài liệu cần thiết",
-        "initialAssessment": "Đánh giá ban đầu",
-        "initialAssessmentDescription": "Thảo luận về các triệu chứng, mối quan tâm và tiền sử bệnh của bạn",
-        "medicalExamination": "Khám y tế",
-        "medicalExaminationDescription": "Khám sức khỏe toàn diện khi cần thiết",
-        "treatmentPlan": "Kế hoạch điều trị",
-        "treatmentPlanDescription": "Nhận khuyến nghị cá nhân hóa và chăm sóc theo dõi",
+        "consultationJourney": "Hành trình tư vấn",
+        "consultationJourneyDescription": "Quy trình tư vấn {{serviceName}} được thiết kế để mang lại trải nghiệm tốt nhất",
         "relatedServices": "Dịch vụ liên quan",
-        "relatedServicesDescription": "Các dịch vụ tư vấn khác trong {{specialty}}",
-        "quickActions": "Hành động nhanh",
-        "quickActionsDescription": "Khám phá thêm các dịch vụ y tế và quản lý chăm sóc của bạn",
-        "viewHealthPackages": "Xem gói sức khỏe",
-        "mySchedules": "Lịch của tôi",
-        "browseAllServices": "Duyệt tất cả dịch vụ",
-        "needHelp": "Cần trợ giúp?",
-        "needHelpDescription": "Nhận hỗ trợ với việc đặt lịch hoặc câu hỏi về dịch vụ",
-        "callSupport": "Gọi hỗ trợ",
-        "emailUs": "Gửi email cho chúng tôi",
-        "somethingWentWrong": "Có gì đó không đúng",
+        "relatedServicesDescription": "Khám phá thêm các dịch vụ khác trong chuyên khoa {{specialty}}",
+        "quickActions": "Thao tác nhanh",
+        "quickActionsDescription": "Truy cập nhanh các tính năng quan trọng",
+        "needHelp": "Cần hỗ trợ",
+        "needHelpDescription": "Đội ngũ hỗ trợ của chúng tôi luôn sẵn sàng giúp đỡ bạn",
+        "requestTimeout": "Yêu cầu hết thời gian chờ",
+        "serviceNotFoundError": "Không tìm thấy dịch vụ",
+        "serverError": "Lỗi máy chủ",
+        "failedToLoad": "Không thể tải dữ liệu",
+        "somethingWentWrong": "Đã xảy ra lỗi",
         "tryAgain": "Thử lại",
         "backToServices": "Quay lại dịch vụ",
         "serviceNotFound": "Không tìm thấy dịch vụ",
-        "serviceNotFoundDescription": "Dịch vụ tư vấn bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.",
-        "requestTimeout": "Yêu cầu hết thời gian. Vui lòng kiểm tra kết nối và thử lại.",
-        "serviceNotFoundError": "Không tìm thấy dịch vụ. Có thể đã bị xóa hoặc liên kết không chính xác.",
-        "serverError": "Lỗi máy chủ. Vui lòng thử lại sau vài phút.",
-        "failedToLoad": "Không thể tải chi tiết dịch vụ. Vui lòng thử lại sau."
+        "serviceNotFoundDescription": "Dịch vụ bạn đang tìm kiếm không tồn tại hoặc đã bị xóa"
+      }
+    },
+    "blogs": {
+      "blogIdMissing": "Thiếu ID blog",
+      "unknownAuthor": "Tác giả không xác định",
+      "failedToLoadBlog": "Không thể tải blog. Vui lòng thử lại sau.",
+      "blogNotFound": "Không tìm thấy bài viết blog.",
+      "backToBlogs": "Quay lại danh sách blog",
+      "topics": "Chủ đề",
+      "page": {
+        "title": "Blog Sức Khỏe & Sống Khỏe",
+        "subtitle": "Chuyên gia chia sẻ, mẹo sống khỏe và nghiên cứu y học mới nhất để giúp bạn sống khỏe mạnh hơn",
+        "searchPlaceholder": "Tìm kiếm bài viết...",
+        "filterLabel": "Lọc:",
+        "allSpecialties": "Tất cả",
+        "clearFilter": "Xóa",
+        "featuredArticle": "Bài viết nổi bật",
+        "latestArticles": "Bài viết mới nhất",
+        "showingResults": "Hiển thị",
+        "of": "trong",
+        "articles": "bài viết",
+        "article": "bài viết",
+        "inSelectedSpecialty": "trong chuyên khoa đã chọn",
+        "readTime": "phút đọc",
+        "views": "lượt xem",
+        "readFullArticle": "Đọc toàn bộ bài viết",
+        "readArticle": "Đọc bài viết",
+        "healthcare": "Chăm sóc sức khỏe",
+        "noArticlesYet": "Chưa có bài viết nào",
+        "noArticlesYetDescription": "Chúng tôi đang nỗ lực mang đến cho bạn nội dung sức khỏe chất lượng. Hãy quay lại sớm để xem các bài viết và thông tin mới nhất.",
+        "noArticlesFound": "Không tìm thấy bài viết nào",
+        "noArticlesFoundDescription": {
+          "searchAndSpecialty": "Không tìm thấy bài viết nào phù hợp với \"{{searchQuery}}\" trong chuyên khoa đã chọn.",
+          "searchOnly": "Không tìm thấy bài viết nào phù hợp với \"{{searchQuery}}\".",
+          "specialtyOnly": "Không tìm thấy bài viết nào trong chuyên khoa đã chọn.",
+          "default": "Không có bài viết nào có sẵn."
+        },
+        "clearAllFilters": "Xóa tất cả bộ lọc",
+        "somethingWentWrong": "Đã xảy ra lỗi",
+        "tryAgain": "Thử lại",
+        "goBack": "Quay lại"
       }
     },
     "healthPackages": {
@@ -774,6 +978,320 @@
       "preventionDescription": "Chương trình chăm sóc phòng ngừa cho sức khỏe lâu dài",
       "familyCare": "Chăm sóc gia đình",
       "familyCareDescription": "Dịch vụ sức khỏe tập trung vào gia đình cho mọi lứa tuổi"
+    }
+  },
+  "admin": {
+    "blogs": {
+      "create": {
+        "title": "Tạo Blog Mới",
+        "subtitle": "Tạo một bài viết blog mới cho trang web",
+        "form": {
+          "title": "Tiêu đề",
+          "titlePlaceholder": "Nhập tiêu đề blog",
+          "content": "Nội dung",
+          "contentPlaceholder": "Nhập nội dung blog (Markdown được hỗ trợ)",
+          "markdownNote": "Bạn có thể sử dụng định dạng Markdown cho nội dung văn bản phong phú.",
+          "author": "Tác giả",
+          "authorPlaceholder": "Nhập tên tác giả",
+          "coverImage": "Ảnh bìa",
+          "coverImagePlaceholder": "Nhập URL ảnh bìa",
+          "specialties": "Chuyên khoa",
+          "specialtyPlaceholder": "Nhập chuyên khoa và nhấn Enter",
+          "addSpecialty": "Thêm chuyên khoa",
+          "active": "Hoạt động",
+          "activeDescription": "Hiển thị blog này trên trang web"
+        },
+        "validationError": "Lỗi xác thực",
+        "titleContentRequired": "Tiêu đề và nội dung là bắt buộc",
+        "success": "Thành công",
+        "blogCreatedSuccessfully": "Blog đã được tạo thành công",
+        "error": "Lỗi",
+        "failedToCreateBlog": "Không thể tạo blog",
+        "creating": "Đang tạo...",
+        "createBlog": "Tạo Blog",
+        "backToBlogs": "Quay lại danh sách blog"
+      },
+      "edit": {
+        "title": "Chỉnh sửa Blog",
+        "subtitle": "Cập nhật thông tin blog",
+        "error": "Lỗi",
+        "failedToLoadData": "Không thể tải dữ liệu blog",
+        "blogUpdatedSuccessfully": "Blog đã được cập nhật thành công",
+        "failedToUpdateBlog": "Không thể cập nhật blog",
+        "saving": "Đang lưu...",
+        "saveChanges": "Lưu thay đổi",
+        "backToBlogs": "Quay lại danh sách blog",
+        "blogNotFound": "Không tìm thấy blog",
+        "blogNotFoundDescription": "Blog bạn đang tìm kiếm không tồn tại."
+      },
+      "list": {
+        "title": "Quản lý Blog",
+        "subtitle": "Xem và quản lý tất cả các bài viết blog",
+        "addNewBlog": "Tạo Blog Mới",
+        "failedToFetchBlogs": "Không thể tải danh sách blog",
+        "allStatus": "Tất cả trạng thái",
+        "noContent": "Không có nội dung",
+        "unknown": "Không xác định",
+        "active": "Hoạt động",
+        "inactive": "Không hoạt động",
+        "searchPlaceholder": "Tìm kiếm blog...",
+        "statusFilter": "Lọc theo trạng thái",
+        "actions": "Hành động",
+        "view": "Xem",
+        "edit": "Chỉnh sửa",
+        "delete": "Xóa",
+        "toggleStatus": "Thay đổi trạng thái"
+      },
+      "view": {
+        "title": "Xem Blog",
+        "backToBlogs": "Quay lại danh sách blog",
+        "editBlog": "Chỉnh sửa Blog",
+        "deleteBlog": "Xóa Blog",
+        "confirmDelete": "Bạn có chắc chắn muốn xóa blog này?",
+        "deleteDescription": "Hành động này không thể hoàn tác. Blog sẽ bị xóa vĩnh viễn."
+      }
+    }
+  },
+  "doctor": {
+    "dashboard": {
+      "title": "Bảng điều khiển bác sĩ",
+      "subtitle": "Quản lý lịch hẹn và bệnh nhân của bạn",
+      "stats": {
+        "todayAppointments": "Lịch hẹn hôm nay",
+        "pendingPrescriptions": "Đơn thuốc chờ xử lý",
+        "totalPatients": "Tổng bệnh nhân",
+        "completedExaminations": "Khám hoàn thành",
+        "fromYesterday": "so với hôm qua",
+        "requireAttention": "cần chú ý",
+        "totalPatientsCount": "bệnh nhân tổng cộng",
+        "examinationsToday": "khám hôm nay"
+      },
+      "quickActions": {
+        "viewSchedule": "Xem lịch trình",
+        "viewScheduleDesc": "Xem và quản lý lịch hẹn của bạn",
+        "createPrescription": "Tạo đơn thuốc",
+        "createPrescriptionDesc": "Tạo đơn thuốc mới cho bệnh nhân",
+        "medicalExamination": "Khám bệnh",
+        "medicalExaminationDesc": "Thực hiện khám bệnh cho bệnh nhân",
+        "patientRecords": "Hồ sơ bệnh nhân",
+        "patientRecordsDesc": "Xem và quản lý hồ sơ bệnh nhân"
+      },
+      "recentAppointments": {
+        "title": "Lịch hẹn gần đây",
+        "patient": "Bệnh nhân",
+        "time": "Thời gian",
+        "status": "Trạng thái",
+        "completed": "Hoàn thành",
+        "inProgress": "Đang thực hiện",
+        "upcoming": "Sắp tới"
+      },
+      "pendingTasks": {
+        "title": "Nhiệm vụ chờ xử lý",
+        "task": "Nhiệm vụ",
+        "priority": "Ưu tiên",
+        "high": "Cao",
+        "medium": "Trung bình",
+        "low": "Thấp"
+      },
+      "samplePatients": {
+        "johnDoe": "Nguyễn Văn A",
+        "janeSmith": "Trần Thị B",
+        "robertJohnson": "Lê Văn C"
+      },
+      "sampleTasks": {
+        "reviewLabResults": "Xem xét kết quả xét nghiệm cho Bệnh nhân #123",
+        "completePrescription": "Hoàn thành đơn thuốc cho Maria Garcia",
+        "followUpSurgery": "Theo dõi bệnh nhân sau phẫu thuật"
+      }
+    },
+    "profile": {
+      "title": "Hồ sơ bác sĩ",
+      "subtitle": "Quản lý thông tin hồ sơ của bạn",
+      "userNotAuthenticated": "Người dùng chưa được xác thực",
+      "failedToLoadProfile": "Không thể tải hồ sơ bác sĩ",
+      "failedToUpdateProfile": "Không thể cập nhật hồ sơ",
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "saveChanges": "Lưu thay đổi",
+      "cancel": "Hủy",
+      "experience": "Kinh nghiệm",
+      "qualifications": "Trình độ chuyên môn",
+      "bio": "Tiểu sử",
+      "consultationFee": "Phí tư vấn",
+      "room": "Phòng khám",
+      "specialty": "Chuyên khoa",
+      "years": "năm",
+      "addQualification": "Thêm trình độ",
+      "removeQualification": "Xóa trình độ"
+    }
+  },
+  "receptionist": {
+    "dashboard": {
+      "title": "Bảng điều khiển lễ tân",
+      "subtitle": "Chào mừng trở lại! Đây là tổng quan bàn lễ tân hôm nay.",
+      "stats": {
+        "todayAppointments": "Lịch hẹn hôm nay",
+        "waitingPatients": "Bệnh nhân đang chờ",
+        "availableDoctors": "Bác sĩ có sẵn",
+        "completedAppointments": "Lịch hẹn hoàn thành",
+        "completed": "hoàn thành",
+        "inWaitingRoom": "Trong phòng chờ",
+        "doctorsAvailable": "bác sĩ có sẵn",
+        "appointmentsCompleted": "lịch hẹn hoàn thành"
+      },
+      "quickActions": {
+        "scheduleAppointment": "Đặt lịch hẹn",
+        "scheduleAppointmentDesc": "Đặt lịch hẹn mới cho bệnh nhân",
+        "registerPatient": "Đăng ký bệnh nhân",
+        "registerPatientDesc": "Thêm bệnh nhân mới vào hệ thống",
+        "manageQueue": "Quản lý hàng chờ",
+        "manageQueueDesc": "Xem và quản lý bệnh nhân đang chờ",
+        "checkInPatient": "Check-in bệnh nhân",
+        "checkInPatientDesc": "Đánh dấu bệnh nhân đã đến"
+      },
+      "recentAppointments": {
+        "title": "Lịch hẹn gần đây",
+        "patient": "Bệnh nhân",
+        "doctor": "Bác sĩ",
+        "time": "Thời gian",
+        "status": "Trạng thái",
+        "waiting": "Đang chờ",
+        "inProgress": "Đang thực hiện",
+        "checkedIn": "Đã check-in"
+      },
+      "notifications": {
+        "title": "Thông báo gần đây",
+        "doctorLate": "BS. Smith trễ 15 phút",
+        "newPatientApproval": "Cần phê duyệt đăng ký bệnh nhân mới",
+        "emergencyAppointment": "Yêu cầu lịch hẹn khẩn cấp",
+        "minAgo": "phút trước"
+      },
+      "doctorStatus": {
+        "title": "Trạng thái bác sĩ",
+        "available": "Có sẵn",
+        "busy": "Bận",
+        "break": "Nghỉ",
+        "nextFree": "Rảnh tiếp theo"
+      },
+      "sampleData": {
+        "patients": {
+          "johnDoe": "Nguyễn Văn A",
+          "janeSmith": "Trần Thị B",
+          "robertWilson": "Lê Văn C"
+        },
+        "doctors": {
+          "drSmith": "BS. Nguyễn Văn D",
+          "drJohnson": "BS. Trần Thị E",
+          "drBrown": "BS. Lê Văn F",
+          "drDavis": "BS. Phạm Thị G"
+        },
+        "specialties": {
+          "cardiology": "Tim mạch",
+          "pediatrics": "Nhi khoa",
+          "orthopedics": "Chỉnh hình",
+          "dermatology": "Da liễu"
+        }
+      }
+    },
+    "appointments": {
+      "title": "Lịch hẹn",
+      "subtitle": "Quản lý tất cả lịch hẹn phòng khám và thăm khám bệnh nhân",
+      "scheduleAppointment": "Đặt lịch hẹn",
+      "searchPlaceholder": "Tìm kiếm bệnh nhân hoặc bác sĩ...",
+      "filterByStatus": "Lọc theo trạng thái",
+      "filterByDoctor": "Lọc theo bác sĩ",
+      "allStatus": "Tất cả trạng thái",
+      "allDoctors": "Tất cả bác sĩ",
+      "status": {
+        "scheduled": "Đã lên lịch",
+        "checkedIn": "Đã check-in",
+        "inProgress": "Đang thực hiện",
+        "completed": "Hoàn thành",
+        "cancelled": "Đã hủy",
+        "noShow": "Không đến"
+      },
+      "sampleData": {
+        "patients": {
+          "johnDoe": "Nguyễn Văn A",
+          "janeSmith": "Trần Thị B",
+          "robertJohnson": "Lê Văn C",
+          "maryWilson": "Phạm Thị D"
+        },
+        "doctors": {
+          "drSmith": "BS. Nguyễn Văn E",
+          "drJohnson": "BS. Trần Thị F",
+          "drBrown": "BS. Lê Văn G",
+          "drDavis": "BS. Phạm Thị H"
+        },
+        "specialties": {
+          "cardiology": "Tim mạch",
+          "pediatrics": "Nhi khoa",
+          "orthopedics": "Chỉnh hình",
+          "dermatology": "Da liễu"
+        },
+        "types": {
+          "consultation": "Tư vấn",
+          "emergency": "Cấp cứu",
+          "followUp": "Tái khám"
+        },
+        "notes": {
+          "regularCheckup": "Khám định kỳ",
+          "kneeInjury": "Chấn thương đầu gối"
+        }
+      }
+    }
+  },
+  "booking": {
+    "schedule": {
+      "title": "Chọn lịch hẹn",
+      "description": "Chọn ngày và khung giờ phù hợp cho lịch hẹn của bạn",
+      "selectDate": "Chọn ngày",
+      "selectTimePeriod": "Chọn khung giờ",
+      "showing30Days": "Hiển thị 30 ngày tới",
+      "allTimesLocal": "Tất cả thời gian theo giờ địa phương",
+      "youSelected": "Bạn đã chọn",
+      "inThe": "vào khung giờ",
+      "cancel": "Hủy",
+      "continueToBooking": "Tiếp tục đặt lịch"
+    },
+    "packageDetails": {
+      "selectedPackage": "Gói đã chọn",
+      "title": "Chi tiết gói",
+      "description": "Thông tin chi tiết về gói sức khỏe bạn đã chọn",
+      "selectPackageTier": "Chọn cấp độ gói",
+      "testsIncluded": "xét nghiệm bao gồm",
+      "packagePrice": "Giá gói",
+      "free": "Miễn phí"
+    },
+    "steps": {
+      "title": "Quy trình đặt lịch",
+      "selectPackage": "Chọn gói dịch vụ",
+      "selectPackageDesc": "Chọn gói sức khỏe hoặc dịch vụ y tế phù hợp với nhu cầu của bạn",
+      "pickDateTime": "Chọn ngày giờ",
+      "pickDateTimeDesc": "Chọn ngày và khung giờ thuận tiện cho lịch hẹn của bạn",
+      "confirmBooking": "Xác nhận đặt lịch",
+      "confirmBookingDesc": "Xem lại thông tin và xác nhận đặt lịch hẹn"
+    }
+  },
+  "dialogs": {
+    "bookingConfirmation": {
+      "confirmYourBooking": "Xác nhận đặt lịch của bạn",
+      "reviewDetails": "Vui lòng xem lại thông tin đặt lịch trước khi xác nhận",
+      "package": "Gói",
+      "service": "Dịch vụ",
+      "services": "Dịch vụ",
+      "selectedServices": "dịch vụ đã chọn",
+      "title": "Đặt lịch",
+      "plan": "Gói",
+      "duration": "Thời lượng",
+      "totalServices": "Tổng dịch vụ",
+      "totalPrice": "Tổng giá",
+      "date": "Ngày",
+      "timePeriod": "Khung giờ",
+      "loggedInAs": "Đăng nhập với tên",
+      "needToLogin": "Bạn cần đăng nhập để tiếp tục",
+      "goBack": "Quay lại",
+      "processing": "Đang xử lý...",
+      "confirmBooking": "Xác nhận đặt lịch"
     }
   },
   "metadata": {
