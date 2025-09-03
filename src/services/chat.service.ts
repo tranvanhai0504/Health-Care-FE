@@ -68,12 +68,23 @@ export class ChatService extends BaseService<ChatResponse> {
           try {
             // Try to parse the reply as JSON to check for form data
             const parsedReply = JSON.parse(responseData.reply);
-            if (parsedReply.type === "form" && parsedReply.data && parsedReply.action && parsedReply.endpoint) {
-              // This is a special form response, extract the form data
+
+            // Normalize possible backend field names to our expected FormResponse shape
+            const maybeData = parsedReply?.data;
+            const maybeAction = parsedReply?.action || parsedReply?.method; // backend may send "method"
+            const maybeEndpoint = parsedReply?.endpoint || parsedReply?.url; // backend may send "url"
+
+            if (maybeData && maybeAction && maybeEndpoint) {
               return {
                 ...responseData,
-                reply: "I've prepared a schedule for you. Please review and confirm the details below.",
-                formResponse: parsedReply
+                reply:
+                  "I've prepared a schedule for you. Please review and confirm the details below.",
+                formResponse: {
+                  type: "form",
+                  data: maybeData,
+                  action: maybeAction,
+                  endpoint: maybeEndpoint,
+                },
               };
             }
           } catch {
