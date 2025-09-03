@@ -109,9 +109,13 @@ export function MessageList() {
     }
 
     try {
+      console.log(formData);
       // Calculate week period and day offset (UTC-based)
-      const weekPeriod = scheduleService.getWeekPeriod(new Date(formData.weekPeriod.from));
-      const dayOffset = scheduleService.getDayOffset(new Date(formData.weekPeriod.from));
+      const weekPeriod = {
+        from: new Date(formData.weekPeriod.from),
+        to: new Date(formData.weekPeriod.to),
+      };
+      const dayOffset = formData.dayOffset
       const timeOffset = formData.timeOffset;
 
       // Create booking data
