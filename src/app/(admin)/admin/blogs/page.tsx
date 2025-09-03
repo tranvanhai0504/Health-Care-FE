@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { BlogService } from "@/services/blogs.service";
 import { Blog, PaginationInfo, User } from "@/types";
 import {
@@ -67,6 +68,7 @@ import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
 const blogService = new BlogService();
 
 export default function AdminBlogsPage() {
+  const { t } = useTranslation();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -152,8 +154,8 @@ export default function AdminBlogsPage() {
       } catch (error) {
         console.error("Error fetching blogs:", error);
         toast({
-          title: "Error",
-          description: "Failed to fetch blogs",
+          title: t("admin.blogs.create.error"),
+          description: t("admin.blogs.list.failedToFetchBlogs"),
           type: "error",
         });
         setBlogs([]);
@@ -244,14 +246,14 @@ export default function AdminBlogsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
-                <FileText className="h-5 w-5" /> Blogs Management
+                <FileText className="h-5 w-5" /> {t("admin.blogs.list.title")}
               </CardTitle>
               <CardDescription className="mt-1.5">
-                Manage all blog posts available to users
+                {t("admin.blogs.list.subtitle")}
               </CardDescription>
             </div>
             <Button onClick={handleCreateBlog} className="w-full md:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Create New Blog
+              <Plus className="mr-2 h-4 w-4" /> {t("admin.blogs.list.addNewBlog")}
             </Button>
           </div>
         </CardHeader>
@@ -271,12 +273,12 @@ export default function AdminBlogsPage() {
             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="All Status" />
+                  <SelectValue placeholder={t("admin.blogs.list.allStatus")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="all">{t("admin.blogs.list.allStatus")}</SelectItem>
+                  <SelectItem value="active">{t("admin.blogs.list.active")}</SelectItem>
+                  <SelectItem value="inactive">{t("admin.blogs.list.inactive")}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -376,7 +378,7 @@ export default function AdminBlogsPage() {
                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                               {blog.content
                                 ? blog.content.substring(0, 100) + "..."
-                                : "No content"}
+                                : t("admin.blogs.list.noContent")}
                             </p>
                           </div>
                         </TableCell>
@@ -390,7 +392,7 @@ export default function AdminBlogsPage() {
                               </span>
                             </div>
                             <span className="text-sm">
-                              {(blog.author as User).name || "Unknown"}
+                              {(blog.author as User).name || t("admin.blogs.list.unknown")}
                             </span>
                           </div>
                         </TableCell>
@@ -400,7 +402,7 @@ export default function AdminBlogsPage() {
                             className="cursor-pointer"
                             onClick={() => handleToggleStatus(blog._id)}
                           >
-                            {blog.active ? "Active" : "Inactive"}
+                            {blog.active ? t("admin.blogs.list.active") : t("admin.blogs.list.inactive")}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -418,18 +420,18 @@ export default function AdminBlogsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>{t("admin.blogs.list.actions")}</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => handleViewBlog(blog._id)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
-                                View
+                                {t("admin.blogs.list.view")}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleEditBlog(blog._id)}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                                {t("admin.blogs.list.edit")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -437,7 +439,7 @@ export default function AdminBlogsPage() {
                                 className="text-blue-600"
                               >
                                 <ListFilter className="mr-2 h-4 w-4" />
-                                Toggle Status
+                                {t("admin.blogs.list.toggleStatus")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -445,7 +447,7 @@ export default function AdminBlogsPage() {
                                 className="text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                {t("admin.blogs.list.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

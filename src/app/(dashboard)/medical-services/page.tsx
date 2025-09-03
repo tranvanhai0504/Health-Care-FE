@@ -171,9 +171,9 @@ export default function ConsultationsPage() {
   }, [searchTerm, selectedSpecialty, sortBy]);
 
   const getSpecialtyName = (specialtyId?: string) => {
-    if (!specialtyId) return "General";
+    if (!specialtyId) return t("dashboard.medicalServices.general");
     const specialty = specialties.find((s) => s._id === specialtyId);
-    return specialty?.name || "Unknown";
+    return specialty?.name || t("dashboard.medicalServices.unknown");
   };
 
   // Pagination helpers

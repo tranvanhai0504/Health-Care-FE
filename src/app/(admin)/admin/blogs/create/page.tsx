@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { BlogService } from "@/services/blogs.service";
 import {
   Card,
@@ -21,6 +22,7 @@ import { useToast } from "@/hooks/useToast";
 const blogService = new BlogService();
 
 export default function CreateBlogPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -63,8 +65,8 @@ export default function CreateBlogPage() {
     
     if (!formData.title.trim() || !formData.content.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Title and content are required",
+        title: t("admin.blogs.create.validationError"),
+        description: t("admin.blogs.create.titleContentRequired"),
         type: "error",
       });
       return;
@@ -82,8 +84,8 @@ export default function CreateBlogPage() {
       });
 
       toast({
-        title: "Success",
-        description: "Blog created successfully",
+        title: t("admin.blogs.create.success"),
+        description: t("admin.blogs.create.blogCreatedSuccessfully"),
         type: "success",
       });
 
@@ -91,8 +93,8 @@ export default function CreateBlogPage() {
     } catch (error) {
       console.error("Error creating blog:", error);
       toast({
-        title: "Error",
-        description: "Failed to create blog",
+        title: t("admin.blogs.create.error"),
+        description: t("admin.blogs.create.failedToCreateBlog"),
         type: "error",
       });
     } finally {
@@ -113,7 +115,7 @@ export default function CreateBlogPage() {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blogs
+          {t("admin.blogs.create.backToBlogs")}
         </Button>
       </div>
 
@@ -121,10 +123,10 @@ export default function CreateBlogPage() {
         <CardHeader className="bg-muted/50 rounded-t-lg">
           <CardTitle className="text-2xl flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Create New Blog
+            {t("admin.blogs.create.title")}
           </CardTitle>
           <CardDescription>
-            Add a new blog post to your healthcare platform
+            {t("admin.blogs.create.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -132,12 +134,12 @@ export default function CreateBlogPage() {
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-medium">
-                Title *
+                {t("admin.blogs.create.form.title")} *
               </Label>
               <Input
                 id="title"
                 type="text"
-                placeholder="Enter blog title..."
+                placeholder={t("admin.blogs.create.form.titlePlaceholder")}
                 value={formData.title}
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 className="w-full"
@@ -148,12 +150,12 @@ export default function CreateBlogPage() {
             {/* Author */}
             <div className="space-y-2">
               <Label htmlFor="author" className="text-sm font-medium">
-                Author
+                {t("admin.blogs.create.form.author")}
               </Label>
               <Input
                 id="author"
                 type="text"
-                placeholder="Enter author name (defaults to Admin)..."
+                placeholder={t("admin.blogs.create.form.authorPlaceholder")}
                 value={formData.author}
                 onChange={(e) => handleInputChange("author", e.target.value)}
                 className="w-full"
@@ -163,12 +165,12 @@ export default function CreateBlogPage() {
             {/* Cover Image */}
             <div className="space-y-2">
               <Label htmlFor="coverImage" className="text-sm font-medium">
-                Cover Image URL
+                {t("admin.blogs.create.form.coverImage")}
               </Label>
               <Input
                 id="coverImage"
                 type="url"
-                placeholder="Enter cover image URL..."
+                placeholder={t("admin.blogs.create.form.coverImagePlaceholder")}
                 value={formData.coverImage}
                 onChange={(e) => handleInputChange("coverImage", e.target.value)}
                 className="w-full"
@@ -178,30 +180,30 @@ export default function CreateBlogPage() {
             {/* Content */}
             <div className="space-y-2">
               <Label htmlFor="content" className="text-sm font-medium">
-                Content *
+                {t("admin.blogs.create.form.content")} *
               </Label>
               <Textarea
                 id="content"
-                placeholder="Write your blog content here..."
+                placeholder={t("admin.blogs.create.form.contentPlaceholder")}
                 value={formData.content}
                 onChange={(e) => handleInputChange("content", e.target.value)}
                 className="w-full min-h-[300px] resize-y"
                 required
               />
               <p className="text-xs text-muted-foreground">
-                You can use Markdown formatting for rich text content.
+                {t("admin.blogs.create.form.markdownNote")}
               </p>
             </div>
 
             {/* Specialties */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                Related Specialties
+                {t("admin.blogs.create.form.specialties")}
               </Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Add specialty..."
+                  placeholder={t("admin.blogs.create.form.specialtyPlaceholder")}
                   value={specialtyInput}
                   onChange={(e) => setSpecialtyInput(e.target.value)}
                   onKeyPress={(e) => {
@@ -218,7 +220,7 @@ export default function CreateBlogPage() {
                   onClick={handleAddSpecialty}
                   disabled={!specialtyInput.trim()}
                 >
-                  Add
+                  {t("admin.blogs.create.form.addSpecialty")}
                 </Button>
               </div>
               {formData.specialties.length > 0 && (
@@ -250,7 +252,7 @@ export default function CreateBlogPage() {
                 onCheckedChange={(checked) => handleInputChange("active", checked)}
               />
               <Label htmlFor="active" className="text-sm font-medium">
-                Publish immediately (Active)
+                {t("admin.blogs.create.form.activeDescription")}
               </Label>
             </div>
 
@@ -262,14 +264,14 @@ export default function CreateBlogPage() {
                 onClick={handleCancel}
                 disabled={loading}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={loading || !formData.title.trim() || !formData.content.trim()}
               >
                 <Save className="mr-2 h-4 w-4" />
-                {loading ? "Creating..." : "Create Blog"}
+                {loading ? t("admin.blogs.create.creating") : t("admin.blogs.create.createBlog")}
               </Button>
             </div>
           </form>

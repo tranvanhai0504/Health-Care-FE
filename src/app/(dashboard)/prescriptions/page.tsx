@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 interface PrescriptionDetailModalProps {
   prescription: Prescription | null;
@@ -38,6 +39,7 @@ interface PrescriptionDetailModalProps {
 }
 
 function PrescriptionDetailModal({ prescription, isOpen, onClose }: PrescriptionDetailModalProps) {
+  const { t } = useTranslation();
   const [doctorUser, setDoctorUser] = useState<User | null>(null);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [isLoadingDoctor, setIsLoadingDoctor] = useState(false);
@@ -109,7 +111,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
         <DialogHeader>
                      <DialogTitle className="flex items-center gap-2">
              <Pill className="h-5 w-5 text-primary" />
-             Prescription Details
+             {t("dashboard.prescriptions.details.title")}
            </DialogTitle>
         </DialogHeader>
 
@@ -119,7 +121,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-xs font-medium text-gray-600">Date Issued</p>
+                <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.dateIssued")}</p>
                 <p className="text-sm text-gray-900">
                   {format(new Date(prescription.dateIssued), "PPP")}
                 </p>
@@ -128,7 +130,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
             <div className="flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-xs font-medium text-gray-600">Total Cost</p>
+                <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.totalCost")}</p>
                 <p className="text-sm text-gray-900">
                   {prescription.totalCost.toLocaleString()} VND
                 </p>
@@ -140,51 +142,51 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
           <div className="border border-gray-200 rounded-lg p-4">
                          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                <Stethoscope className="h-5 w-5 text-primary" />
-               Doctor Information
+               {t("dashboard.prescriptions.details.doctorInformation")}
              </h3>
             {typeof prescription.doctor === 'string' ? (
-              <p className="text-gray-500">Doctor ID: {prescription.doctor}</p>
+              <p className="text-gray-500">{t("dashboard.prescriptions.details.doctorId")}: {prescription.doctor}</p>
             ) : (
               <div className="space-y-4">
                 {/* Doctor User Info */}
                 {isLoadingDoctor ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-gray-500">Loading doctor information...</span>
+                    <span className="text-sm text-gray-500">{t("dashboard.prescriptions.details.loadingDoctor")}</span>
                   </div>
                 ) : doctorUser ? (
                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-primary/5 rounded-lg">
                    <div className="flex items-center gap-2">
                      <UserIcon className="h-4 w-4 text-primary" />
                      <div>
-                       <p className="text-xs font-medium text-gray-600">Name</p>
+                       <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.name")}</p>
                        <p className="text-sm text-gray-900 font-medium">{doctorUser.name}</p>
                      </div>
                    </div>
                    <div className="flex items-center gap-2">
                      <Phone className="h-4 w-4 text-primary" />
                      <div>
-                       <p className="text-xs font-medium text-gray-600">Phone</p>
+                       <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.phone")}</p>
                        <p className="text-sm text-gray-900 font-medium">{doctorUser.phoneNumber}</p>
                      </div>
                    </div>
                  </div>
                 ) : (
-                  <p className="text-sm text-gray-500">Unable to load doctor information</p>
+                  <p className="text-sm text-gray-500">{t("dashboard.prescriptions.details.unableToLoadDoctor")}</p>
                 )}
 
                 {/* Doctor Professional Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Experience</p>
+                    <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.experience")}</p>
                     <p className="text-gray-900">{prescription.doctor.experience} years</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Consultation Fee</p>
+                    <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.consultationFee")}</p>
                     <p className="text-gray-900">{prescription.doctor.consultationFee.toLocaleString()} VND</p>
                   </div>
                   <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-gray-700">Qualifications</p>
+                    <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.qualifications")}</p>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {prescription.doctor.qualifications.map((qual, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
@@ -195,7 +197,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
                   </div>
                   {prescription.doctor.bio && prescription.doctor.bio !== 'undefined' && (
                     <div className="md:col-span-2">
-                      <p className="text-sm font-medium text-gray-700">Bio</p>
+                      <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.bio")}</p>
                       <p className="text-gray-900">{prescription.doctor.bio}</p>
                     </div>
                   )}
@@ -208,7 +210,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
           <div className="border border-gray-200 rounded-lg p-4">
                          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                <FileText className="h-5 w-5 text-primary" />
-               Diagnosis
+               {t("dashboard.prescriptions.details.diagnosis")}
              </h3>
              <p className="text-gray-900 bg-primary/5 p-3 rounded-md">
                {prescription.diagnosis}
@@ -220,7 +222,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
             <div className="border border-gray-200 rounded-lg p-4">
                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                <AlertCircle className="h-5 w-5 text-primary" />
-               Notes
+               {t("dashboard.prescriptions.details.notes")}
              </h3>
              <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
                {prescription.notes}
@@ -232,25 +234,25 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
           <div className="border border-gray-200 rounded-lg p-4">
                          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                <Pill className="h-5 w-5 text-primary" />
-               Medications ({prescription.medications.length})
+               {t("dashboard.prescriptions.details.medications")} ({prescription.medications.length})
              </h3>
                          {isLoadingMedicines ? (
                <div className="flex items-center gap-2">
                  <Loader2 className="h-4 w-4 animate-spin" />
-                 <span className="text-sm text-gray-500">Loading medicine information...</span>
+                 <span className="text-sm text-gray-500">{t("dashboard.prescriptions.details.loadingMedicines")}</span>
                </div>
              ) : (
                <div className="overflow-x-auto">
                  <table className="w-full text-sm">
                    <thead>
                      <tr className="border-b border-gray-200">
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Medicine</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Dosage</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Form</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Route</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Quantity</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Frequency</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">Duration</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.medicine")}</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.dosage")}</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.form")}</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.route")}</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.quantity")}</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.frequency")}</th>
+                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.duration")}</th>
                      </tr>
                    </thead>
                    <tbody>
@@ -260,7 +262,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
                          <tr key={index} className="border-b border-gray-100 hover:bg-gray-50/50">
                            <td className="py-3 px-3">
                              <div className="font-medium text-gray-900">
-                               {medicine ? medicine.name : `Medicine ${index + 1}`}
+                               {medicine ? medicine.name : `${t("dashboard.prescriptions.details.medicine")} ${index + 1}`}
                              </div>
                              {!medicine && (
                                <div className="text-xs text-yellow-600 mt-1">
@@ -299,12 +301,12 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
 
           {/* Payment Status */}
           <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t("dashboard.prescriptions.details.paymentStatus")}</h3>
             <Badge
               variant={prescription.isPaid ? "default" : "secondary"}
               className={prescription.isPaid ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}
             >
-              {prescription.isPaid ? "Paid" : "Pending Payment"}
+              {prescription.isPaid ? t("dashboard.prescriptions.details.paid") : t("dashboard.prescriptions.details.pendingPayment")}
             </Badge>
           </div>
         </div>
@@ -314,6 +316,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
 }
 
 export default function PrescriptionsPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(false);
@@ -404,17 +407,17 @@ export default function PrescriptionsPage() {
              <LogIn className="h-8 w-8 text-primary" />
            </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Access Your Prescriptions
+            {t("dashboard.prescriptions.accessTitle")}
           </h1>
           <p className="text-gray-600 mb-6">
-            Please sign in to view and search your prescription history.
+            {t("dashboard.prescriptions.accessDescription")}
           </p>
           <div className="space-y-3">
             <Button asChild className="w-full">
-              <Link href="/login">Sign In</Link>
+              <Link href="/login">{t("dashboard.prescriptions.signIn")}</Link>
             </Button>
             <Button variant="outline" asChild className="w-full">
-              <Link href="/register">Create Account</Link>
+              <Link href="/register">{t("dashboard.prescriptions.createAccount")}</Link>
             </Button>
           </div>
         </div>
@@ -431,9 +434,9 @@ export default function PrescriptionsPage() {
              <FileText className="h-5 w-5 text-primary" />
            </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Prescriptions</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t("dashboard.prescriptions.title")}</h1>
             <p className="text-gray-600">
-              View and search your prescription history
+              {t("dashboard.prescriptions.subtitle")}
             </p>
           </div>
         </div>
@@ -443,7 +446,7 @@ export default function PrescriptionsPage() {
            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary/60" />
           <Input
             type="text"
-            placeholder="Search by diagnosis or notes..."
+            placeholder={t("dashboard.prescriptions.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 pr-4 py-2"
@@ -477,12 +480,12 @@ export default function PrescriptionsPage() {
             <FileText className="h-8 w-8 text-gray-400" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {searchTerm ? "No prescriptions found" : "No prescriptions yet"}
+            {searchTerm ? t("dashboard.prescriptions.noPrescriptionsFound") : t("dashboard.prescriptions.noPrescriptionsYet")}
           </h3>
           <p className="text-gray-500">
             {searchTerm 
-              ? "Try adjusting your search terms"
-              : "Your prescriptions will appear here after your medical consultations"
+              ? t("dashboard.prescriptions.tryAdjustingSearch")
+              : t("dashboard.prescriptions.prescriptionsWillAppear")
             }
           </p>
         </div>
@@ -511,22 +514,22 @@ export default function PrescriptionsPage() {
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <Pill className="h-4 w-4" />
-                    Medications ({prescription.medications.length})
+                    {t("dashboard.prescriptions.medications")} ({prescription.medications.length})
                   </h4>
                   <div className="space-y-2">
                     {prescription.medications.slice(0, 2).map((med, index) => (
                       <div key={index} className="text-sm">
                         <div className="font-medium text-gray-900">
-                          Medicine {index + 1}
+                          {t("dashboard.prescriptions.medicine")} {index + 1}
                         </div>
                         <div className="text-gray-600 text-xs">
-                          Quantity: {med.quantity}
+                          {t("dashboard.prescriptions.quantity")}: {med.quantity}
                         </div>
                       </div>
                     ))}
                     {prescription.medications.length > 2 && (
                       <div className="text-xs text-gray-500">
-                        +{prescription.medications.length - 2} more medications
+                        +{prescription.medications.length - 2} {t("dashboard.prescriptions.moreMedications")}
                       </div>
                     )}
                   </div>
@@ -537,7 +540,7 @@ export default function PrescriptionsPage() {
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                       <AlertCircle className="h-4 w-4" />
-                      Notes
+                      {t("dashboard.prescriptions.notes")}
                     </h4>
                     <p className="text-sm text-gray-600 line-clamp-2">
                       {prescription.notes}
@@ -548,7 +551,7 @@ export default function PrescriptionsPage() {
                 {/* Total Cost */}
                 <div className="pt-2 border-t border-gray-100">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Total Cost:</span>
+                    <span className="text-gray-600">{t("dashboard.prescriptions.totalCost")}:</span>
                     <span className="font-medium text-gray-900">
                       {prescription.totalCost.toLocaleString()} VND
                     </span>
@@ -574,7 +577,7 @@ export default function PrescriptionsPage() {
             ) : (
               <FileText className="h-4 w-4" />
             )}
-            Refresh Prescriptions
+            {t("dashboard.prescriptions.refreshPrescriptions")}
           </Button>
         </div>
       )}

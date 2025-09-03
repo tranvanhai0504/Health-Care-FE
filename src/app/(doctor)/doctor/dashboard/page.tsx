@@ -192,9 +192,9 @@ export default function DoctorDashboard() {
           <CardContent>
             <div className="space-y-3">
               {[
-                { patient: "John Doe", time: "10:00 AM", status: "completed" },
-                { patient: "Jane Smith", time: "11:30 AM", status: "in-progress" },
-                { patient: "Robert Johnson", time: "2:00 PM", status: "upcoming" }
+                { patient: t("doctor.dashboard.samplePatients.johnDoe"), time: "10:00 AM", status: "completed" },
+                { patient: t("doctor.dashboard.samplePatients.janeSmith"), time: "11:30 AM", status: "in-progress" },
+                { patient: t("doctor.dashboard.samplePatients.robertJohnson"), time: "2:00 PM", status: "upcoming" }
               ].map((appointment, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                   <div>
@@ -227,9 +227,9 @@ export default function DoctorDashboard() {
           <CardContent>
             <div className="space-y-3">
               {[
-                { task: "Review lab results for Patient #123", priority: "high" },
-                { task: "Complete prescription for Maria Garcia", priority: "medium" },
-                { task: "Follow-up with post-surgery patient", priority: "high" }
+                { task: t("doctor.dashboard.sampleTasks.reviewLabResults"), priority: "high" },
+                { task: t("doctor.dashboard.sampleTasks.completePrescription"), priority: "medium" },
+                { task: t("doctor.dashboard.sampleTasks.followUpSurgery"), priority: "high" }
               ].map((task, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-md">
                   <div className={`w-2 h-2 rounded-full mt-2 ${
