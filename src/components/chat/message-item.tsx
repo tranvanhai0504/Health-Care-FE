@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScheduleConfirmation } from './schedule-confirmation';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 
 interface MessageItemProps {
   message: ChatMessage;
@@ -96,7 +97,29 @@ export function MessageItem({ message, onRetry, onScheduleConfirm }: MessageItem
               />
             </div>
           )}
-          {message.content}
+          {/* Render markdown for AI responses, plain text for user messages */}
+          {isUser ? (
+            message.content
+          ) : (
+            <ReactMarkdown
+              components={{
+                p: ({ ...props }) => <p className="mb-3 last:mb-0" {...props} />,
+                ul: ({ ...props }) => <ul className="list-disc list-inside mb-3" {...props} />,
+                ol: ({ ...props }) => <ol className="list-decimal list-inside mb-3" {...props} />,
+                li: ({ ...props }) => <li className="mb-1" {...props} />,
+                a: ({ ...props }) => <a className="text-blue-500 hover:underline" {...props} />,
+                strong: ({ ...props }) => <strong className="font-bold" {...props} />,
+                em: ({ ...props }) => <em className="italic" {...props} />,
+                h1: ({ ...props }) => <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />,
+                h2: ({ ...props }) => <h2 className="text-xl font-bold mt-3 mb-2" {...props} />,
+                h3: ({ ...props }) => <h3 className="text-lg font-bold mt-2 mb-1" {...props} />,
+                blockquote: ({ ...props }) => <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2" {...props} />,
+                code: ({ ...props }) => <code className="bg-gray-100 rounded px-1 py-0.5 font-mono text-sm" {...props} />,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          )}
           
           {/* Form response for schedule confirmation */}
           {!isUser && message.formResponse && message.formResponse.type === "form" && (

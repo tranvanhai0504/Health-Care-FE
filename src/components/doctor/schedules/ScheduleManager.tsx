@@ -286,7 +286,7 @@ export function ScheduleManager({
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-4 border-t">
-          <Button type="submit" disabled={isSaving} className="flex-1">
+          <Button type="submit" disabled={isSaving || false} className="flex-1">
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? t("doctor.schedules.saving") : t("doctor.schedules.saveChanges")}
           </Button>
