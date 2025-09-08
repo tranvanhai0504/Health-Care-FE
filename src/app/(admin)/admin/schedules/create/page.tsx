@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ type Step = 1 | 2;
 export default function CreateAdminSchedulePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Steps
   const [step, setStep] = useState<Step>(1);
@@ -41,6 +43,10 @@ export default function CreateAdminSchedulePage() {
     { phoneNumber: "", name: "", gender: "male" }
   );
   const [creatingUser, setCreatingUser] = useState<boolean>(false);
+  const [validationErrors, setValidationErrors] = useState<{
+    phoneNumber?: string;
+    name?: string;
+  }>({});
 
   // Step 2: services and date
   const [isSearchServiceOpen, setIsSearchServiceOpen] = useState(false);
@@ -51,6 +57,74 @@ export default function CreateAdminSchedulePage() {
   const canProceedToStep2 = useMemo(() => !!selectedUser, [selectedUser]);
   const selectedServiceIds = useMemo(() => selectedServices.map(s => s._id), [selectedServices]);
   const totalPrice = useMemo(() => selectedServices.reduce((sum, s) => sum + (s.price || 0), 0), [selectedServices]);
+
+  // Validation functions
+  const validatePhoneNumber = (phoneNumber: string): string | null => {
+    if (!phoneNumber.trim()) {
+      return t("admin.schedules.create.validation.phoneNumberRequired");
+    }
+    
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/\s+/g, ''))) {
+      return t("admin.schedules.create.validation.phoneNumberInvalid");
+    }
+    
+    return null;
+  };
+
+  const validateName = (name: string): string | null => {
+    if (!name.trim()) {
+      return t("admin.schedules.create.validation.nameRequired");
+    }
+    
+    if (name.trim().length < 2) {
+      return t("admin.schedules.create.validation.nameMinLength");
+    }
+    
+    if (name.trim().length > 50) {
+      return t("admin.schedules.create.validation.nameMaxLength");
+    }
+    
+    return null;
+  };
+
+  const validateNewUserForm = (): boolean => {
+    const errors: { phoneNumber?: string; name?: string } = {};
+    
+    const phoneError = validatePhoneNumber(newUser.phoneNumber);
+    const nameError = validateName(newUser.name);
+    
+    if (phoneError) errors.phoneNumber = phoneError;
+    if (nameError) errors.name = nameError;
+    
+    setValidationErrors(errors);
+    
+    return Object.keys(errors).length === 0;
+  };
+
+  // Clear validation error when user types
+  const handleNewUserChange = (field: keyof typeof newUser, value: string) => {
+    setNewUser(prev => ({ ...prev, [field]: value }));
+    
+    // Clear validation error for this field
+    if (validationErrors[field as keyof typeof validationErrors]) {
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        [field]: undefined 
+      }));
+    }
+  };
+
+  // Reset form when switching modes
+  const handleUserModeChange = (useExisting: boolean) => {
+    setUseExistingUser(useExisting);
+    if (!useExisting) {
+      // Clear form when switching to new user mode
+      setNewUser({ phoneNumber: "", name: "", gender: "male" });
+      setValidationErrors({});
+    }
+    setSelectedUser(null);
+  };
 
   const handleSearchUsers = useCallback(async (page: number = 1) => {
     setUserLoading(true);
@@ -91,29 +165,35 @@ export default function CreateAdminSchedulePage() {
   };
 
   const handleCreateUser = useCallback(async () => {
-    if (!newUser.phoneNumber || !newUser.name) return;
+    if (!validateNewUserForm()) {
+      return;
+    }
+    
     setCreatingUser(true);
     try {
       const created = await userService.unsignup({
-        phoneNumber: newUser.phoneNumber,
-        name: newUser.name,
+        phoneNumber: newUser.phoneNumber.trim(),
+        name: newUser.name.trim(),
         gender: newUser.gender,
       });
       setSelectedUser(created);
       setUseExistingUser(true);
       setStep(2);
+      // Clear form after successful creation
+      setNewUser({ phoneNumber: "", name: "", gender: "male" });
+      setValidationErrors({});
     } catch (e) {
-      let message = "Failed to create user";
+      let message = t("admin.schedules.create.createUserError");
       if (axios.isAxiosError(e)) {
         const data = e.response?.data as { data?: { message?: string }; msg?: string } | undefined;
         message = data?.data?.message || data?.msg || message;
       }
-      toast({ title: "Error", description: message, type: "error" });
+      toast({ title: t("admin.schedules.create.error"), description: message, type: "error" });
     } finally {
       setCreatingUser(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newUser]);
+  }, [newUser, validateNewUserForm]);
 
   const handleApplyServices = (services: ConsultationService[]) => {
     setSelectedServices(services);
@@ -126,7 +206,7 @@ export default function CreateAdminSchedulePage() {
   const handleSubmitSchedule = useCallback(async () => {
     if (!selectedUser) return;
     if (selectedServices.length === 0) {
-      toast({ title: "Error", description: "Please select at least one service", type: "error" });
+      toast({ title: t("admin.schedules.create.error"), description: t("admin.schedules.create.selectAtLeastOneService"), type: "error" });
       return;
     }
 
@@ -147,12 +227,12 @@ export default function CreateAdminSchedulePage() {
       });
       router.push("/admin");
     } catch (e) {
-      let message = "Failed to create schedule";
+      let message = t("admin.schedules.create.createScheduleError");
       if (axios.isAxiosError(e)) {
         const data = e.response?.data as { data?: { message?: string }; msg?: string } | undefined;
         message = data?.data?.message || data?.msg || message;
       }
-      toast({ title: "Error", description: message, type: "error" });
+      toast({ title: t("admin.schedules.create.error"), description: message, type: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -173,8 +253,8 @@ export default function CreateAdminSchedulePage() {
     <div className="h-[calc(100vh-64px)] overflow-auto p-4">
       <div className="max-w-5xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">New Schedule</h1>
-          <Badge variant="outline" className="text-xs">Step {step} / 2</Badge>
+          <h1 className="text-xl font-semibold">{t("admin.schedules.create.title")}</h1>
+          <Badge variant="outline" className="text-xs">{t("admin.schedules.create.stepProgress", { current: step, total: 2 })}</Badge>
         </div>
 
         <Card className="shadow-md border-border/60">
@@ -182,10 +262,10 @@ export default function CreateAdminSchedulePage() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
                 {step === 1 ? <User className="h-4 w-4 text-primary" /> : <ClipboardList className="h-4 w-4 text-primary" />} 
-                {step === 1 ? "User Information" : "Schedule Details"}
+                {step === 1 ? t("admin.schedules.create.userInformation") : t("admin.schedules.create.scheduleDetails")}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xxs">Fast create</Badge>
+                <Badge variant="outline" className="text-xxs">{t("admin.schedules.create.fastCreate")}</Badge>
               </div>
             </div>
           </CardHeader>
@@ -196,18 +276,18 @@ export default function CreateAdminSchedulePage() {
                   <Button
                     variant={useExistingUser ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setUseExistingUser(true)}
+                    onClick={() => handleUserModeChange(true)}
                     className="flex items-center gap-2"
                   >
-                    <Search className="h-4 w-4" /> Existing User
+                    <Search className="h-4 w-4" /> {t("admin.schedules.create.existingUser")}
                   </Button>
                   <Button
                     variant={!useExistingUser ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setUseExistingUser(false)}
+                    onClick={() => handleUserModeChange(false)}
                     className="flex items-center gap-2"
                   >
-                    <UserPlus className="h-4 w-4" /> New User
+                    <UserPlus className="h-4 w-4" /> {t("admin.schedules.create.newUser")}
                   </Button>
                 </div>
 
@@ -216,7 +296,7 @@ export default function CreateAdminSchedulePage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
-                        placeholder="Search by phone, email, or name..."
+                        placeholder={t("admin.schedules.create.searchUserPlaceholder")}
                         value={userSearch}
                         onChange={(e) => setUserSearch(e.target.value)}
                         className="pl-10"
@@ -224,12 +304,12 @@ export default function CreateAdminSchedulePage() {
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={() => handleSearchUsers(1)} disabled={userLoading}>
-                        {userLoading ? "Searching..." : "Search"}
+                        {userLoading ? t("admin.schedules.create.searching") : t("admin.schedules.create.search")}
                       </Button>
                     </div>
                     <div className="border rounded-md divide-y bg-white">
                       {userResults.length === 0 ? (
-                        <div className="text-sm text-gray-500 p-3">No results</div>
+                        <div className="text-sm text-gray-500 p-3">{t("admin.schedules.create.noResults")}</div>
                       ) : (
                         userResults.map((u) => (
                           <button
@@ -258,7 +338,7 @@ export default function CreateAdminSchedulePage() {
                         itemsPerPage={userItemsPerPage}
                         onPageChange={handleUserPageChange}
                         onItemsPerPageChange={handleUserItemsPerPageChange}
-                        itemName="user"
+                        itemName={t("admin.schedules.create.user")}
                         showItemsPerPage={true}
                         showJumpToPage={false}
                         itemsPerPageOptions={[5, 10, 20]}
@@ -268,38 +348,50 @@ export default function CreateAdminSchedulePage() {
                 ) : (
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="text-xs text-gray-600">Phone Number</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-600">{t("admin.schedules.create.phoneNumber")} *</label>
                         <Input
                           value={newUser.phoneNumber}
-                          onChange={(e) => setNewUser({ ...newUser, phoneNumber: e.target.value })}
-                          placeholder="e.g. 0773xxxxxx"
+                          onChange={(e) => handleNewUserChange("phoneNumber", e.target.value)}
+                          placeholder={t("admin.schedules.create.phoneNumberPlaceholder")}
+                          className={validationErrors.phoneNumber ? "border-red-500" : ""}
                         />
+                        {validationErrors.phoneNumber && (
+                          <p className="text-xs text-red-500">{validationErrors.phoneNumber}</p>
+                        )}
                       </div>
-                      <div>
-                        <label className="text-xs text-gray-600">Name</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-600">{t("admin.schedules.create.name")} *</label>
                         <Input
                           value={newUser.name}
-                          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                          placeholder="Full name"
+                          onChange={(e) => handleNewUserChange("name", e.target.value)}
+                          placeholder={t("admin.schedules.create.fullName")}
+                          className={validationErrors.name ? "border-red-500" : ""}
                         />
+                        {validationErrors.name && (
+                          <p className="text-xs text-red-500">{validationErrors.name}</p>
+                        )}
                       </div>
-                      <div>
-                        <label className="text-xs text-gray-600">Gender</label>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-600">{t("admin.schedules.create.gender")}</label>
                         <select
                           className="w-full border rounded h-9 text-sm px-2"
                           value={newUser.gender}
-                          onChange={(e) => setNewUser({ ...newUser, gender: e.target.value })}
+                          onChange={(e) => handleNewUserChange("gender", e.target.value)}
                         >
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                          <option value="other">Other</option>
+                          <option value="male">{t("admin.schedules.create.male")}</option>
+                          <option value="female">{t("admin.schedules.create.female")}</option>
+                          <option value="other">{t("admin.schedules.create.other")}</option>
                         </select>
                       </div>
                     </div>
                     <div>
-                      <Button size="sm" onClick={handleCreateUser} disabled={creatingUser || !newUser.phoneNumber || !newUser.name}>
-                        {creatingUser ? "Creating..." : "Create & Continue"}
+                      <Button 
+                        size="sm" 
+                        onClick={handleCreateUser} 
+                        disabled={creatingUser || !newUser.phoneNumber.trim() || !newUser.name.trim()}
+                      >
+                        {creatingUser ? t("admin.schedules.create.creating") : t("admin.schedules.create.createAndContinue")}
                       </Button>
                     </div>
                   </div>
@@ -308,24 +400,24 @@ export default function CreateAdminSchedulePage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <Button variant="outline" size="sm" onClick={() => router.back()} className="flex items-center gap-2">
-                    <ArrowLeft className="h-4 w-4" /> Cancel
+                    <ArrowLeft className="h-4 w-4" /> {t("admin.schedules.create.cancel")}
                   </Button>
                   <Button size="sm" onClick={() => setStep(2)} disabled={!canProceedToStep2} className="flex items-center gap-2">
-                    Next <ArrowRight className="h-4 w-4" />
+                    {t("admin.schedules.create.next")} <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="text-sm">Scheduling for: <span className="font-medium">{selectedUser?.name || selectedUser?.email || selectedUser?.phoneNumber}</span></div>
+                <div className="text-sm">{t("admin.schedules.create.schedulingFor")} <span className="font-medium">{selectedUser?.name || selectedUser?.email || selectedUser?.phoneNumber}</span></div>
                 <div className="space-y-3">
                   <Button variant="outline" size="sm" onClick={() => setIsSearchServiceOpen(true)}>
-                    <Plus className="h-4 w-4 mr-1" /> Add/Manage Services
+                    <Plus className="h-4 w-4 mr-1" /> {t("admin.schedules.create.addManageServices")}
                   </Button>
                   <div className="border rounded-md min-h-24 p-0">
-                    <div className="bg-muted/40 px-3 py-2 text-xs text-muted-foreground border-b">Selected services</div>
+                    <div className="bg-muted/40 px-3 py-2 text-xs text-muted-foreground border-b">{t("admin.schedules.create.selectedServices")}</div>
                     {selectedServices.length === 0 ? (
-                      <div className="text-sm text-gray-500 p-3">No services selected</div>
+                      <div className="text-sm text-gray-500 p-3">{t("admin.schedules.create.noServicesSelected")}</div>
                     ) : (
                       <div className="divide-y">
                         {selectedServices.map(s => (
@@ -341,7 +433,7 @@ export default function CreateAdminSchedulePage() {
                           </div>
                         ))}
                         <div className="flex items-center justify-between px-3 py-2 text-sm bg-muted/30">
-                          <div className="text-muted-foreground">Total</div>
+                          <div className="text-muted-foreground">{t("admin.schedules.create.total")}</div>
                           <div className="font-semibold">{formatCurrency(totalPrice)}</div>
                         </div>
                       </div>
@@ -352,10 +444,10 @@ export default function CreateAdminSchedulePage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <Button variant="outline" size="sm" onClick={() => setStep(1)} className="flex items-center gap-2">
-                    <ArrowLeft className="h-4 w-4" /> Back
+                    <ArrowLeft className="h-4 w-4" /> {t("admin.schedules.create.back")}
                   </Button>
                   <Button size="sm" onClick={handleSubmitSchedule} disabled={submitting || selectedServices.length === 0} className="flex items-center gap-2">
-                    {submitting ? "Creating..." : "Create Schedule (Now)"}
+                    {submitting ? t("admin.schedules.create.creating") : t("admin.schedules.create.createScheduleNow")}
                   </Button>
                 </div>
               </div>

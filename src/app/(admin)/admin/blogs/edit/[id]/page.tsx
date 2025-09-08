@@ -62,8 +62,8 @@ export default function EditBlogPage() {
       } catch (error) {
         console.error("Error fetching blog:", error);
         toast({
-          title: t("admin.blogs.edit.error"),
-          description: t("admin.blogs.edit.failedToLoadData"),
+          title: t("admin.blogs.editSection.error"),
+          description: t("admin.blogs.editSection.failedToLoadData"),
           type: "error",
         });
         router.push("/admin/blogs");
@@ -117,7 +117,7 @@ export default function EditBlogPage() {
       await blogService.update(blogId, {
         title: formData.title.trim(),
         content: formData.content.trim(),
-        author: formData.author.trim() || "Admin",
+        author: formData.author.trim() || t("admin.blogs.create.form.defaultAuthor", { defaultValue: "Admin" }),
         active: formData.active,
         coverImage: formData.coverImage.trim(),
         specialties: formData.specialties
@@ -125,7 +125,7 @@ export default function EditBlogPage() {
 
       toast({
         title: t("admin.blogs.create.success"),
-        description: t("admin.blogs.edit.blogUpdatedSuccessfully"),
+        description: t("admin.blogs.editSection.blogUpdatedSuccessfully"),
         type: "success",
       });
 
@@ -134,7 +134,7 @@ export default function EditBlogPage() {
       console.error("Error updating blog:", error);
       toast({
         title: t("admin.blogs.create.error"),
-        description: t("admin.blogs.edit.failedToUpdateBlog"),
+        description: t("admin.blogs.editSection.failedToUpdateBlog"),
         type: "error",
       });
     } finally {
@@ -152,7 +152,7 @@ export default function EditBlogPage() {
         <div className="mb-6">
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("admin.blogs.edit.backToBlogs")}
+            {t("admin.blogs.editSection.backToBlogs")}
           </Button>
         </div>
 
@@ -177,13 +177,13 @@ export default function EditBlogPage() {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="text-center py-16">
-          <h3 className="text-lg font-medium mb-2">{t("admin.blogs.edit.blogNotFound")}</h3>
+          <h3 className="text-lg font-medium mb-2">{t("admin.blogs.editSection.blogNotFound")}</h3>
           <p className="text-muted-foreground mb-6">
-            {t("admin.blogs.edit.blogNotFoundDescription")}
+            {t("admin.blogs.editSection.blogNotFoundDescription")}
           </p>
           <Button onClick={handleCancel}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("admin.blogs.edit.backToBlogs")}
+            {t("admin.blogs.editSection.backToBlogs")}
           </Button>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function EditBlogPage() {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("admin.blogs.edit.backToBlogs")}
+          {t("admin.blogs.editSection.backToBlogs")}
         </Button>
       </div>
 
@@ -207,10 +207,10 @@ export default function EditBlogPage() {
         <CardHeader className="bg-muted/50 rounded-t-lg">
           <CardTitle className="text-2xl flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            {t("admin.blogs.edit.title")}
+            {t("admin.blogs.editSection.title")}
           </CardTitle>
           <CardDescription>
-            {t("admin.blogs.edit.subtitle")}
+            {t("admin.blogs.editSection.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -234,12 +234,12 @@ export default function EditBlogPage() {
             {/* Author */}
             <div className="space-y-2">
               <Label htmlFor="author" className="text-sm font-medium">
-                Author
+                {t("admin.blogs.create.form.author")}
               </Label>
               <Input
                 id="author"
                 type="text"
-                placeholder="Enter author name..."
+                placeholder={t("admin.blogs.create.form.authorPlaceholder")}
                 value={formData.author}
                 onChange={(e) => handleInputChange("author", e.target.value)}
                 className="w-full"
@@ -249,12 +249,12 @@ export default function EditBlogPage() {
             {/* Cover Image */}
             <div className="space-y-2">
               <Label htmlFor="coverImage" className="text-sm font-medium">
-                Cover Image URL
+                {t("admin.blogs.create.form.coverImage")}
               </Label>
               <Input
                 id="coverImage"
                 type="url"
-                placeholder="Enter cover image URL..."
+                placeholder={t("admin.blogs.create.form.coverImagePlaceholder")}
                 value={formData.coverImage}
                 onChange={(e) => handleInputChange("coverImage", e.target.value)}
                 className="w-full"
@@ -264,30 +264,30 @@ export default function EditBlogPage() {
             {/* Content */}
             <div className="space-y-2">
               <Label htmlFor="content" className="text-sm font-medium">
-                Content *
+                {t("admin.blogs.create.form.content")} *
               </Label>
               <Textarea
                 id="content"
-                placeholder="Write your blog content here..."
+                placeholder={t("admin.blogs.create.form.contentPlaceholder")}
                 value={formData.content}
                 onChange={(e) => handleInputChange("content", e.target.value)}
                 className="w-full min-h-[300px] resize-y"
                 required
               />
               <p className="text-xs text-muted-foreground">
-                You can use Markdown formatting for rich text content.
+                {t("admin.blogs.create.form.markdownNote")}
               </p>
             </div>
 
             {/* Specialties */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                Related Specialties
+                {t("admin.blogs.create.form.specialties")}
               </Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Add specialty..."
+                  placeholder={t("admin.blogs.create.form.specialtyPlaceholder")}
                   value={specialtyInput}
                   onChange={(e) => setSpecialtyInput(e.target.value)}
                   onKeyPress={(e) => {
@@ -304,7 +304,7 @@ export default function EditBlogPage() {
                   onClick={handleAddSpecialty}
                   disabled={!specialtyInput.trim()}
                 >
-                  Add
+                  {t("admin.blogs.create.form.addSpecialty")}
                 </Button>
               </div>
               {formData.specialties.length > 0 && (
@@ -336,7 +336,7 @@ export default function EditBlogPage() {
                 onCheckedChange={(checked) => handleInputChange("active", checked)}
               />
               <Label htmlFor="active" className="text-sm font-medium">
-                Published (Active)
+                {t("admin.blogs.create.form.activeDescription")}
               </Label>
             </div>
 
@@ -355,7 +355,7 @@ export default function EditBlogPage() {
                 disabled={saving || !formData.title.trim() || !formData.content.trim()}
               >
                 <Save className="mr-2 h-4 w-4" />
-                {saving ? t("admin.blogs.edit.saving") : t("admin.blogs.edit.saveChanges")}
+                {saving ? t("admin.blogs.editSection.saving") : t("admin.blogs.editSection.saveChanges")}
               </Button>
             </div>
           </form>

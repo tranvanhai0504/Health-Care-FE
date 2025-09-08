@@ -20,6 +20,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
+import { formatDate } from "@/utils/date";
 
 interface BlogWithSpecialties extends Blog {
   specialtyDetails?: Specialty[];
@@ -102,7 +103,7 @@ const BlogsPage = () => {
     };
 
     fetchInitialData();
-  }, []);
+  }, [t]);
 
   // Fetch paginated blogs for the grid
   useEffect(() => {
@@ -169,15 +170,6 @@ const BlogsPage = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedSpecialty]);
-
-  function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
 
   // Get featured blog (first blog from all blogs or null if no blogs)
   const featuredBlog = allBlogs.length > 0 ? allBlogs[0] : null;

@@ -19,6 +19,7 @@ import { medicalExaminationService } from "@/services/medicalExamination.service
 import { useToast } from "@/hooks/useToast";
 import React from "react";
 import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "react-i18next";
 import SearchService from "@/components/dialogs/search-service";
 import {
   Select,
@@ -40,6 +41,25 @@ import {
 import { scheduleService } from "@/services/schedule.service";
 import { getScheduleDate } from "@/utils";
 
+// Import ICD service and types
+import { icdService } from "@/services/icd.service";
+import { ICD } from "@/types/icd";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+
+
 interface MedicalExaminationDetailsProps {
   examination: PopulatedMedicalExamination;
   onUpdate: (updatedExamination: PopulatedMedicalExamination) => void;
@@ -54,6 +74,7 @@ export function MedicalExaminationDetails({
   disabled = false,
 }: MedicalExaminationDetailsProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [services, setServices] = useState<ConsultationService[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<UpdateMedicalExaminationData>({});
@@ -172,8 +193,8 @@ export function MedicalExaminationDetails({
     };
 
     initializeFormData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [examination]);
+  }, [examination, t, toast]);
+
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSymptomChange = (index: number, value: string) => {
@@ -196,15 +217,30 @@ export function MedicalExaminationDetails({
   };
 
   const handleDiagnosisChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    index: number
+    index: number,
+    field: "icd" | "description",
+    value: ICD | string
   ) => {
-    const { name, value } = e.target;
     const newDiagnosis = [...(formData.finalDiagnosis || [])];
     if (!newDiagnosis[index]) {
       newDiagnosis[index] = { icdCode: "", description: "" };
     }
-    newDiagnosis[index] = { ...newDiagnosis[index], [name]: value };
+    
+    if (field === "icd") {
+      const icd = value as ICD;
+      newDiagnosis[index] = { 
+        ...newDiagnosis[index], 
+        icdCode: icd.code,
+        icdId: icd._id,
+        description: icd.title
+      };
+    } else {
+      newDiagnosis[index] = { 
+        ...newDiagnosis[index], 
+        [field]: value as string 
+      };
+    }
+    
     setFormData((prev) => ({ ...prev, finalDiagnosis: newDiagnosis }));
   };
 
@@ -348,7 +384,7 @@ export function MedicalExaminationDetails({
       <div>
         <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
           <ClipboardList className="w-5 h-5" />
-          Symptoms
+          {t("doctor.medicalExamination.symptoms")}
         </h3>
         <div className="space-y-4">
           {formData.symptoms && formData.symptoms.length > 0 ? (
@@ -357,7 +393,7 @@ export function MedicalExaminationDetails({
                 <Input
                   value={symptom}
                   onChange={(e) => handleSymptomChange(index, e.target.value)}
-                  placeholder={`Symptom #${index + 1}`}
+                  placeholder={`${t("doctor.medicalExamination.symptoms")} #${index + 1}`}
                   disabled={disabled}
                 />
                 <Button
@@ -373,7 +409,7 @@ export function MedicalExaminationDetails({
             ))
           ) : (
             <p className="text-muted-foreground text-sm">
-              No symptoms added yet.
+              {t("doctor.medicalExamination.noSymptomsAdded")}
             </p>
           )}
           <Button
@@ -385,7 +421,7 @@ export function MedicalExaminationDetails({
             disabled={disabled}
           >
             <PlusCircle className="w-4 h-4" />
-            Add Symptom
+            {t("doctor.medicalExamination.addSymptom")}
           </Button>
         </div>
       </div>
@@ -393,11 +429,11 @@ export function MedicalExaminationDetails({
       <div>
         <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
           <Beaker className="w-5 h-5" />
-          Subclinical Results
+          {t("doctor.medicalExamination.subclinicalResults")}
         </h3>
         <div className="space-y-4">
           {isLoading ? (
-            <p>Loading results...</p>
+            <p>{t("doctor.schedules.loading")}</p>
           ) : formData.subclinicalResults &&
             formData.subclinicalResults.length > 0 ? (
             formData.subclinicalResults.map((result, index) => {
@@ -437,7 +473,7 @@ export function MedicalExaminationDetails({
                     )}
                   </h4>
                   <div className="space-y-2">
-                    <Label htmlFor={`resultData-${index}`}>Result Data</Label>
+                    <Label htmlFor={`resultData-${index}`}>{t("doctor.medicalExamination.resultData")}</Label>
                     <Textarea
                       id={`resultData-${index}`}
                       value={result.resultData || ""}
@@ -448,12 +484,12 @@ export function MedicalExaminationDetails({
                           e.target.value
                         )
                       }
-                      placeholder="Enter result data"
+                      placeholder={t("doctor.medicalExamination.enterResultData")}
                       disabled={!canEdit || isSaving}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`notes-${index}`}>Notes</Label>
+                    <Label htmlFor={`notes-${index}`}>{t("doctor.medicalExamination.notes")}</Label>
                     <Textarea
                       id={`notes-${index}`}
                       value={result.notes || ""}
@@ -464,7 +500,7 @@ export function MedicalExaminationDetails({
                           e.target.value
                         )
                       }
-                      placeholder="Enter notes"
+                      placeholder={t("doctor.medicalExamination.enterNotes")}
                       disabled={!canEdit || isSaving}
                     />
                   </div>
@@ -473,7 +509,7 @@ export function MedicalExaminationDetails({
             })
           ) : (
             <p className="text-muted-foreground text-sm">
-              No subclinical results available.
+              {t("doctor.medicalExamination.noSubclinicalResults")}
             </p>
           )}
         </div>
@@ -482,23 +518,25 @@ export function MedicalExaminationDetails({
       <div>
         <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5" />
-          Final Diagnosis
+          {t("doctor.medicalExamination.finalDiagnosis")}
         </h3>
         <div className="space-y-4">
-          {formData.finalDiagnosis && formData.finalDiagnosis.length > 0 ? (
+          {formData.finalDiagnosis && Array.isArray(formData.finalDiagnosis) && formData.finalDiagnosis.length > 0 ? (
             formData.finalDiagnosis.map((diag, index) => (
               <div
                 key={index}
                 className="p-4 border rounded-md space-y-4 bg-gray-50/50"
               >
                 <div className="flex items-center gap-2">
-                  <Input
-                    name="icdCode"
-                    value={diag.icdCode}
-                    onChange={(e) => handleDiagnosisChange(e, index)}
-                    placeholder={`ICD-10 Code #${index + 1}`}
-                    disabled={disabled}
-                  />
+                  <div className="flex-1">
+                    <ICDSelector
+                      value={(diag.icdId && diag.icdCode) ? { _id: diag.icdId, code: diag.icdCode || "", title: diag.description || "", range: "", createdAt: "", updatedAt: "" } as ICD : 
+                             (diag.icdCode ? { _id: "", code: diag.icdCode || "", title: diag.description || "", range: "", createdAt: "", updatedAt: "" } as ICD : null)}
+                      onValueChange={(icd) => icd && handleDiagnosisChange(index, "icd", icd)}
+                      placeholder={t("doctor.medicalExamination.icdCodePlaceholder", { number: index + 1 })}
+                      disabled={disabled}
+                    />
+                  </div>
                   <Button
                     type="button"
                     variant="ghost"
@@ -509,18 +547,18 @@ export function MedicalExaminationDetails({
                     <XCircle className="w-5 h-5" />
                   </Button>
                 </div>
-                                  <Textarea
-                    name="description"
-                    value={diag.description}
-                    onChange={(e) => handleDiagnosisChange(e, index)}
-                    placeholder={`Description #${index + 1}`}
-                    disabled={disabled}
-                  />
+                <Textarea
+                  name="description"
+                  value={diag.description || ""}
+                  onChange={(e) => handleDiagnosisChange(index, "description", e.target.value)}
+                  placeholder={t("doctor.medicalExamination.descriptionPlaceholder", { number: index + 1 })}
+                  disabled={disabled}
+                />
               </div>
             ))
           ) : (
             <p className="text-muted-foreground text-sm">
-              No diagnosis added yet.
+              {t("doctor.medicalExamination.noDiagnosisAdded")}
             </p>
           )}
           <Button
@@ -532,7 +570,7 @@ export function MedicalExaminationDetails({
             disabled={disabled}
           >
             <PlusCircle className="w-4 h-4" />
-            Add Diagnosis
+            {t("doctor.medicalExamination.addDiagnosis")}
           </Button>
         </div>
       </div>
@@ -540,7 +578,7 @@ export function MedicalExaminationDetails({
       <div>
         <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
           <CalendarPlus className="w-5 h-5" />
-          Follow-Up
+          {t("doctor.medicalExamination.followUp")}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center gap-3">
@@ -549,7 +587,7 @@ export function MedicalExaminationDetails({
               onCheckedChange={(checked) => setFollowUpEnabled(!!checked)}
               disabled={disabled}
             />
-            <span className="text-sm">Enable follow-up</span>
+            <span className="text-sm">{t("doctor.medicalExamination.enableFollowUp")}</span>
           </div>
 
           {followUpEnabled && (
@@ -559,7 +597,7 @@ export function MedicalExaminationDetails({
                 <div className="space-y-4 p-4 border rounded-md bg-blue-50/50">
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-primary">
-                      Follow-up Information
+                      {t("doctor.medicalExamination.followUpInformation")}
                     </h4>
                     <Button
                       variant="outline"
@@ -568,14 +606,14 @@ export function MedicalExaminationDetails({
                       className="text-primary border-primary hover:bg-primary/10"
                       disabled={disabled}
                     >
-                      Edit Follow-up
+                      {t("doctor.medicalExamination.editFollowUp")}
                     </Button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm font-medium text-primary">
-                        Date
+                        {t("dialog.scheduleDetail.date")}
                       </Label>
                       <p className="text-sm text-primary mt-1">
                         {new Date(
@@ -585,17 +623,17 @@ export function MedicalExaminationDetails({
                     </div>
                     <div>
                       <Label className="text-sm font-medium text-primary">
-                        Time
+                        {t("dialog.scheduleDetail.time")}
                       </Label>
                       <p className="text-sm text-primary mt-1">
                         {existingFollowUpData.timeOffset === "0"
-                          ? "Morning"
-                          : "Afternoon"}
+                          ? t("dialog.scheduleDetail.morning")
+                          : t("dialog.scheduleDetail.afternoon")}
                       </p>
                     </div>
                     <div className="col-span-2">
                       <Label className="text-sm font-medium text-primary">
-                        Services
+                        {t("doctor.schedules.services")}
                       </Label>
                       <div className="mt-1 space-y-2">
                         {existingFollowUpData.services.length > 0 ? (
@@ -618,7 +656,7 @@ export function MedicalExaminationDetails({
                           )
                         ) : (
                           <p className="text-sm text-muted-foreground">
-                            No services selected
+                            {t("doctor.medicalExamination.noServicesSelected")}
                           </p>
                         )}
                       </div>
@@ -628,7 +666,7 @@ export function MedicalExaminationDetails({
                   {existingFollowUpData.notes && (
                     <div>
                       <Label className="text-sm font-medium text-primary">
-                        Notes
+                        {t("doctor.medicalExamination.followUpNotes")}
                       </Label>
                       <p className="text-sm text-primary mt-1 bg-white p-2 rounded border">
                         {existingFollowUpData.notes}
@@ -641,21 +679,21 @@ export function MedicalExaminationDetails({
                 <div className="space-y-4 p-4 border rounded-md bg-gray-50/50">
                   {existingFollowUpData && (
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold">Edit Follow-up</h4>
+                      <h4 className="font-semibold">{t("doctor.medicalExamination.editFollowUp")}</h4>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsEditingFollowUp(false)}
                         className="text-gray-600 hover:text-gray-800"
                       >
-                        Cancel Edit
+                        {t("doctor.medicalExamination.cancelEdit")}
                       </Button>
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <Label htmlFor="followUpDate">Date</Label>
+                      <Label htmlFor="followUpDate">{t("dialog.scheduleDetail.date")}</Label>
                       <Input
                         id="followUpDate"
                         type="date"
@@ -666,8 +704,8 @@ export function MedicalExaminationDetails({
                       />
                     </div>
                     <div>
-                      <Label>Time</Label>
-                                              <Select
+                      <Label>{t("dialog.scheduleDetail.time")}</Label>
+                      <Select
                           value={followUpTimeOffset}
                           onValueChange={(v) =>
                             setFollowUpTimeOffset(v as "0" | "1")
@@ -675,16 +713,16 @@ export function MedicalExaminationDetails({
                           disabled={disabled}
                         >
                         <SelectTrigger className="mt-2">
-                          <SelectValue placeholder="Select time" />
+                          <SelectValue placeholder={t("doctor.medicalExamination.selectTime")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="0">Morning</SelectItem>
-                          <SelectItem value="1">Afternoon</SelectItem>
+                          <SelectItem value="0">{t("dialog.scheduleDetail.morning")}</SelectItem>
+                          <SelectItem value="1">{t("dialog.scheduleDetail.afternoon")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label>Services</Label>
+                      <Label>{t("doctor.schedules.services")}</Label>
                       <div className="mt-2">
                         <SearchService
                           isOpen={followUpServiceDialogOpen}
@@ -700,8 +738,8 @@ export function MedicalExaminationDetails({
                               className="w-full justify-between"
                             >
                               {followUpSelectedServices.length > 0
-                                ? `${followUpSelectedServices.length} service(s) selected`
-                                : "Select services"}
+                                ? `${followUpSelectedServices.length} ${t("doctor.medicalExamination.serviceSelected")}`
+                                : t("doctor.medicalExamination.selectServices")}
                             </Button>
                           }
                           initialSelectedIds={followUpSelectedServices.map(
@@ -713,13 +751,13 @@ export function MedicalExaminationDetails({
                   </div>
 
                   <div>
-                    <Label htmlFor="followUpNotes">Notes</Label>
-                                      <Textarea
+                    <Label htmlFor="followUpNotes">{t("doctor.medicalExamination.followUpNotes")}</Label>
+                    <Textarea
                     id="followUpNotes"
                     className="mt-2"
                     value={followUpNotes}
                     onChange={(e) => setFollowUpNotes(e.target.value)}
-                    placeholder="Follow-up notes"
+                    placeholder={t("doctor.medicalExamination.enterFollowUpNotes")}
                     disabled={disabled}
                   />
                   </div>
@@ -737,9 +775,142 @@ export function MedicalExaminationDetails({
           className="w-full flex items-center gap-2"
         >
           <Save className="w-4 h-4" />
-          {isSaving ? "Saving..." : "Save Examination"}
+          {isSaving ? t("doctor.medicalExamination.saving") : t("doctor.medicalExamination.saveExamination")}
         </Button>
       </div>
     </div>
   );
 }
+
+interface ICDSelectorProps {
+  value: ICD | null;
+  onValueChange: (value: ICD | null) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+const ICDSelector = React.forwardRef<
+  React.ElementRef<typeof PopoverTrigger>,
+  ICDSelectorProps
+>(({ value, onValueChange, placeholder, disabled }, ref) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [icdResults, setIcdResults] = useState<ICD[]>([]);
+  const [allIcds, setAllIcds] = useState<ICD[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch all ICD codes when popover opens
+  useEffect(() => {
+    if (open && allIcds.length === 0) {
+      const fetchAllICDs = async () => {
+        setLoading(true);
+        try {
+          // Fetch all ICD codes with a reasonable limit
+          const results = await icdService.getAll({ limit: 1000 });
+          // Ensure results.data is an array before setting state
+          if (results && Array.isArray(results.data)) {
+            setAllIcds(results.data);
+            // If there's no search term, show all ICDs
+            if (search.length === 0) {
+              setIcdResults(results.data);
+            }
+          } else {
+            setAllIcds([]);
+            setIcdResults([]);
+          }
+        } catch (error) {
+          console.error("Failed to fetch all ICD codes:", error);
+          setAllIcds([]);
+          setIcdResults([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchAllICDs();
+    } else if (open && allIcds.length > 0 && icdResults.length === 0) {
+      // If we already have all ICDs but no results are displayed, show all ICDs
+      setIcdResults(allIcds);
+    }
+  }, [open, allIcds, search, icdResults.length]);
+
+  // Filter ICD codes based on search term when all ICDs are loaded
+  useEffect(() => {
+    if (allIcds.length > 0) {
+      if (search.length === 0) {
+        setIcdResults(allIcds);
+      } else {
+        const filtered = allIcds.filter(
+          (icd) =>
+            icd.code.toLowerCase().includes(search.toLowerCase()) ||
+            icd.title.toLowerCase().includes(search.toLowerCase())
+        );
+        setIcdResults(filtered);
+      }
+    }
+  }, [search, allIcds]);
+
+  // Safety check for value
+  const displayValue = value && value.code && value.title 
+    ? `${value.code} - ${value.title}` 
+    : (value && value.code 
+        ? `${value.code}${value.title ? ` - ${value.title}` : ''}` 
+        : (placeholder || "Select ICD code..."));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          ref={ref}
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+          disabled={disabled}
+        >
+          {displayValue}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[400px] p-0">
+        <Command shouldFilter={false}>
+          <CommandInput 
+            placeholder="Search ICD codes..." 
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            {loading ? (
+              <CommandEmpty>Searching...</CommandEmpty>
+            ) : (icdResults && icdResults.length > 0) ? (
+              <CommandGroup>
+                {icdResults.map((icd) => (
+                  <CommandItem
+                    key={icd._id}
+                    value={`${icd.code} - ${icd.title}`}
+                    onSelect={() => {
+                      onValueChange(icd);
+                      setOpen(false);
+                    }}
+                  >
+                    <div className="flex flex-col w-full">
+                      <span className="font-medium">{icd.code}</span>
+                      <span className="text-sm text-muted-foreground truncate">{icd.title}</span>
+                    </div>
+                    {value && value._id === icd._id && (
+                      <Check className="ml-auto h-4 w-4" />
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ) : (
+              <CommandEmpty>No ICD codes found.</CommandEmpty>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+});
+
+ICDSelector.displayName = "ICDSelector";

@@ -448,7 +448,7 @@ const HealthPackagesPage = () => {
                   <div className="relative w-full h-60 overflow-hidden">
                     <Image
                       src={pkg.titleImage}
-                      alt={`${pkg.title} package image`}
+                      alt={t("dashboard.healthPackages.packageImageAlt", { title: pkg.title })}
                       fill
                       className="object-cover transition-transform group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -463,7 +463,7 @@ const HealthPackagesPage = () => {
                         <CardTitle className="text-xl">{pkg.title}</CardTitle>
                         {pkg.isPopular && (
                           <Badge className="py-1 gap-1">
-                            <Star className="h-3 w-3 fill-current" /> Popular
+                            <Star className="h-3 w-3 fill-current" /> {t("dashboard.healthPackages.popular")}
                           </Badge>
                         )}
                       </div>
@@ -555,7 +555,7 @@ const HealthPackagesPage = () => {
                 disabled={!canGoPrevious}
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                {t("dashboard.healthPackages.previous")}
               </Button>
 
               <div className="flex items-center gap-1">
@@ -578,7 +578,7 @@ const HealthPackagesPage = () => {
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!canGoNext}
               >
-                Next
+                {t("dashboard.healthPackages.next")}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

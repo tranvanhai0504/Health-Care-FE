@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useServiceListSafe } from '@/hooks/useServiceListSafe';
 import { ConsultationService } from '@/types';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface AddToListButtonProps {
   service: ConsultationService;
@@ -22,6 +23,7 @@ export function AddToListButton({
   className = "",
   showIcon = true 
 }: AddToListButtonProps) {
+  const { t } = useTranslation("common");
   const [isAdded, setIsAdded] = useState(false);
   const { addService, items, isClient } = useServiceListSafe();
 
@@ -34,8 +36,8 @@ export function AddToListButton({
     addService(service);
     setIsAdded(true);
     
-    toast.success(`Added "${service.name}" to services list`, {
-      description: "View your services list to manage selections",
+    toast.success(t('common.servicesList.addToList.successMessage', { serviceName: service.name }), {
+      description: t('common.servicesList.addToList.successDescription'),
       duration: 2000,
     });
 
@@ -54,7 +56,7 @@ export function AddToListButton({
         disabled
       >
         {showIcon && <Check className="h-4 w-4" />}
-        In List
+        {t('common.servicesList.addToList.inList')}
       </Button>
     );
   }
@@ -70,12 +72,12 @@ export function AddToListButton({
       {isAdded ? (
         <>
           {showIcon && <Check className="h-4 w-4" />}
-          Added!
+          {t('common.servicesList.addToList.added')}
         </>
       ) : (
         <>
           {showIcon && <Plus className="h-4 w-4" />}
-          Add to List
+          {t('common.servicesList.addToList.addToList')}
         </>
       )}
     </Button>

@@ -193,7 +193,7 @@ export default function DoctorDashboard() {
             <div className="space-y-3">
               {[
                 { patient: t("doctor.dashboard.samplePatients.johnDoe"), time: "10:00 AM", status: "completed" },
-                { patient: t("doctor.dashboard.samplePatients.janeSmith"), time: "11:30 AM", status: "in-progress" },
+                { patient: t("doctor.dashboard.samplePatients.janeSmith"), time: "11:30 AM", status: "inProgress" },
                 { patient: t("doctor.dashboard.samplePatients.robertJohnson"), time: "2:00 PM", status: "upcoming" }
               ].map((appointment, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
@@ -203,10 +203,10 @@ export default function DoctorDashboard() {
                   </div>
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    appointment.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                    appointment.status === 'inProgress' ? 'bg-blue-100 text-blue-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {appointment.status}
+                    {t(`doctor.schedules.status.${appointment.status}`)}
                   </span>
                 </div>
               ))}
@@ -237,7 +237,7 @@ export default function DoctorDashboard() {
                   }`} />
                   <div className="flex-1">
                     <p className="text-sm">{task.task}</p>
-                    <p className="text-xs text-gray-500 capitalize">{task.priority} {t("doctor.dashboard.priority")}</p>
+                    <p className="text-xs text-gray-500 capitalize">{t(`doctor.dashboard.priorityLevels.${task.priority}`)} {t("doctor.dashboard.priority")}</p>
                   </div>
                 </div>
               ))}

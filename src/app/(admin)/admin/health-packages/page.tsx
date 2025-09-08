@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils";
+import { formatDate } from "@/utils/date";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -176,8 +177,8 @@ export default function AdminHealthPackagesPage() {
       } catch (error) {
         console.error("Error fetching packages:", error);
         toast({
-          title: "Error",
-          description: "Failed to fetch health packages",
+          title: t("admin.toast.error"),
+          description: t("admin.toast.failedToFetchPackages"),
           type: "error",
         });
       } finally {
@@ -268,30 +269,21 @@ export default function AdminHealthPackagesPage() {
       setPaginationInfo(response.pagination);
 
       toast({
-        title: "Success",
-        description: "Health package deleted successfully",
+        title: t("admin.toast.success"),
+        description: t("admin.toast.packageDeleted"),
         type: "success",
       });
     } catch (error) {
       console.error("Error deleting package:", error);
       toast({
-        title: "Error",
-        description: "Failed to delete health package",
+        title: t("admin.toast.error"),
+        description: t("admin.toast.failedToDeletePackage"),
         type: "error",
       });
     } finally {
       setPackageToDelete(null);
       setIsDeleteAlertOpen(false);
     }
-  };
-
-  // Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   // Pagination helpers
@@ -442,7 +434,7 @@ export default function AdminHealthPackagesPage() {
               </span>
               {searchQuery && (
                 <Badge variant="secondary" className="gap-1">
-                  Search: &quot;{searchQuery}&quot;
+                  {t("admin.healthPackages.searchLabel")} &quot;{searchQuery}&quot;
                   <button
                     onClick={() => setSearchQuery("")}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -453,7 +445,7 @@ export default function AdminHealthPackagesPage() {
               )}
               {categoryFilter !== "all" && (
                 <Badge variant="secondary" className="gap-1">
-                  Category: {categoryFilter}
+                  {t("admin.healthPackages.categoryLabel")} {categoryFilter}
                   <button
                     onClick={() => setCategoryFilter("all")}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -464,7 +456,7 @@ export default function AdminHealthPackagesPage() {
               )}
               {minPriceFilter && (
                 <Badge variant="secondary" className="gap-1">
-                  Min: ${minPriceFilter}
+                  {t("admin.healthPackages.minLabel")} ${minPriceFilter}
                   <button
                     onClick={() => setMinPriceFilter("")}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -475,7 +467,7 @@ export default function AdminHealthPackagesPage() {
               )}
               {maxPriceFilter && (
                 <Badge variant="secondary" className="gap-1">
-                  Max: ${maxPriceFilter}
+                  {t("admin.healthPackages.maxLabel")} ${maxPriceFilter}
                   <button
                     onClick={() => setMaxPriceFilter("")}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
@@ -491,13 +483,12 @@ export default function AdminHealthPackagesPage() {
           {paginationInfo && (
             <div className="mb-4">
               <Badge variant="outline" className="text-sm">
-                Showing {(paginationInfo.page - 1) * paginationInfo.limit + 1}-
+                {t("admin.healthPackages.showingResults")} {(paginationInfo.page - 1) * paginationInfo.limit + 1}-
                 {Math.min(
                   paginationInfo.page * paginationInfo.limit,
                   paginationInfo.total
                 )}{" "}
-                of {paginationInfo.total} package
-                {paginationInfo.total !== 1 ? "s" : ""}
+                {t("admin.healthPackages.ofTotal")} {paginationInfo.total} {paginationInfo.total !== 1 ? t("admin.healthPackages.packages") : t("admin.healthPackages.package")}
               </Badge>
             </div>
           )}
@@ -648,7 +639,7 @@ export default function AdminHealthPackagesPage() {
                     disabled={!canGoPrevious}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {t("admin.healthPackages.previous")}
                   </Button>
 
                   <div className="flex items-center gap-1">
@@ -671,7 +662,7 @@ export default function AdminHealthPackagesPage() {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={!canGoNext}
                   >
-                    Next
+                    {t("admin.healthPackages.next")}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -685,19 +676,18 @@ export default function AdminHealthPackagesPage() {
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.healthPackages.areYouAbsolutelySure")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              health package and remove all associated data.
+              {t("admin.healthPackages.deletePackageConfirmation")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("admin.healthPackages.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeletePackage}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              Delete
+              {t("admin.healthPackages.deleteAction")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

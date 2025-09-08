@@ -81,7 +81,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
     null
   );
 
-  // Filter state
+  // Filter stated
   const [filters, setFilters] = useState<FilterState>({
     specialization: "",
     minPrice: "",
@@ -110,11 +110,11 @@ const SearchService: React.FC<SearchServiceProps> = ({
       const data = await specialtyService.getAll();
       setSpecialties(data);
     } catch (err) {
-      console.error("Error fetching specialties:", err);
+      console.error(t("dialog.searchService.errorFetchingSpecialties"), err);
     } finally {
       setLoadingSpecialties(false);
     }
-  }, [specialties.length]);
+  }, [specialties.length, t]);
 
   // Fetch services
   const fetchServices = useCallback(async () => {
@@ -147,12 +147,12 @@ const SearchService: React.FC<SearchServiceProps> = ({
       setTotalPages(response.pagination.totalPages || 1);
       setPaginationInfo(response.pagination);
     } catch (err) {
-      setError("Failed to fetch consultation services");
-      console.error("Error fetching services:", err);
+      setError(t("dialog.searchService.failedToFetchServices"));
+      console.error(t("dialog.searchService.errorFetchingServices"), err);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debouncedSearch, filters]);
+  }, [currentPage, itemsPerPage, debouncedSearch, filters, t]);
 
   // Fetch initial selected services when dialog opens
   useEffect(() => {
@@ -167,7 +167,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
           const loadedIds = initialServices.map((service) => service._id);
           setSelectedIds(new Set(loadedIds));
         } catch (error) {
-          console.error("Error fetching initial selected services:", error);
+          console.error(t("dialog.searchService.errorFetchingInitialServices"), error);
           // If fetching fails, reset to empty but keep the initial IDs for retry
           setSelectedServices([]);
           setSelectedIds(new Set(initialSelectedIds));
@@ -180,7 +180,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
     };
 
     fetchInitialSelectedServices();
-  }, [isOpen, initialSelectedIds]);
+  }, [isOpen, initialSelectedIds, t]);
 
   // Fetch services and specialties when dependencies change
   useEffect(() => {
@@ -302,19 +302,19 @@ const SearchService: React.FC<SearchServiceProps> = ({
             className={cn("justify-between text-sm", className)}
             disabled={disabled}
           >
-            {selectedSpecialty ? selectedSpecialty.name : t("dialogs.searchService.allSpecializations")}
+            {selectedSpecialty ? selectedSpecialty.name : t("dialog.searchService.allSpecializations")}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] p-0 z-50">
           <Command>
             <CommandInput
-              placeholder={t("dialogs.searchService.searchSpecializations")}
+              placeholder={t("dialog.searchService.searchSpecializations")}
               className="h-9"
             />
             <CommandList>
               <CommandEmpty>
-                {loadingSpecialties ? t("dialogs.searchService.loading") : t("dialogs.searchService.noSpecializationFound")}
+                {loadingSpecialties ? t("dialog.searchService.loading") : t("dialog.searchService.noSpecializationFound")}
               </CommandEmpty>
               <CommandGroup>
                 <CommandItem
@@ -324,7 +324,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     setOpen(false);
                   }}
                 >
-                  {t("dialogs.searchService.allSpecializations")}
+                  {t("dialog.searchService.allSpecializations")}
                   <Check
                     className={cn(
                       "ml-auto h-4 w-4",
@@ -387,7 +387,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
               {service.description}
             </p>
             <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-              <span className="flex-shrink-0">{service.duration}min</span>
+              <span className="flex-shrink-0">{service.duration}{t("dialog.searchService.durationUnit")}</span>
               <span className="font-medium text-green-600 flex-shrink-0">
                 {formatCurrency(service.price)}
               </span>
@@ -414,12 +414,12 @@ const SearchService: React.FC<SearchServiceProps> = ({
 
       <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col h-[80vh]">
         <DialogHeader>
-          <DialogTitle>{t("dialogs.searchService.title")}</DialogTitle>
+          <DialogTitle>{t("dialog.searchService.title")}</DialogTitle>
           <DialogDescription>
-            {t("dialogs.searchService.description")}{" "}
+            {t("dialog.searchService.description")}{" "}
             {multiple
-              ? t("dialogs.searchService.selectMultiple")
-              : t("dialogs.searchService.selectOne")}
+              ? t("dialog.searchService.selectMultiple")
+              : t("dialog.searchService.selectOne")}
           </DialogDescription>
         </DialogHeader>
 
@@ -430,13 +430,13 @@ const SearchService: React.FC<SearchServiceProps> = ({
               {/* Search Bar */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("dialogs.searchService.searchServices")}
+                  {t("dialog.searchService.searchServices")}
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder={t("dialogs.searchService.search")}
+                    placeholder={t("dialog.searchService.search")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -449,7 +449,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
                     <Filter className="w-4 h-4" />
-                    Filters
+                    {t("common:filters")}
                   </h3>
                   {(filters.specialization ||
                     filters.minPrice ||
@@ -458,7 +458,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                       onClick={clearFilters}
                       className="text-xs text-blue-600 hover:text-blue-800"
                     >
-                      Clear
+                      {t("common:clear")}
                     </button>
                   )}
                 </div>
@@ -466,7 +466,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-2">
-                      Specialization
+                      {t("common:specialization")}
                     </label>
                     <SpecializationCombobox
                       value={filters.specialization}
@@ -477,7 +477,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     />
                     {loadingSpecialties && (
                       <div className="text-xs text-gray-500 mt-1">
-                        Loading...
+                        {t("dialog.searchService.loading")}
                       </div>
                     )}
                   </div>
@@ -485,11 +485,11 @@ const SearchService: React.FC<SearchServiceProps> = ({
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-2">
-                        Min Price
+                        {t("dialog.searchService.minPrice")}
                       </label>
                       <input
                         type="number"
-                        placeholder="0"
+                        placeholder={t("dialog.searchService.minPricePlaceholder")}
                         min="0"
                         value={filters.minPrice}
                         onChange={(e) =>
@@ -501,11 +501,11 @@ const SearchService: React.FC<SearchServiceProps> = ({
 
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-2">
-                        {t("dialogs.searchService.maxPrice")}
+                        {t("dialog.searchService.maxPrice")}
                       </label>
                       <input
                         type="number"
-                        placeholder="1000"
+                        placeholder={t("dialog.searchService.maxPricePlaceholder")}
                         min="0"
                         value={filters.maxPrice}
                         onChange={(e) =>
@@ -529,7 +529,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder={t("dialogs.searchService.searchServices")}
+                  placeholder={t("dialog.searchService.searchServices")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -552,7 +552,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="number"
-                  placeholder={t("dialogs.searchService.minPrice")}
+                  placeholder={t("dialog.searchService.minPrice")}
                   min="0"
                   value={filters.minPrice}
                   onChange={(e) =>
@@ -562,7 +562,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 />
                 <input
                   type="number"
-                  placeholder={t("dialogs.searchService.maxPrice")}
+                  placeholder={t("dialog.searchService.maxPrice")}
                   min="0"
                   value={filters.maxPrice}
                   onChange={(e) =>
@@ -581,7 +581,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                     onClick={clearFilters}
                     className="text-sm text-blue-600 hover:text-blue-800"
                   >
-                    {t("dialogs.searchService.clearFilters")}
+                    {t("dialog.searchService.clearFilters")}
                   </button>
                 </div>
               )}
@@ -592,21 +592,21 @@ const SearchService: React.FC<SearchServiceProps> = ({
               {loading ? (
                 <div className="flex items-center justify-center h-96 text-gray-600">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-sm">{t("dialogs.searchService.loadingServices")}</span>
+                  <span className="ml-2 text-sm">{t("dialog.searchService.loadingServices")}</span>
                 </div>
               ) : error ? (
                 <div className="flex items-center justify-center h-96 text-red-600">
                   <div className="text-center">
                     <div className="text-sm font-medium">{error}</div>
-                    <div className="text-xs mt-1">{t("dialogs.searchService.pleaseTryAgain")}</div>
+                    <div className="text-xs mt-1">{t("dialog.searchService.pleaseTryAgain")}</div>
                   </div>
                 </div>
               ) : services.length === 0 ? (
                 <div className="flex items-center justify-center h-96 text-gray-500">
                   <div className="text-center">
-                    <div className="text-sm">{t("dialogs.searchService.noServicesFound")}</div>
+                    <div className="text-sm">{t("dialog.searchService.noServicesFound")}</div>
                     <div className="text-xs mt-1">
-                      {t("dialogs.searchService.tryAdjustingFilters")}
+                      {t("dialog.searchService.tryAdjustingFilters")}
                     </div>
                   </div>
                 </div>
@@ -625,7 +625,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
               itemsPerPage={itemsPerPage}
               onPageChange={handlePageChange}
               onItemsPerPageChange={handleItemsPerPageChange}
-              itemName="service"
+              itemName={t("dialog.searchService.service")}
               showItemsPerPage={true}
               showJumpToPage={false}
               itemsPerPageOptions={[10, 20, 30, 40]}
@@ -637,7 +637,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
         <DialogFooter>
           <div className="flex items-center justify-between w-full">
             <div className="text-sm text-gray-600">
-              {selectedServices.length} {selectedServices.length !== 1 ? t("dialogs.searchService.services") : t("dialogs.searchService.service")} {t("dialogs.searchService.selected")}
+              {selectedServices.length} {selectedServices.length !== 1 ? t("dialog.searchService.services") : t("dialog.searchService.service")} {t("dialog.searchService.selected")}
             </div>
 
             <div className="flex gap-2">
@@ -646,7 +646,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                   onClick={handleDialogClose}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
                 >
-                  Cancel
+                  {t("common:cancel")}
                 </button>
               </DialogClose>
 
@@ -655,7 +655,7 @@ const SearchService: React.FC<SearchServiceProps> = ({
                 disabled={selectedServices.length === 0}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t("dialogs.searchService.apply")} ({selectedServices.length})
+                {t("dialog.searchService.apply")} ({selectedServices.length})
               </button>
             </div>
           </div>

@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 interface SidebarItem {
   title: string;
@@ -22,30 +23,31 @@ interface SidebarItem {
 const AdminSidebar = () => {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { t } = useTranslation();
 
   const sidebarItems: SidebarItem[] = [
     {
-      title: "Schedules",
+      title: t("admin.sidebar.navigation.schedules"),
       href: "/admin/schedules",
       icon: <Calendar className="w-5 h-5" />,
     },
     {
-      title: "Users",
+      title: t("admin.sidebar.navigation.users"),
       href: "/admin/users",
       icon: <Users className="w-5 h-5" />,
     },
     {
-      title: "Health Services",
+      title: t("admin.sidebar.navigation.healthServices"),
       href: "/admin/health-services",
       icon: <Stethoscope className="w-5 h-5" />,
     },
     {
-      title: "Health Packages",
+      title: t("admin.sidebar.navigation.healthPackages"),
       href: "/admin/health-packages",
       icon: <Package className="w-5 h-5" />,
     },
     {
-      title: "Blogs",
+      title: t("admin.sidebar.navigation.blogs"),
       href: "/admin/blogs",
       icon: <FileText className="w-5 h-5" />,
     },
@@ -62,7 +64,7 @@ const AdminSidebar = () => {
   return (
     <div className="fixed left-0 top-20 w-64 h-[calc(100vh-80px)] bg-white border-r border-gray-200 flex flex-col z-30">
       <div className="px-6 py-5 border-b">
-        <h1 className="text-xl font-bold text-primary">Admin Panel</h1>
+        <h1 className="text-xl font-bold text-primary">{t("admin.sidebar.title")}</h1>
       </div>
 
       <div className="px-6 py-5 border-b">
@@ -71,7 +73,7 @@ const AdminSidebar = () => {
             {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
           </div>
           <div>
-            <p className="font-medium">{user?.name || "Admin"}</p>
+            <p className="font-medium">{user?.name || t("admin.sidebar.user.admin")}</p>
             <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
         </div>
@@ -103,7 +105,7 @@ const AdminSidebar = () => {
           className="flex items-center space-x-3 px-4 py-3 w-full rounded-md hover:bg-red-50 text-red-600 transition-colors"
         >
           <LogOut className="w-5 h-5" />
-          <span>Logout</span>
+          <span>{t("admin.sidebar.user.logout")}</span>
         </button>
       </div>
     </div>

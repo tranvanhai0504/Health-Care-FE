@@ -11,6 +11,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { PaginationInfo } from "@/types";
+import { useTranslation } from "react-i18next";
 
 interface PaginationWrapperProps {
   paginationInfo: PaginationInfo | null;
@@ -39,6 +40,7 @@ export function PaginationWrapper({
   itemsPerPageOptions = [6, 9, 12, 24, 48],
   className,
 }: PaginationWrapperProps) {
+  const { t } = useTranslation();
   // Custom hook to get window width
   const useWindowWidth = () => {
     const [width, setWidth] = useState(0);
@@ -103,12 +105,12 @@ export function PaginationWrapper({
   // if (totalPages <= 1) return null;
 
   return (
-    <div className={`space-y-4 border-t ${className || ''}`}>
+    <div className={`space-y-4 border-t pt-4 mt-4 ${className || ''}`}>
       {/* Top row: Items per page and results summary */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         {showItemsPerPage && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Items per page:</span>
+            <span>{t("pagination.itemsPerPage")}:</span>
             <Select 
               value={itemsPerPage.toString()} 
               onValueChange={(value) => {
@@ -133,13 +135,13 @@ export function PaginationWrapper({
         <div className="text-sm text-muted-foreground">
           {paginationInfo ? (
             <>
-              Showing {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-
-              {Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} of{' '}
+              {t("pagination.showing")} {((paginationInfo.page - 1) * paginationInfo.limit) + 1}-
+              {Math.min(paginationInfo.page * paginationInfo.limit, paginationInfo.total)} {t("pagination.of")}{' '}
               {paginationInfo.total} {itemName}
               {paginationInfo.total !== 1 ? (itemName.endsWith('s') ? '' : 's') : ''}
             </>
           ) : (
-            <>Loading {itemName}...</>
+            <>{t("pagination.loading")} {itemName}...</>
           )}
         </div>
       </div>
@@ -244,7 +246,7 @@ export function PaginationWrapper({
       {/* Jump to page */}
       {showJumpToPage && width > 640 && (
         <div className="flex items-center justify-center gap-2 text-sm">
-          <span className="text-muted-foreground">Go to page:</span>
+          <span className="text-muted-foreground">{t("pagination.goToPage")}:</span>
           <Input
             type="number"
             min="1"
@@ -258,7 +260,7 @@ export function PaginationWrapper({
             }}
             className="w-16 h-8 text-center"
           />
-          <span className="text-muted-foreground">of {totalPages}</span>
+          <span className="text-muted-foreground">{t("pagination.of")} {totalPages}</span>
         </div>
       )}
     </div>

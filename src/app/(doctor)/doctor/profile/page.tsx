@@ -88,6 +88,7 @@ export default function DoctorProfilePage() {
     };
 
     fetchDoctorProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?._id]);
 
   useEffect(() => {
@@ -175,10 +176,10 @@ export default function DoctorProfilePage() {
                 <Loader2 className="h-6 w-6 animate-spin text-gray-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Loading Your Profile
+                {t("doctor.profile.loadingProfile")}
               </h3>
               <p className="text-gray-600">
-                Please wait while we fetch your information...
+                {t("doctor.profile.loadingProfileDescription")}
               </p>
             </div>
           </div>
@@ -197,14 +198,14 @@ export default function DoctorProfilePage() {
                 <Shield className="h-6 w-6 text-red-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Unable to Load Profile
+                {t("doctor.profile.unableToLoadProfile")}
               </h3>
               <p className="text-red-600 mb-6">{error}</p>
               <Button
                 onClick={() => window.location.reload()}
                 variant="destructive"
               >
-                Try Again
+                {t("doctor.profile.tryAgain")}
               </Button>
             </div>
           </div>
@@ -223,13 +224,13 @@ export default function DoctorProfilePage() {
                 <User className="h-6 w-6 text-gray-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Profile Not Found
+                {t("doctor.profile.profileNotFound")}
               </h3>
               <p className="text-gray-600 mb-6">
-                No doctor profile found. Please contact administration.
+                {t("doctor.profile.profileNotFoundDescription")}
               </p>
               <Link href="/doctor/dashboard">
-                <Button>Go to Dashboard</Button>
+                <Button>{t("doctor.profile.goToDashboard")}</Button>
               </Link>
             </div>
           </div>
@@ -278,7 +279,7 @@ export default function DoctorProfilePage() {
 
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">
-                  Dr. {doctorData.user.name}
+                  {t("doctor.profile.doctorTitle")} {doctorData.user.name}
                 </h1>
                 <p className="text-gray-600 mb-2">
                   {doctorData.specialization.name}
@@ -287,7 +288,7 @@ export default function DoctorProfilePage() {
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {doctorData.experience} years experience
+                    {doctorData.experience} {t("doctor.profile.yearsExperience")}
                   </span>
                   <span className="flex items-center gap-1">
                     {renderStars(doctorData.averageRating)}
@@ -478,12 +479,12 @@ export default function DoctorProfilePage() {
                 <CardTitle className="flex items-center justify-between text-gray-900 text-base">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    Personal Information
+                    {t("doctor.profile.personalInformation")}
                   </div>
                   <Link href="/doctor/profile/edit">
                     <Button size="sm" variant="outline">
                       <Edit className="w-3 h-3 mr-1" />
-                      Edit Personal Info
+                      {t("doctor.profile.editPersonalInfo")}
                     </Button>
                   </Link>
                 </CardTitle>
@@ -492,7 +493,7 @@ export default function DoctorProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-600">
-                      Email
+                      {t("doctor.profile.email")}
                     </label>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-gray-500" />
@@ -504,7 +505,7 @@ export default function DoctorProfilePage() {
 
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-600">
-                      Phone
+                      {t("doctor.profile.phone")}
                     </label>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-500" />
@@ -516,7 +517,7 @@ export default function DoctorProfilePage() {
 
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-600">
-                      Address
+                      {t("doctor.profile.address")}
                     </label>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-500" />
@@ -528,7 +529,7 @@ export default function DoctorProfilePage() {
 
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-600">
-                      Date of Birth
+                      {t("doctor.profile.dateOfBirth")}
                     </label>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-500" />
@@ -540,7 +541,7 @@ export default function DoctorProfilePage() {
 
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-600">
-                      Gender
+                      {t("doctor.profile.gender")}
                     </label>
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-gray-500" />
@@ -553,7 +554,7 @@ export default function DoctorProfilePage() {
                   {doctorData.user.occupation && (
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-gray-600">
-                        Occupation
+                        {t("doctor.profile.occupation")}
                       </label>
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-gray-500" />
@@ -572,7 +573,7 @@ export default function DoctorProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 text-base">
                   <FileText className="w-4 h-4" />
-                  Professional Information
+                  {t("doctor.profile.professionalInformation")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -581,16 +582,16 @@ export default function DoctorProfilePage() {
                     htmlFor="bio"
                     className="text-sm font-medium text-gray-600 mb-2 block"
                   >
-                    Room
+                    {t("doctor.profile.room")}
                   </Label>
-                  <Badge variant="secondary">{room?.name} - {room?.roomNumber} - floor {room?.roomFloor}</Badge>
+                  <Badge variant="secondary">{room?.name} - {room?.roomNumber} - {t("doctor.profile.floor")} {room?.roomFloor}</Badge>
                 </div>
                 <div>
                   <Label
                     htmlFor="bio"
                     className="text-sm font-medium text-gray-600 mb-2 block"
                   >
-                    Biography
+                    {t("doctor.profile.bio")}
                   </Label>
                   {isEditing ? (
                     <Textarea

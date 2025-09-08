@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // If not loading and not authenticated, redirect to login
@@ -41,7 +43,7 @@ export default function ProtectedRoute({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="animate-spin h-8 w-8 text-primary" />
-        <span className="ml-2">Loading...</span>
+        <span className="ml-2">{t("admin.protectedRoute.loading")}</span>
       </div>
     );
   }

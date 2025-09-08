@@ -109,10 +109,10 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-                     <DialogTitle className="flex items-center gap-2">
-             <Pill className="h-5 w-5 text-primary" />
-             {t("dashboard.prescriptions.details.title")}
-           </DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Pill className="h-5 w-5 text-primary" />
+            {t("dashboard.prescriptions.details.title")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -132,7 +132,7 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
               <div>
                 <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.totalCost")}</p>
                 <p className="text-sm text-gray-900">
-                  {prescription.totalCost.toLocaleString()} VND
+                  {prescription.totalCost.toLocaleString()} {t("dashboard.prescriptions.details.vnd")}
                 </p>
               </div>
             </div>
@@ -140,10 +140,10 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
 
           {/* Doctor Information */}
           <div className="border border-gray-200 rounded-lg p-4">
-                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-               <Stethoscope className="h-5 w-5 text-primary" />
-               {t("dashboard.prescriptions.details.doctorInformation")}
-             </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-primary" />
+              {t("dashboard.prescriptions.details.doctorInformation")}
+            </h3>
             {typeof prescription.doctor === 'string' ? (
               <p className="text-gray-500">{t("dashboard.prescriptions.details.doctorId")}: {prescription.doctor}</p>
             ) : (
@@ -155,22 +155,22 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
                     <span className="text-sm text-gray-500">{t("dashboard.prescriptions.details.loadingDoctor")}</span>
                   </div>
                 ) : doctorUser ? (
-                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-primary/5 rounded-lg">
-                   <div className="flex items-center gap-2">
-                     <UserIcon className="h-4 w-4 text-primary" />
-                     <div>
-                       <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.name")}</p>
-                       <p className="text-sm text-gray-900 font-medium">{doctorUser.name}</p>
-                     </div>
-                   </div>
-                   <div className="flex items-center gap-2">
-                     <Phone className="h-4 w-4 text-primary" />
-                     <div>
-                       <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.phone")}</p>
-                       <p className="text-sm text-gray-900 font-medium">{doctorUser.phoneNumber}</p>
-                     </div>
-                   </div>
-                 </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-primary/5 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <UserIcon className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.name")}</p>
+                        <p className="text-sm text-gray-900 font-medium">{doctorUser.name}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">{t("dashboard.prescriptions.details.phone")}</p>
+                        <p className="text-sm text-gray-900 font-medium">{doctorUser.phoneNumber}</p>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <p className="text-sm text-gray-500">{t("dashboard.prescriptions.details.unableToLoadDoctor")}</p>
                 )}
@@ -179,11 +179,11 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.experience")}</p>
-                    <p className="text-gray-900">{prescription.doctor.experience} years</p>
+                    <p className="text-gray-900">{prescription.doctor.experience} {t("dashboard.prescriptions.details.years")}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.consultationFee")}</p>
-                    <p className="text-gray-900">{prescription.doctor.consultationFee.toLocaleString()} VND</p>
+                    <p className="text-gray-900">{prescription.doctor.consultationFee.toLocaleString()} {t("dashboard.prescriptions.details.vnd")}</p>
                   </div>
                   <div className="md:col-span-2">
                     <p className="text-sm font-medium text-gray-700">{t("dashboard.prescriptions.details.qualifications")}</p>
@@ -208,95 +208,95 @@ function PrescriptionDetailModal({ prescription, isOpen, onClose }: Prescription
 
           {/* Diagnosis */}
           <div className="border border-gray-200 rounded-lg p-4">
-                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-               <FileText className="h-5 w-5 text-primary" />
-               {t("dashboard.prescriptions.details.diagnosis")}
-             </h3>
-             <p className="text-gray-900 bg-primary/5 p-3 rounded-md">
-               {prescription.diagnosis}
-             </p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {t("dashboard.prescriptions.details.diagnosis")}
+            </h3>
+            <p className="text-gray-900 bg-primary/5 p-3 rounded-md">
+              {prescription.diagnosis}
+            </p>
           </div>
 
           {/* Notes */}
           {prescription.notes && (
             <div className="border border-gray-200 rounded-lg p-4">
-                           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-               <AlertCircle className="h-5 w-5 text-primary" />
-               {t("dashboard.prescriptions.details.notes")}
-             </h3>
-             <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
-               {prescription.notes}
-             </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-primary" />
+                {t("dashboard.prescriptions.details.notes")}
+              </h3>
+              <p className="text-gray-900 bg-gray-50 p-3 rounded-md">
+                {prescription.notes}
+              </p>
             </div>
           )}
 
           {/* Medications */}
           <div className="border border-gray-200 rounded-lg p-4">
-                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-               <Pill className="h-5 w-5 text-primary" />
-               {t("dashboard.prescriptions.details.medications")} ({prescription.medications.length})
-             </h3>
-                         {isLoadingMedicines ? (
-               <div className="flex items-center gap-2">
-                 <Loader2 className="h-4 w-4 animate-spin" />
-                 <span className="text-sm text-gray-500">{t("dashboard.prescriptions.details.loadingMedicines")}</span>
-               </div>
-             ) : (
-               <div className="overflow-x-auto">
-                 <table className="w-full text-sm">
-                   <thead>
-                     <tr className="border-b border-gray-200">
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.medicine")}</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.dosage")}</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.form")}</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.route")}</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.quantity")}</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.frequency")}</th>
-                       <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.duration")}</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     {prescription.medications.map((medication, index) => {
-                       const medicine = medicines.find(m => m && m._id === medication.medicine);
-                       return (
-                         <tr key={index} className="border-b border-gray-100 hover:bg-gray-50/50">
-                           <td className="py-3 px-3">
-                             <div className="font-medium text-gray-900">
-                               {medicine ? medicine.name : `${t("dashboard.prescriptions.details.medicine")} ${index + 1}`}
-                             </div>
-                             {!medicine && (
-                               <div className="text-xs text-yellow-600 mt-1">
-                                 ID: {medication.medicine}
-                               </div>
-                             )}
-                           </td>
-                           <td className="py-3 px-3 text-gray-700">
-                             {medicine ? medicine.dosage : '-'}
-                           </td>
-                           <td className="py-3 px-3 text-gray-700">
-                             {medicine ? medicine.form : '-'}
-                           </td>
-                           <td className="py-3 px-3 text-gray-700">
-                             {medicine ? medicine.route : '-'}
-                           </td>
-                           <td className="py-3 px-3">
-                             <Badge variant="outline" className="text-xs">
-                               {medication.quantity}
-                             </Badge>
-                           </td>
-                           <td className="py-3 px-3 text-gray-700">
-                             {medication.frequency || '-'}
-                           </td>
-                           <td className="py-3 px-3 text-gray-700">
-                             {medication.duration || '-'}
-                           </td>
-                         </tr>
-                       );
-                     })}
-                   </tbody>
-                 </table>
-               </div>
-             )}
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Pill className="h-5 w-5 text-primary" />
+              {t("dashboard.prescriptions.details.medications")} ({prescription.medications.length})
+            </h3>
+            {isLoadingMedicines ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm text-gray-500">{t("dashboard.prescriptions.details.loadingMedicines")}</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.medicine")}</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.dosage")}</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.form")}</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.route")}</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.quantity")}</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.frequency")}</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-700">{t("dashboard.prescriptions.details.duration")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prescription.medications.map((medication, index) => {
+                      const medicine = medicines.find(m => m && m._id === medication.medicine);
+                      return (
+                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50/50">
+                          <td className="py-3 px-3">
+                            <div className="font-medium text-gray-900">
+                              {medicine ? medicine.name : `${t("dashboard.prescriptions.details.medicine")} ${index + 1}`}
+                            </div>
+                            {!medicine && (
+                              <div className="text-xs text-yellow-600 mt-1">
+                                ID: {medication.medicine}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-gray-700">
+                            {medicine ? medicine.dosage : '-'}
+                          </td>
+                          <td className="py-3 px-3 text-gray-700">
+                            {medicine ? medicine.form : '-'}
+                          </td>
+                          <td className="py-3 px-3 text-gray-700">
+                            {medicine ? medicine.route : '-'}
+                          </td>
+                          <td className="py-3 px-3">
+                            <Badge variant="outline" className="text-xs">
+                              {medication.quantity}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-3 text-gray-700">
+                            {medication.frequency || '-'}
+                          </td>
+                          <td className="py-3 px-3 text-gray-700">
+                            {medication.duration || '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Payment Status */}
@@ -402,15 +402,15 @@ export default function PrescriptionsPage() {
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto">
-                 <div className="max-w-md mx-auto text-center">
-           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-             <LogIn className="h-8 w-8 text-primary" />
-           </div>
+        <div className="max-w-md mx-auto text-center">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <LogIn className="h-8 w-8 text-primary" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {t("dashboard.prescriptions.accessTitle")}
           </h1>
           <p className="text-gray-600 mb-6">
-            {t("dashboard.prescriptions.accessDescription")}
+            {t("dashboard.prescriptions.accessSubtitle")}
           </p>
           <div className="space-y-3">
             <Button asChild className="w-full">
@@ -430,9 +430,9 @@ export default function PrescriptionsPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-             <FileText className="h-5 w-5 text-primary" />
-           </div>
+          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+            <FileText className="h-5 w-5 text-primary" />
+          </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{t("dashboard.prescriptions.title")}</h1>
             <p className="text-gray-600">
@@ -442,8 +442,8 @@ export default function PrescriptionsPage() {
         </div>
 
         {/* Search Bar */}
-                 <div className="relative max-w-md">
-           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary/60" />
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary/60" />
           <Input
             type="text"
             placeholder={t("dashboard.prescriptions.searchPlaceholder")}
@@ -553,7 +553,7 @@ export default function PrescriptionsPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">{t("dashboard.prescriptions.totalCost")}:</span>
                     <span className="font-medium text-gray-900">
-                      {prescription.totalCost.toLocaleString()} VND
+                      {prescription.totalCost.toLocaleString()} {t("dashboard.prescriptions.details.vnd")}
                     </span>
                   </div>
                 </div>

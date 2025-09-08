@@ -31,14 +31,14 @@ export function PackageDetailsCard({
   return (
     <Card className="lg:col-span-1 border-border/60 shadow-md relative">
       <div className="absolute -top-3 left-4 inline-flex bg-primary text-white text-xs font-medium py-1 px-3 rounded-full">
-        {t("booking.packageDetails.selectedPackage")}
+        {t("dashboard.booking.packageDetails.selectedPackage")}
       </div>
       <CardHeader className="pt-6 pb-3 bg-gradient-to-r from-primary/10 to-transparent rounded-t-lg">
         <CardTitle className="flex items-center gap-2">
           <Package className="h-5 w-5 text-primary" />
-          {t("booking.packageDetails.title")}
+          {t("dashboard.booking.packageDetails.title")}
         </CardTitle>
-        <CardDescription>{t("booking.packageDetails.description")}</CardDescription>
+        <CardDescription>{t("dashboard.booking.packageDetails.description")}</CardDescription>
       </CardHeader>
       <CardContent className="pt-5">
         <div className="space-y-4">
@@ -54,7 +54,7 @@ export function PackageDetailsCard({
               <>
                 <Label htmlFor="price-options" className="text-base font-medium flex items-center gap-2 mb-3">
                   <CheckCircle className="h-4 w-4 text-primary" />
-                  {t("booking.packageDetails.selectPackageTier")}
+                  {t("dashboard.booking.packageDetails.selectPackageTier")}
                 </Label>
                 <div className="grid grid-cols-1 gap-3 mt-2">
                   {packageData.priceOptions.map((option) => (
@@ -78,7 +78,7 @@ export function PackageDetailsCard({
                       </div>
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
                         <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                        <span>{option.testsIncluded} {t("booking.packageDetails.testsIncluded")}</span>
+                        <span>{option.testsIncluded} {t("dashboard.booking.packageDetails.testsIncluded")}</span>
                       </div>
                     </div>
                   ))}
@@ -88,12 +88,12 @@ export function PackageDetailsCard({
               <>
                 <Label className="text-base font-medium flex items-center gap-2 mb-3">
                   <CheckCircle className="h-4 w-4 text-primary" />
-                  {t("booking.packageDetails.packagePrice")}
+                  {t("dashboard.booking.packageDetails.packagePrice")}
                 </Label>
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5">
                   <div className="text-center">
                     <span className="text-2xl font-bold text-primary">
-                      {packageData.price === 0 ? t("booking.packageDetails.free") : formatCurrency(packageData.price)}
+                      {packageData.price === 0 ? t("dashboard.booking.packageDetails.free") : formatCurrency(packageData.price)}
                     </span>
                     {packageData.category && (
                       <p className="text-sm text-muted-foreground mt-1 capitalize">
@@ -102,7 +102,7 @@ export function PackageDetailsCard({
                     )}
                     {packageData.bookingOption && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Booking Type: {packageData.bookingOption}
+                        {t("dashboard.booking.packageDetails.bookingType")}: {packageData.bookingOption}
                       </p>
                     )}
                   </div>

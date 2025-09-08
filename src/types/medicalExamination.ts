@@ -35,6 +35,7 @@ export interface PopulatedSubclinicalResult {
 export interface FinalDiagnosis {
   icdCode: string;
   description: string;
+  icdId?: string; // Add ICD ID field
 }
 
 /**

@@ -6,12 +6,11 @@ import Link from "next/link";
 import {
   BarChart3,
   Calendar,
-  // Stethoscope,
   Settings,
   LogOut,
-  // PillIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 interface SidebarItem {
   title: string;
@@ -22,30 +21,26 @@ interface SidebarItem {
 const DoctorSidebar = () => {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { t } = useTranslation();
 
   const sidebarItems: SidebarItem[] = [
     {
-      title: "Dashboard",
+      title: t("navigation.doctorSidebar.dashboard"),
       href: "/doctor/dashboard",
       icon: <BarChart3 className="w-5 h-5" />,
     },
     {
-      title: "My Schedules",
+      title: t("navigation.doctorSidebar.mySchedules"),
       href: "/doctor/schedules",
       icon: <Calendar className="w-5 h-5" />,
     },
     // {
-    //   title: "Prescriptions",
+    //   title: t("navigation.doctorSidebar.prescriptions"),
     //   href: "/doctor/prescriptions",
     //   icon: <PillIcon className="w-5 h-5" />,
     // },
-    // {
-    //   title: "Medical Examinations",
-    //   href: "/doctor/examinations",
-    //   icon: <Stethoscope className="w-5 h-5" />,
-    // },
     {
-      title: "Profile",
+      title: t("navigation.doctorSidebar.profile"),
       href: "/doctor/profile",
       icon: <Settings className="w-5 h-5" />,
     },
@@ -62,7 +57,9 @@ const DoctorSidebar = () => {
   return (
     <div className="fixed left-0 top-20 w-64 h-[calc(100vh-80px)] bg-white border-r border-gray-200 flex flex-col z-30">
       <div className="px-6 py-5 border-b">
-        <h1 className="text-xl font-bold text-primary">Doctor Portal</h1>
+        <h1 className="text-xl font-bold text-primary">
+          {t("navigation.doctorSidebar.doctorPortal")}
+        </h1>
       </div>
 
       <div className="px-6 py-5 border-b">
@@ -71,7 +68,10 @@ const DoctorSidebar = () => {
             {user?.name ? user.name.charAt(0).toUpperCase() : "D"}
           </div>
           <div>
-            <p className="font-medium">Dr. {user?.name || "Doctor"}</p>
+            <p className="font-medium">
+              Dr.{" "}
+              {user?.name || t("doctor.dashboard.quickActions.patientRecords")}
+            </p>
             <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
         </div>
@@ -103,7 +103,7 @@ const DoctorSidebar = () => {
           className="flex items-center space-x-3 px-4 py-3 w-full rounded-md hover:bg-red-50 text-red-600 transition-colors"
         >
           <LogOut className="w-5 h-5" />
-          <span>Logout</span>
+          <span>{t("navigation.doctorSidebar.logout")}</span>
         </button>
       </div>
     </div>

@@ -1,0 +1,51 @@
+{
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "save": "Save",
+  "edit": "Edit",
+  "delete": "Delete",
+  "close": "Close",
+  "back": "Back",
+  "next": "Next",
+  "previous": "Previous",
+  "search": "Search",
+  "filter": "Filter",
+  "filters": "Filters",
+  "clear": "Clear",
+  "specialization": "Specialization",
+  "sort": "Sort",
+  "refresh": "Refresh",
+  "retry": "Retry",
+  "bookSchedule": "Book Schedule",
+  "bookASchedule": "Book a Schedule",
+  "signInToBookSchedule": "Sign in to book a schedule",
+  "scheduleCreated": "Schedule Created",
+  "scheduleCreatedSuccess": "Your schedule with Dr. {{doctorName}} has been created successfully.",
+  "errorCreatingSchedule": "Error Creating Schedule",
+  "errorCreatingScheduleDescription": "There was an error creating your schedule. Please try again.",
+  "servicesList": {
+    "drawer": {
+      "title": "Services List",
+      "service": "service",
+      "services": "services",
+      "description": "Review and manage your selected medical services before booking",
+      "loadingServices": "Loading services...",
+      "emptyList": "No Services Selected",
+      "emptyListDescription": "Add medical services to your list to get started with booking",
+      "totalServices": "Total Services",
+      "totalPrice": "Total Price",
+      "clearAll": "Clear All",
+      "bookNow": "Book Now"
+    },
+    "addToList": {
+      "addToList": "Add to List",
+      "added": "Added!",
+      "inList": "In List",
+      "successMessage": "Added \"{{serviceName}}\" to services list",
+      "successDescription": "View your services list to manage selections"
+    }
+  }
+}

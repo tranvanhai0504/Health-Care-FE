@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import { scheduleService } from "@/services";
 import { ScheduleResponse, ScheduleStatus } from "@/types/schedule";
@@ -55,9 +56,10 @@ import {
 import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { ScheduleDetails } from "@/components/admin/schedules";
-import { formatScheduleDate, getScheduleDate } from "@/utils/formatters";
+import { formatScheduleDate, formatScheduleWeekday } from "@/utils/formatters";
 
 export default function AdminSchedulesPage() {
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -106,8 +108,8 @@ export default function AdminSchedulesPage() {
     } catch (error) {
       console.error("Error fetching schedules:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch schedules",
+        title: t("admin.schedules.toast.error"),
+        description: t("admin.schedules.toast.failedToFetchSchedules"),
         type: "error",
       });
       setSchedules([]);
@@ -168,8 +170,8 @@ export default function AdminSchedulesPage() {
         status: ScheduleStatus.CHECKEDIN,
       });
       toast({
-        title: "Success",
-        description: "Patient checked in successfully",
+        title: t("admin.schedules.toast.success"),
+        description: t("admin.schedules.toast.patientCheckedInSuccessfully"),
         type: "success",
       });
       // Refresh the schedules list
@@ -177,8 +179,8 @@ export default function AdminSchedulesPage() {
     } catch (error) {
       console.error("Error checking in patient:", error);
       toast({
-        title: "Error",
-        description: "Failed to check in patient",
+        title: t("admin.schedules.toast.error"),
+        description: t("admin.schedules.toast.failedToCheckInPatient"),
         type: "error",
       });
     }
@@ -211,7 +213,7 @@ export default function AdminSchedulesPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatDate = (weekPeriod: any, dayOffset: number = 0) => {
-    if (!weekPeriod || !weekPeriod.from) return "Invalid Date";
+    if (!weekPeriod || !weekPeriod.from) return t("admin.schedules.messages.invalidDate");
     return formatScheduleDate(weekPeriod, dayOffset, 'MMM dd, yyyy');
   };
   const formatTimeSlot = (
@@ -220,10 +222,9 @@ export default function AdminSchedulesPage() {
     dayOffset: number,
     timeOffset: 0 | 1
   ) => {
-    if (!weekPeriod || !weekPeriod.from) return "Unknown";
-    const appointmentDate = getScheduleDate(weekPeriod, dayOffset);
-    const dayName = appointmentDate.toLocaleDateString("en-US", { weekday: "long" });
-    const timeSlot = timeOffset === 0 ? "Morning" : "Afternoon";
+    if (!weekPeriod || !weekPeriod.from) return t("admin.schedules.messages.unknown");
+    const dayName = formatScheduleWeekday(weekPeriod, dayOffset);
+    const timeSlot = timeOffset === 0 ? t("admin.schedules.timeSlots.morning") : t("admin.schedules.timeSlots.afternoon");
     return `${dayName} ${timeSlot}`;
   };
 
@@ -260,11 +261,10 @@ export default function AdminSchedulesPage() {
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                       <CardTitle className="text-2xl flex items-center gap-2">
-                        <Calendar className="h-5 w-5" /> Schedules Management
+                        <Calendar className="h-5 w-5" /> {t("admin.schedules.title")}
                       </CardTitle>
                       <CardDescription className="mt-1.5">
-                        Manage all patient appointments and schedules across the
-                        system
+                        {t("admin.schedules.subtitle")}
                       </CardDescription>
                     </div>
                   </div>
@@ -275,7 +275,7 @@ export default function AdminSchedulesPage() {
                     <div className="relative w-full lg:max-w-xs">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                       <Input
-                        placeholder="Search by user name or schedule ID..."
+                        placeholder={t("admin.schedules.searchPlaceholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10 w-full"
@@ -288,26 +288,26 @@ export default function AdminSchedulesPage() {
                         onValueChange={setStatusFilter}
                       >
                         <SelectTrigger className="w-full sm:w-40">
-                          <SelectValue placeholder="All Status" />
+                          <SelectValue placeholder={t("admin.schedules.filters.allStatus")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Status</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="checkedIn">Checked In</SelectItem>
-                          <SelectItem value="serving">Serving</SelectItem>
-                          <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                          <SelectItem value="all">{t("admin.schedules.filters.allStatus")}</SelectItem>
+                          <SelectItem value="confirmed">{t("admin.schedules.filters.confirmed")}</SelectItem>
+                          <SelectItem value="checkedIn">{t("admin.schedules.filters.checkedIn")}</SelectItem>
+                          <SelectItem value="serving">{t("admin.schedules.filters.serving")}</SelectItem>
+                          <SelectItem value="completed">{t("admin.schedules.filters.completed")}</SelectItem>
+                          <SelectItem value="cancelled">{t("admin.schedules.filters.cancelled")}</SelectItem>
                         </SelectContent>
                       </Select>
 
                       <Select value={typeFilter} onValueChange={setTypeFilter}>
                         <SelectTrigger className="w-full sm:w-40">
-                          <SelectValue placeholder="All Types" />
+                          <SelectValue placeholder={t("admin.schedules.filters.allTypes")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="package">Package</SelectItem>
-                          <SelectItem value="services">Services</SelectItem>
+                          <SelectItem value="all">{t("admin.schedules.filters.allTypes")}</SelectItem>
+                          <SelectItem value="package">{t("admin.schedules.filters.package")}</SelectItem>
+                          <SelectItem value="services">{t("admin.schedules.filters.services")}</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -318,7 +318,7 @@ export default function AdminSchedulesPage() {
                         className="w-full sm:w-auto"
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
-                        Reset
+                        {t("admin.schedules.filters.reset")}
                       </Button>
 
                       <Button
@@ -329,7 +329,7 @@ export default function AdminSchedulesPage() {
                         }
                       >
                         <Plus className="h-4 w-4" />
-                        New Schedule
+                        {t("admin.schedules.filters.newSchedule")}
                       </Button>
                     </div>
                   </div>
@@ -356,20 +356,20 @@ export default function AdminSchedulesPage() {
                         <Calendar className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-medium mb-2">
-                        No schedules found
+                        {t("admin.schedules.messages.noSchedulesFound")}
                       </h3>
                       <p className="text-muted-foreground mb-6">
                         {searchQuery ||
                         statusFilter !== "all" ||
                         typeFilter !== "all"
-                          ? "No schedules match your current filters."
-                          : "No schedules have been created yet."}
+                          ? t("admin.schedules.messages.noSchedulesMatchFilters")
+                          : t("admin.schedules.messages.noSchedulesCreated")}
                       </p>
                       {searchQuery ||
                       statusFilter !== "all" ||
                       typeFilter !== "all" ? (
                         <Button variant="outline" onClick={resetFilters}>
-                          Clear filters
+                          {t("admin.schedules.messages.clearFilters")}
                         </Button>
                       ) : null}
                     </div>
@@ -379,15 +379,15 @@ export default function AdminSchedulesPage() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Schedule ID</TableHead>
-                              <TableHead>User</TableHead>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Time Slot</TableHead>
-                              <TableHead>Date</TableHead>
-                              <TableHead>Status</TableHead>
+                              <TableHead>{t("admin.schedules.table.scheduleId")}</TableHead>
+                              <TableHead>{t("admin.schedules.table.user")}</TableHead>
+                              <TableHead>{t("admin.schedules.table.type")}</TableHead>
+                              <TableHead>{t("admin.schedules.table.timeSlot")}</TableHead>
+                              <TableHead>{t("admin.schedules.table.date")}</TableHead>
+                              <TableHead>{t("admin.schedules.table.status")}</TableHead>
 
                               <TableHead className="text-right">
-                                Actions
+                                {t("admin.schedules.table.actions")}
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -461,18 +461,18 @@ export default function AdminSchedulesPage() {
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         <span className="sr-only">
-                                          Open menu
+                                          {t("admin.schedules.actions.openMenu")}
                                         </span>
                                         <MoreVertical className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                       <DropdownMenuLabel>
-                                        Actions
+                                        {t("admin.schedules.table.actions")}
                                       </DropdownMenuLabel>
                                       <DropdownMenuItem className="text-blue-600">
                                         <User className="mr-2 h-4 w-4" />
-                                        View User
+                                        {t("admin.schedules.actions.viewUser")}
                                       </DropdownMenuItem>
                                       {schedule.status ===
                                         ScheduleStatus.CONFIRMED && (
@@ -483,12 +483,12 @@ export default function AdminSchedulesPage() {
                                           }
                                         >
                                           <UserCheck className="mr-2 h-4 w-4" />
-                                          Check In Patient
+                                          {t("admin.schedules.actions.checkInPatient")}
                                         </DropdownMenuItem>
                                       )}
                                       <DropdownMenuItem className="text-orange-600">
                                         <CheckCircle className="mr-2 h-4 w-4" />
-                                        Update Status
+                                        {t("admin.schedules.actions.updateStatus")}
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
@@ -512,6 +512,7 @@ export default function AdminSchedulesPage() {
                           showItemsPerPage={true}
                           showJumpToPage={false}
                           itemsPerPageOptions={[5, 10, 20, 50]}
+                          className="pt-4"
                         />
                       )}
                     </>

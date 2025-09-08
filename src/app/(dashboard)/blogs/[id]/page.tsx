@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, ArrowLeft, User, Tag } from "lucide-react";
 import { convertMarkdown } from "@/utils/markdown";
+import { formatDate } from "@/utils/date";
 
 const BlogDetailPage = () => {
   const { t } = useTranslation();
@@ -44,16 +45,8 @@ const BlogDetailPage = () => {
     };
 
     fetchBlog();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
-
-  function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
 
   return (
     <div className="container mx-auto px-4">

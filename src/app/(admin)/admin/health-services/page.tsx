@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils";
+import { formatDate } from "@/utils/date";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -327,15 +328,6 @@ export default function AdminHealthServicesPage() {
       setServiceToDelete(null);
       setIsDeleteAlertOpen(false);
     }
-  };
-
-  // Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   // Pagination helpers
@@ -736,7 +728,7 @@ export default function AdminHealthServicesPage() {
                             <CalendarDays className="h-3 w-3" />
                             {service.createdAt
                               ? formatDate(service.createdAt)
-                              : "N/A"}
+                              : t("admin.healthServices.notAvailable")}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
@@ -811,7 +803,7 @@ export default function AdminHealthServicesPage() {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={!canGoNext}
                   >
-                    Next
+                    {t("admin.healthServices.next")}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -825,19 +817,18 @@ export default function AdminHealthServicesPage() {
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.healthServices.deleteDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              health service and remove all associated data.
+              {t("admin.healthServices.deleteDialog.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("admin.healthServices.deleteDialog.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteService}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              Delete
+              {t("admin.healthServices.deleteDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

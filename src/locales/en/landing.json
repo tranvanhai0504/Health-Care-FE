@@ -1,0 +1,149 @@
+{
+  "hero": {
+    "badge": "Your Health, Our Priority",
+    "title": "Modern Healthcare Solutions",
+    "subtitle": "Providing quality healthcare services to improve your wellbeing and quality of life with cutting-edge medical technology and expert care.",
+    "bookSchedule": "Book Schedule",
+    "learnMore": "Learn More",
+    "trustOurServices": "Trust our services",
+    "nextAvailable": "Next Available",
+    "todayAppointment": "Today, 3:00 PM",
+    "doctorWithPatient": "Doctor with patient",
+    "stats": {
+      "patients": "Happy Patients",
+      "doctors": "Expert Doctors",
+      "services": "Medical Services",
+      "experience": "Years Experience"
+    }
+  },
+  "services": {
+    "title": "Our Medical Services",
+    "subtitle": "Comprehensive healthcare solutions tailored to your needs",
+    "viewAll": "View All Services",
+    "consultation": "Medical Consultation",
+    "consultationDesc": "Expert medical advice and diagnosis from qualified healthcare professionals.",
+    "examination": "Health Examination",
+    "examinationDesc": "Comprehensive health checkups and preventive care services.",
+    "emergency": "Emergency Care",
+    "emergencyDesc": "24/7 emergency medical services for urgent healthcare needs.",
+    "specialist": "Specialist Care",
+    "specialistDesc": "Access to specialized medical care for complex health conditions."
+  },
+  "packages": {
+    "title": "Health Packages",
+    "subtitle": "Choose the perfect health package for your needs",
+    "viewAll": "View All Packages",
+    "basic": "Basic Health Check",
+    "basicDesc": "Essential health screening and basic medical consultation.",
+    "premium": "Premium Health Package",
+    "premiumDesc": "Comprehensive health assessment with advanced diagnostics.",
+    "family": "Family Health Plan",
+    "familyDesc": "Complete healthcare coverage for the entire family.",
+    "corporate": "Corporate Wellness",
+    "corporateDesc": "Employee health programs and corporate wellness solutions."
+  },
+  "features": {
+    "title": "Excellence in Healthcare",
+    "description": "We're committed to providing exceptional healthcare services with a focus on quality, compassion, and innovation.",
+    "technology": "Advanced Technology",
+    "technologyDesc": "State-of-the-art medical equipment and cutting-edge technology.",
+    "expertise": "Expert Medical Team",
+    "expertiseDesc": "Highly qualified doctors and healthcare professionals.",
+    "accessibility": "24/7 Accessibility",
+    "accessibilityDesc": "Round-the-clock healthcare services and emergency support.",
+    "personalized": "Personalized Care",
+    "personalizedDesc": "Tailored treatment plans designed for your specific needs.",
+    "patientCenteredCare": {
+      "title": "Patient-Centered Care",
+      "description": "Our healthcare approach puts patients at the center of everything we do, ensuring personalized and compassionate care.",
+      "personalizedPlans": "Personalized Treatment Plans",
+      "compassionateCare": "Compassionate Care",
+      "patientEducation": "Patient Education"
+    },
+    "expertSpecialists": {
+      "title": "Expert Specialists",
+      "description": "Our team of board-certified specialists brings years of experience and expertise to provide the highest quality medical care.",
+      "boardCertified": "Board-Certified Doctors",
+      "specializedExpertise": "Specialized Expertise",
+      "collaborativeApproach": "Collaborative Approach"
+    },
+    "support24x7": {
+      "title": "24/7 Support",
+      "description": "Round-the-clock healthcare support ensures you have access to medical assistance whenever you need it.",
+      "emergencyAssistance": "Emergency Assistance",
+      "onlineConsultations": "Online Consultations",
+      "immediateResponses": "Immediate Responses"
+    },
+    "advancedTechnology": {
+      "title": "Advanced Technology",
+      "description": "We utilize cutting-edge medical technology and equipment to provide accurate diagnoses and effective treatments."
+    },
+    "affordableCare": {
+      "title": "Affordable Care",
+      "description": "Quality healthcare should be accessible to everyone. We offer competitive pricing and flexible payment options."
+    }
+  },
+  "specialties": {
+    "title": "Our Medical Specialties",
+    "description": "Explore our wide range of medical specialties with expert doctors and comprehensive care options for your needs.",
+    "viewAll": "View All Specialties",
+    "viewDetails": "View Details",
+    "viewAllSpecialties": "View All Specialties",
+    "cardiology": "Cardiology",
+    "cardiologyDesc": "Heart and cardiovascular system care",
+    "neurology": "Neurology",
+    "neurologyDesc": "Brain and nervous system treatment",
+    "orthopedics": "Orthopedics",
+    "orthopedicsDesc": "Bone, joint, and muscle care",
+    "pediatrics": "Pediatrics",
+    "pediatricsDesc": "Specialized care for children and infants"
+  },
+  "blog": {
+    "title": "Latest Health Updates",
+    "description": "Stay informed with our latest healthcare articles, tips, and insights from our medical experts.",
+    "viewAll": "View All Articles",
+    "readMore": "Read More",
+    "wellness": "Wellness",
+    "medicalResearch": "Medical Research",
+    "nutrition": "Nutrition",
+    "mentalHealth": "Mental Health",
+    "featuredArticle": "Featured Article",
+    "featuredArticleDescription": "Health tips and advice from medical experts",
+    "readTime": "read time",
+    "articleDescription": "Article description",
+    "readArticle": "Read Article",
+    "viewAllArticles": "View All Articles"
+  },
+  "healthPackages": {
+    "title": "Health Packages",
+    "description": "Comprehensive health packages designed to provide complete care solutions at affordable prices.",
+    "mostPopular": "Most Popular",
+    "free": "Free",
+    "learnMore": "Learn More",
+    "viewAll": "View All Health Packages",
+    "discoverAll": "Discover All"
+  },
+  "slider": {
+    "healthcareService1": "Healthcare Service 1",
+    "healthcareService2": "Healthcare Service 2",
+    "healthcareService3": "Healthcare Service 3",
+    "healthcareService4": "Healthcare Service 4",
+    "healthcareService5": "Healthcare Service 5",
+    "healthcareService6": "Healthcare Service 6",
+    "healthcareService7": "Healthcare Service 7",
+    "diagnostics": "Diagnostics",
+    "diagnosticsDescription": "Advanced diagnostic services with state-of-the-art equipment",
+    "consultation": "Consultation",
+    "consultationDescription": "Professional consultation with specialists in various fields",
+    "treatment": "Treatment",
+    "treatmentDescription": "Personalized treatment plans tailored to your needs",
+    "support": "Support",
+    "supportDescription": "24/7 support and care for all patients",
+    "facilities": "Facilities",
+    "facilitiesDescription": "Modern facilities with comfortable recovery environments",
+    "prevention": "Prevention",
+    "preventionDescription": "Preventative care programs for long-term health",
+    "familyCare": "Family Care",
+    "familyCareDescription": "Family-focused health services for all ages"
+  }
+}

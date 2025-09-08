@@ -57,3 +57,6 @@ export * from './payment';
 
 // Waiting message types
 export * from './waitingMessage';
+
+// ICD types
+export * from './icd';

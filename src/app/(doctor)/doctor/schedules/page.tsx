@@ -119,9 +119,9 @@ export default function DoctorSchedules() {
         return {
           id: schedule._id || "",
           patientName: user?.name || `${t("doctor.schedules.patient")} ${userId || t("doctor.schedules.unknown")}`,
-          patientPhone: user?.phoneNumber || "N/A",
-          patientEmail: user?.email || "N/A",
-          patientAddress: user?.address || "N/A",
+          patientPhone: user?.phoneNumber || t("doctor.schedules.notAvailable"),
+          patientEmail: user?.email || t("doctor.schedules.notAvailable"),
+          patientAddress: user?.address || t("doctor.schedules.notAvailable"),
           time: schedule.timeOffset === 0 ? "09:00 AM" : "02:00 PM", // Convert timeOffset to time format
           date: getScheduleDate(schedule.weekPeriod, schedule.dayOffset)
             .toISOString()
@@ -131,13 +131,13 @@ export default function DoctorSchedules() {
           notes: schedule.packageId
             ? `${t("doctor.schedules.package")}: ${schedule.packageId}`
             : t("doctor.schedules.servicesAppointment"),
-          duration: "N/A", // Not available in schedule data
+          duration: t("doctor.schedules.notAvailable"), // Not available in schedule data
           symptoms: "",
           previousVisits: 0, // Not available in schedule data
           // Add enhanced user info
-          patientGender: user?.gender || "N/A",
-          patientDateOfBirth: user?.dateOfBirth || "N/A",
-          patientOccupation: user?.occupation || "N/A",
+          patientGender: user?.gender || t("doctor.schedules.notAvailable"),
+          patientDateOfBirth: user?.dateOfBirth || t("doctor.schedules.notAvailable"),
+          patientOccupation: user?.occupation || t("doctor.schedules.notAvailable"),
           // Store the user ID for future reference
           userId: userId,
           originalSchedule: schedule,
@@ -364,13 +364,13 @@ export default function DoctorSchedules() {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <p className="text-red-800 text-sm">
-                  Error loading schedules: {error}
+                  {t("doctor.schedules.errorLoadingSchedules")}: {error}
                 </p>
                 <button
                   onClick={() => refetch()}
                   className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
                 >
-                  Try again
+                  {t("doctor.schedules.tryAgain")}
                 </button>
               </div>
             )}

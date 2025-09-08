@@ -1,0 +1,51 @@
+{
+  "loading": "Đang tải...",
+  "error": "Lỗi",
+  "success": "Thành công",
+  "cancel": "Hủy",
+  "confirm": "Xác nhận",
+  "save": "Lưu",
+  "edit": "Chỉnh sửa",
+  "delete": "Xóa",
+  "close": "Đóng",
+  "back": "Quay lại",
+  "next": "Tiếp theo",
+  "previous": "Trước",
+  "search": "Tìm kiếm",
+  "filter": "Lọc",
+  "filters": "Bộ lọc",
+  "clear": "Xóa",
+  "specialization": "Chuyên khoa",
+  "sort": "Sắp xếp",
+  "refresh": "Làm mới",
+  "retry": "Thử lại",
+  "bookSchedule": "Đặt lịch hẹn",
+  "bookASchedule": "Đặt lịch hẹn",
+  "signInToBookSchedule": "Đăng nhập để đặt lịch hẹn",
+  "scheduleCreated": "Lịch hẹn đã tạo",
+  "scheduleCreatedSuccess": "Lịch hẹn của bạn với Bác sĩ {{doctorName}} đã được tạo thành công.",
+  "errorCreatingSchedule": "Lỗi tạo lịch hẹn",
+  "errorCreatingScheduleDescription": "Có lỗi xảy ra khi tạo lịch hẹn của bạn. Vui lòng thử lại.",
+  "servicesList": {
+    "drawer": {
+      "title": "Danh sách dịch vụ",
+      "service": "dịch vụ",
+      "services": "dịch vụ",
+      "description": "Xem lại và quản lý các dịch vụ y tế đã chọn trước khi đặt lịch",
+      "loadingServices": "Đang tải dịch vụ...",
+      "emptyList": "Chưa chọn dịch vụ nào",
+      "emptyListDescription": "Thêm dịch vụ y tế vào danh sách để bắt đầu đặt lịch",
+      "totalServices": "Tổng dịch vụ",
+      "totalPrice": "Tổng giá",
+      "clearAll": "Xóa tất cả",
+      "bookNow": "Đặt lịch ngay"
+    },
+    "addToList": {
+      "addToList": "Thêm vào danh sách",
+      "added": "Đã thêm!",
+      "inList": "Trong danh sách",
+      "successMessage": "Đã thêm \"{{serviceName}}\" vào danh sách dịch vụ",
+      "successDescription": "Xem danh sách dịch vụ để quản lý lựa chọn"
+    }
+  }
+}

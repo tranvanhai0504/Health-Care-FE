@@ -33,6 +33,7 @@ import {
   PopulatedMedicalExamination,
 } from "@/types/medicalExamination";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "react-i18next";
 
 import { MedicalExaminationDetails } from "./MedicalExaminationDetails";
 import { PrescriptionDisplay } from "./PrescriptionDisplay";
@@ -64,6 +65,7 @@ export function AppointmentDetails({
   handleCollapseRightPanel,
   rightPanelSize,
 }: AppointmentDetailsProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [services, setServices] = useState<ConsultationService[]>([]);
   const [isLoadingServices, setIsLoadingServices] = useState(true);
@@ -371,7 +373,7 @@ export function AppointmentDetails({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <User className="h-4 w-4" />
-            Appointment Details
+            {t("doctor.schedules.appointmentDetails")}
           </h2>
           <div>
             {rightPanelSize !== 100 && (
@@ -408,7 +410,7 @@ export function AppointmentDetails({
           {/* Patient Information */}
           <AccordionItem value="patient-info">
             <AccordionTrigger className="text-base font-semibold">
-              Patient Information
+              {t("doctor.schedules.patientInformation")}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-3 p-2">
@@ -418,7 +420,7 @@ export function AppointmentDetails({
                     <p className="text-sm font-medium">
                       {appointment.patientName}
                     </p>
-                    <p className="text-xs text-gray-600">Patient Name</p>
+                    <p className="text-xs text-gray-600">{t("doctor.schedules.patientName")}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -427,7 +429,7 @@ export function AppointmentDetails({
                     <p className="text-sm font-medium">
                       {appointment.patientPhone}
                     </p>
-                    <p className="text-xs text-gray-600">Phone Number</p>
+                    <p className="text-xs text-gray-600">{t("doctor.schedules.phoneNumber")}</p>
                   </div>
                 </div>
                 {appointment.patientEmail &&
@@ -438,7 +440,7 @@ export function AppointmentDetails({
                         <p className="text-sm font-medium">
                           {appointment.patientEmail}
                         </p>
-                        <p className="text-xs text-gray-600">Email</p>
+                        <p className="text-xs text-gray-600">{t("doctor.schedules.email")}</p>
                       </div>
                     </div>
                   )}
@@ -450,7 +452,7 @@ export function AppointmentDetails({
                         <p className="text-sm font-medium">
                           {appointment.patientAddress}
                         </p>
-                        <p className="text-xs text-gray-600">Address</p>
+                        <p className="text-xs text-gray-600">{t("doctor.schedules.address")}</p>
                       </div>
                     </div>
                   )}
@@ -462,7 +464,7 @@ export function AppointmentDetails({
                         <p className="text-sm font-medium capitalize">
                           {appointment.patientGender}
                         </p>
-                        <p className="text-xs text-gray-600">Gender</p>
+                        <p className="text-xs text-gray-600">{t("doctor.schedules.gender")}</p>
                       </div>
                     </div>
                   )}
@@ -476,7 +478,7 @@ export function AppointmentDetails({
                             appointment.patientDateOfBirth
                           ).toLocaleDateString()}
                         </p>
-                        <p className="text-xs text-gray-600">Date of Birth</p>
+                        <p className="text-xs text-gray-600">{t("doctor.schedules.dateOfBirth")}</p>
                       </div>
                     </div>
                   )}
@@ -488,7 +490,7 @@ export function AppointmentDetails({
                         <p className="text-sm font-medium">
                           {appointment.patientOccupation}
                         </p>
-                        <p className="text-xs text-gray-600">Occupation</p>
+                        <p className="text-xs text-gray-600">{t("doctor.schedules.occupation")}</p>
                       </div>
                     </div>
                   )}
@@ -499,7 +501,7 @@ export function AppointmentDetails({
           {/* Appointment Information */}
           <AccordionItem value="appointment-info">
             <AccordionTrigger className="text-base font-semibold">
-              Appointment Information
+              {t("doctor.schedules.appointmentInformation")}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 p-2">
@@ -507,14 +509,14 @@ export function AppointmentDetails({
                   <Calendar className="h-3 w-3 text-gray-500" />
                   <div>
                     <p className="text-sm font-medium">{appointment.date}</p>
-                    <p className="text-xs text-gray-600">Date</p>
+                    <p className="text-xs text-gray-600">{t("doctor.schedules.date")}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-3 w-3 text-gray-500" />
                   <div>
                     <p className="text-sm font-medium">{appointment.time}</p>
-                    <p className="text-xs text-gray-600">Time</p>
+                    <p className="text-xs text-gray-600">{t("doctor.schedules.time")}</p>
                   </div>
                 </div>
                 {appointment.duration && (
@@ -524,7 +526,7 @@ export function AppointmentDetails({
                       <p className="text-sm font-medium">
                         {appointment.duration}
                       </p>
-                      <p className="text-xs text-gray-600">Duration</p>
+                      <p className="text-xs text-gray-600">{t("doctor.schedules.duration")}</p>
                     </div>
                   </div>
                 )}
@@ -554,27 +556,26 @@ export function AppointmentDetails({
           {/* Service Management */}
           <AccordionItem value="services">
             <AccordionTrigger className="text-base font-semibold">
-              Services
+              {t("doctor.schedules.services")}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 p-2">
                 {appointment.status !== "in-progress" && appointment.originalSchedule?.status !== ScheduleStatus.COMPLETED && (
                   <div className="w-full text-xs p-2 border bg-yellow-50 text-yellow-700 border-yellow-200 rounded-md mb-3">
                     <p>
-                      Services cannot be edited until the patient is checked in
-                      and paid.
+                      {t("doctor.schedules.servicesCannotBeEdited")}
                     </p>
                   </div>
                 )}
                 {appointment.originalSchedule?.status === ScheduleStatus.COMPLETED && (
                   <div className="w-full text-xs p-2 border bg-green-50 text-green-700 border-green-200 rounded-md mb-3">
                     <p>
-                      Services cannot be edited as this appointment is completed.
+                      {t("doctor.schedules.appointmentCompleted")}
                     </p>
                   </div>
                 )}
                 {isLoadingServices ? (
-                  <p className="text-sm text-gray-500">Loading services...</p>
+                  <p className="text-sm text-gray-500">{t("doctor.schedules.loadingServices")}</p>
                 ) : (
                   <>
                     {services.map((service, index) => (
@@ -586,7 +587,7 @@ export function AppointmentDetails({
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="text-sm font-semibold text-gray-900">
-                                {service.name || "Service"}
+                                {service.name || t("doctor.schedules.service")}
                               </h4>
                               <Badge
                                 variant="outline"
@@ -602,7 +603,7 @@ export function AppointmentDetails({
                                   (s) => s.service === service._id
                                 )?.status || (
                                   <div className="text-xs text-gray-500">
-                                    temporary
+                                    {t("doctor.schedules.temporary")}
                                   </div>
                                 )}
                               </Badge>
@@ -648,7 +649,7 @@ export function AppointmentDetails({
                                     handleRemoveService(service._id)
                                   }
                                 >
-                                  Remove
+                                  {t("doctor.schedules.remove")}
                                 </Button>
                               )}
                           </div>
@@ -665,13 +666,13 @@ export function AppointmentDetails({
                     disabled={appointment.status !== "in-progress" || appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                     title={
                       appointment.originalSchedule?.status === ScheduleStatus.COMPLETED
-                        ? "Services cannot be edited as appointment is completed"
+                        ? t("doctor.schedules.cannotEditCompleted")
                         : appointment.status !== "in-progress"
-                        ? "Patient must be checked in and paid to edit services"
+                        ? t("doctor.schedules.mustCheckIn")
                         : ""
                     }
                   >
-                    Add Service
+                    {t("doctor.schedules.addService")}
                   </Button>
                   <Button
                     type="button"
@@ -683,13 +684,13 @@ export function AppointmentDetails({
                     }
                     title={
                       appointment.originalSchedule?.status === ScheduleStatus.COMPLETED
-                        ? "Services cannot be edited as appointment is completed"
+                        ? t("doctor.schedules.cannotEditCompleted")
                         : appointment.status !== "in-progress"
-                        ? "Patient must be checked in and paid to save services"
+                        ? t("doctor.schedules.mustCheckIn")
                         : ""
                     }
                   >
-                    Save Services
+                    {t("doctor.schedules.saveServices")}
                   </Button>
                 </div>
                 <SearchService
@@ -706,7 +707,7 @@ export function AppointmentDetails({
           {/* Medical Information */}
           <AccordionItem value="medical-info">
             <AccordionTrigger className="text-base font-semibold">
-              Medical Information
+              {t("doctor.schedules.medicalInformation")}
             </AccordionTrigger>
             <AccordionContent>
               <div className="p-2">
@@ -725,7 +726,7 @@ export function AppointmentDetails({
                       {appointment.symptoms && (
                         <div>
                           <p className="text-xs font-medium text-gray-600 mb-1">
-                            Symptoms
+                            {t("doctor.schedules.symptoms")}
                           </p>
                           <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded-md">
                             {appointment.symptoms}
@@ -735,7 +736,7 @@ export function AppointmentDetails({
                       {appointment.notes && (
                         <div>
                           <p className="text-xs font-medium text-gray-600 mb-1">
-                            Notes
+                            {t("doctor.schedules.notes")}
                           </p>
                           <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded-md">
                             {appointment.notes}
@@ -745,10 +746,10 @@ export function AppointmentDetails({
                       {appointment.previousVisits !== undefined && (
                         <div>
                           <p className="text-xs font-medium text-gray-600 mb-1">
-                            Previous Visits
+                            {t("doctor.schedules.previousVisits")}
                           </p>
                           <p className="text-sm text-gray-900">
-                            {appointment.previousVisits} visits
+                            {appointment.previousVisits} {t("doctor.schedules.visits")}
                           </p>
                         </div>
                       )}
@@ -763,7 +764,7 @@ export function AppointmentDetails({
           {medicalExamination?.prescription && (
             <AccordionItem value="prescription-info">
               <AccordionTrigger className="text-base font-semibold">
-                Prescription
+                {t("doctor.schedules.prescription")}
               </AccordionTrigger>
               <AccordionContent>
                 <div className="p-2">
@@ -784,7 +785,7 @@ export function AppointmentDetails({
         <div className="pt-3 border-t space-y-2 mt-4">
           {isLoading ? (
             <div className="flex justify-center items-center h-8">
-              <p className="text-sm text-gray-500">Loading...</p>
+              <p className="text-sm text-gray-500">{t("doctor.schedules.loading")}</p>
             </div>
           ) : (
             <div className="flex gap-2">
@@ -797,7 +798,7 @@ export function AppointmentDetails({
                       onClick={handleCreatePrescriptionClick}
                       disabled={appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                     >
-                      Create Prescription
+                      {t("doctor.schedules.createPrescription")}
                     </Button>
                   ) : (
                     <Button
@@ -806,17 +807,17 @@ export function AppointmentDetails({
                       onClick={handleStartConsultation}
                       disabled={appointment.originalSchedule?.status === ScheduleStatus.COMPLETED}
                     >
-                      Start Consultation
+                      {t("doctor.schedules.startConsultation")}
                     </Button>
                   )}
                 </>
               ) : appointment.originalSchedule?.status === ScheduleStatus.COMPLETED ? (
                 <div className="w-fit text-xs p-2 border bg-green-50 text-green-700 border-green-200 rounded-md">
-                  <p>Appointment completed</p>
+                  <p>{t("doctor.schedules.appointmentCompletedMessage")}</p>
                 </div>
               ) : (
                 <div className="w-fit text-xs p-2 border bg-yellow-50 text-yellow-700 border-yellow-200 rounded-md">
-                  <p>This patient is not checked or paid yet.</p>
+                  <p>{t("doctor.schedules.notCheckedIn")}</p>
                 </div>
               )}
               {onViewHistory && (
@@ -827,7 +828,7 @@ export function AppointmentDetails({
                   onClick={() => onViewHistory(appointment)}
                 >
                   <FileText className="h-3 w-3 mr-1" />
-                  View History
+                  {t("doctor.schedules.viewHistory")}
                 </Button>
               )}
             </div>

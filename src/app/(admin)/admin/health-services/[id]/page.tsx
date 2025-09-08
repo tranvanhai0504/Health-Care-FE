@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { ConsultationService } from "@/types";
 import { consultationServiceApi } from "@/services/consultationService.service";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/utils";
+import { formatDateTimeString } from "@/utils/date";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -44,6 +46,7 @@ export default function ViewHealthServicePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { t } = useTranslation();
   const [serviceData, setServiceData] = useState<ConsultationService | null>(
     null
   );
@@ -88,11 +91,11 @@ export default function ViewHealthServicePage({
   const handleDeleteService = async () => {
     try {
       await consultationServiceApi.delete(id);
-      toast.success("Health service deleted successfully");
+      toast.success(t("admin.toast.serviceDeleted"));
       router.push("/admin/health-services");
     } catch (error) {
       console.error("Error deleting service:", error);
-      toast.error("Failed to delete health service");
+      toast.error(t("admin.toast.failedToDeleteService"));
     } finally {
       setIsDeleteAlertOpen(false);
     }
@@ -118,13 +121,12 @@ export default function ViewHealthServicePage({
   if (!serviceData) {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
-        <h2 className="text-2xl font-bold mb-4">Service Not Found</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("admin.healthServices.notFound.title")}</h2>
         <p className="mb-6">
-          The health service you&apos;re looking for doesn&apos;t exist or has
-          been removed.
+          {t("admin.healthServices.notFound.description")}
         </p>
         <Button onClick={() => router.push("/admin/health-services")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Health Services
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("admin.healthServices.notFound.backToServices")}
         </Button>
       </div>
     );
@@ -137,17 +139,17 @@ export default function ViewHealthServicePage({
           variant="ghost"
           onClick={() => router.push("/admin/health-services")}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Health Services
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("admin.healthServices.details.backToServices")}
         </Button>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleEditService}>
-            <Pencil className="mr-2 h-4 w-4" /> Edit Service
+            <Pencil className="mr-2 h-4 w-4" /> {t("admin.healthServices.details.editService")}
           </Button>
           <Button
             variant="destructive"
             onClick={() => setIsDeleteAlertOpen(true)}
           >
-            <Trash2 className="mr-2 h-4 w-4" /> Delete Service
+            <Trash2 className="mr-2 h-4 w-4" /> {t("admin.healthServices.details.deleteService")}
           </Button>
         </div>
       </div>
@@ -172,10 +174,10 @@ export default function ViewHealthServicePage({
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                    Description
+                    {t("admin.healthServices.details.description")}
                   </h3>
                   <p className="text-base">
-                    {serviceData.description || "No description available"}
+                    {serviceData.description || t("admin.healthServices.details.noDescription")}
                   </p>
                 </div>
 
@@ -185,16 +187,16 @@ export default function ViewHealthServicePage({
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <DollarSign className="h-4 w-4 text-primary" />
-                      <h3 className="text-lg font-medium">Price</h3>
+                      <h3 className="text-lg font-medium">{t("admin.healthServices.details.price")}</h3>
                     </div>
                     <div className="bg-primary/5 rounded-lg p-6 border border-primary/20">
                       <p className="text-2xl font-bold text-primary mb-2">
                         {serviceData.price === 0
-                          ? "Free"
+                          ? t("admin.healthServices.details.free")
                           : formatCurrency(serviceData.price)}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Per consultation service
+                        {t("admin.healthServices.details.perConsultation")}
                       </p>
                     </div>
                   </div>
@@ -202,14 +204,14 @@ export default function ViewHealthServicePage({
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <Clock className="h-4 w-4 text-primary" />
-                      <h3 className="text-lg font-medium">Duration</h3>
+                      <h3 className="text-lg font-medium">{t("admin.healthServices.details.duration")}</h3>
                     </div>
                     <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
                       <p className="text-2xl font-bold text-blue-600 mb-2">
                         {serviceData.duration} minutes
                       </p>
                       <p className="text-sm text-blue-600">
-                        Estimated consultation time
+                        {t("admin.healthServices.details.estimatedTime")}
                       </p>
                     </div>
                   </div>
@@ -220,13 +222,13 @@ export default function ViewHealthServicePage({
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <User className="h-4 w-4 text-primary" />
-                    <h3 className="text-lg font-medium">Specialization</h3>
+                    <h3 className="text-lg font-medium">{t("admin.healthServices.details.specialization")}</h3>
                   </div>
                   <div className="space-y-3">
                     <Badge variant="outline" className="text-base px-4 py-2">
                       {typeof serviceData.specialization === "string"
                         ? serviceData.specialization
-                        : serviceData.specialization?.name || "General"}
+                        : serviceData.specialization?.name || t("admin.healthServices.details.general")}
                     </Badge>
                     {typeof serviceData.specialization === "object" &&
                       serviceData.specialization?.description && (
@@ -245,28 +247,28 @@ export default function ViewHealthServicePage({
           <Card className="border-none shadow-sm">
             <CardHeader className="bg-muted/50 rounded-t-lg border-b">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" /> Service Details
+                <Calendar className="h-5 w-5 text-primary" /> {t("admin.healthServices.details.serviceDetails")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                    Created At
+                    {t("admin.healthServices.details.createdAt")}
                   </h4>
                   <p className="font-medium">
                     {serviceData.createdAt
-                      ? new Date(serviceData.createdAt).toLocaleString()
+                      ? formatDateTimeString(serviceData.createdAt)
                       : "N/A"}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">
-                    Updated At
+                    {t("admin.healthServices.details.updatedAt")}
                   </h4>
                   <p className="font-medium">
                     {serviceData.updatedAt
-                      ? new Date(serviceData.updatedAt).toLocaleString()
+                      ? formatDateTimeString(serviceData.updatedAt)
                       : "N/A"}
                   </p>
                 </div>
@@ -278,35 +280,35 @@ export default function ViewHealthServicePage({
           <Card className="border-none shadow-sm">
             <CardHeader className="bg-muted/50 rounded-t-lg border-b">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Stethoscope className="h-5 w-5 text-primary" /> Service Summary
+                <Stethoscope className="h-5 w-5 text-primary" /> {t("admin.healthServices.details.serviceSummary")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Duration
+                    {t("admin.healthServices.details.duration")}
                   </span>
                   <span className="font-medium">
                     {serviceData.duration} min
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Price</span>
+                  <span className="text-sm text-muted-foreground">{t("admin.healthServices.details.price")}</span>
                   <span className="font-medium">
                     {serviceData.price === 0
-                      ? "Free"
+                      ? t("admin.healthServices.details.free")
                       : formatCurrency(serviceData.price)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Specialization
+                    {t("admin.healthServices.details.specialization")}
                   </span>
                   <span className="font-medium text-right max-w-[120px] truncate">
                     {typeof serviceData.specialization === "string"
                       ? serviceData.specialization
-                      : serviceData.specialization?.name || "General"}
+                      : serviceData.specialization?.name || t("admin.healthServices.details.general")}
                   </span>
                 </div>
               </div>

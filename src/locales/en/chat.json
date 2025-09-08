@@ -1,0 +1,45 @@
+{
+  "welcome": "Welcome to AI Assistant",
+  "welcomeMessage": "I'm here to help you with your healthcare needs. Ask me anything about our services, appointments, or general health questions.",
+  "tryAsking": "Try asking:",
+  "suggestions": {
+    "bookAppointment": "How can I book an appointment?",
+    "services": "What services do you offer?",
+    "doctors": "Tell me about your doctors",
+    "hours": "What are your operating hours?"
+  },
+  "scheduleConfirmation": {
+    "title": "Schedule Confirmation",
+    "message": "I've prepared a schedule for you. Please review and confirm the details below.",
+    "loadingPackage": "Loading package information...",
+    "packageError": "Failed to load package information",
+    "package": "Package:",
+    "schedule": "Schedule:",
+    "date": "Date:",
+    "time": "Time:",
+    "week": "Week:",
+    "status": "Status:",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "confirmSchedule": "Confirm Schedule",
+    "confirming": "Confirming...",
+    "details": "Details",
+    "confirmed": "I've confirmed your schedule for {{type}} on {{date}}.",
+    "alreadyConfirmed": "This schedule has already been confirmed."
+  },
+  "floatingButton": {
+    "closeChat": "Close Chat"
+  },
+  "popup": {
+    "aiAssistant": "AI Assistant",
+    "messages": "Messages",
+    "clearConversation": "Clear Conversation",
+    "closeChat": "Close Chat"
+  },
+  "messageInput": {
+    "attachImage": "Attach Image",
+    "placeholder": "Type your message here...",
+    "sendMessage": "Send Message",
+    "sendInstructions": "Send Instructions"
+  }
+}

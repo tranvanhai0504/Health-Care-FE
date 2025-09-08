@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/utils/date";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -220,15 +221,6 @@ export default function AdminBlogsPage() {
     }
   };
 
-  // Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   // Pagination handlers
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -263,7 +255,7 @@ export default function AdminBlogsPage() {
             <div className="relative w-full lg:max-w-xs">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search blogs..."
+                placeholder={t("admin.blogs.list.searchPlaceholder", { defaultValue: "Search blogs..." })}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-full"
@@ -287,10 +279,10 @@ export default function AdminBlogsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="createdAt">Sort by Date</SelectItem>
-                  <SelectItem value="title">Sort by Title</SelectItem>
-                  <SelectItem value="author">Sort by Author</SelectItem>
-                  <SelectItem value="updatedAt">Sort by Updated</SelectItem>
+                  <SelectItem value="createdAt">{t("admin.blogs.list.sortByDate", { defaultValue: "Sort by Date" })}</SelectItem>
+                  <SelectItem value="title">{t("admin.blogs.list.sortByTitle", { defaultValue: "Sort by Title" })}</SelectItem>
+                  <SelectItem value="author">{t("admin.blogs.list.sortByAuthor", { defaultValue: "Sort by Author" })}</SelectItem>
+                  <SelectItem value="updatedAt">{t("admin.blogs.list.sortByUpdated", { defaultValue: "Sort by Updated" })}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -305,7 +297,7 @@ export default function AdminBlogsPage() {
                 className="w-full sm:w-auto"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reset
+                {t("admin.blogs.list.reset", { defaultValue: "Reset" })}
               </Button>
             </div>
           </div>
@@ -330,11 +322,11 @@ export default function AdminBlogsPage() {
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No blogs found</h3>
+              <h3 className="text-lg font-medium mb-2">{t("admin.blogs.list.noBlogsFound", { defaultValue: "No blogs found" })}</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery || statusFilter !== "all"
-                  ? "No blogs match your current filters."
-                  : "No blogs have been created yet."}
+                  ? t("admin.blogs.list.noBlogsMatchFilters", { defaultValue: "No blogs match your current filters." })
+                  : t("admin.blogs.list.noBlogsYet", { defaultValue: "No blogs have been created yet." })}
               </p>
               {searchQuery || statusFilter !== "all" ? (
                 <Button
@@ -345,12 +337,12 @@ export default function AdminBlogsPage() {
                     setSortBy("createdAt");
                   }}
                 >
-                  Clear filters
+                  {t("admin.blogs.list.clearFilters", { defaultValue: "Clear filters" })}
                 </Button>
               ) : (
                 <Button onClick={handleCreateBlog}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create your first blog
+                  {t("admin.blogs.list.createFirstBlog", { defaultValue: "Create your first blog" })}
                 </Button>
               )}
             </div>
@@ -360,11 +352,11 @@ export default function AdminBlogsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[400px]">Title</TableHead>
-                      <TableHead>Author</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="w-[400px]">{t("admin.blogs.list.colTitle", { defaultValue: "Title" })}</TableHead>
+                      <TableHead>{t("admin.blogs.list.colAuthor", { defaultValue: "Author" })}</TableHead>
+                      <TableHead>{t("admin.blogs.list.colStatus", { defaultValue: "Status" })}</TableHead>
+                      <TableHead>{t("admin.blogs.list.colCreated", { defaultValue: "Created" })}</TableHead>
+                      <TableHead className="text-right">{t("admin.blogs.list.colActions", { defaultValue: "Actions" })}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -415,7 +407,7 @@ export default function AdminBlogsPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{t("admin.blogs.list.openMenu", { defaultValue: "Open menu" })}</span>
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -466,7 +458,7 @@ export default function AdminBlogsPage() {
                 itemsPerPage={itemsPerPage}
                 onPageChange={handlePageChange}
                 onItemsPerPageChange={handleItemsPerPageChange}
-                itemName="blog"
+                itemName={t("admin.blogs.list.itemName", { defaultValue: "blog" })}
                 showItemsPerPage={true}
                 showJumpToPage={false}
                 itemsPerPageOptions={[5, 10, 20, 50]}
@@ -480,19 +472,18 @@ export default function AdminBlogsPage() {
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.blogs.list.deleteConfirmTitle", { defaultValue: "Are you absolutely sure?" })}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              blog post and remove all associated data.
+              {t("admin.blogs.list.deleteConfirmDescription", { defaultValue: "This action cannot be undone. This will permanently delete the blog post and remove all associated data." })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel", { defaultValue: "Cancel" })}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteBlog}
               className="bg-red-600 text-white hover:bg-red-700"
             >
-              Delete
+              {t("common.delete", { defaultValue: "Delete" })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

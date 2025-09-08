@@ -1,0 +1,45 @@
+{
+  "welcome": "Chào mừng đến với Trợ lý AI",
+  "welcomeMessage": "Tôi ở đây để giúp bạn với các nhu cầu chăm sóc sức khỏe. Hãy hỏi tôi bất cứ điều gì về dịch vụ, cuộc hẹn hoặc câu hỏi sức khỏe chung.",
+  "tryAsking": "Hãy thử hỏi:",
+  "suggestions": {
+    "bookAppointment": "Làm thế nào để đặt lịch hẹn?",
+    "services": "Bạn cung cấp những dịch vụ gì?",
+    "doctors": "Cho tôi biết về các bác sĩ",
+    "hours": "Giờ hoạt động của bạn là gì?"
+  },
+  "scheduleConfirmation": {
+    "title": "Xác nhận lịch hẹn",
+    "message": "Tôi đã chuẩn bị lịch hẹn cho bạn. Vui lòng xem xét và xác nhận thông tin bên dưới.",
+    "loadingPackage": "Đang tải thông tin gói dịch vụ...",
+    "packageError": "Không thể tải thông tin gói dịch vụ",
+    "package": "Gói dịch vụ:",
+    "schedule": "Lịch hẹn:",
+    "date": "Ngày:",
+    "time": "Giờ:",
+    "week": "Tuần:",
+    "status": "Trạng thái:",
+    "morning": "Sáng",
+    "afternoon": "Chiều",
+    "confirmSchedule": "Xác nhận lịch hẹn",
+    "confirming": "Đang xác nhận...",
+    "details": "Chi tiết",
+    "confirmed": "Tôi đã xác nhận lịch hẹn {{type}} của bạn vào ngày {{date}}.",
+    "alreadyConfirmed": "Lịch hẹn này đã được xác nhận rồi."
+  },
+  "floatingButton": {
+    "closeChat": "Đóng trò chuyện"
+  },
+  "popup": {
+    "aiAssistant": "Trợ lý AI",
+    "messages": "Tin nhắn",
+    "clearConversation": "Xóa cuộc trò chuyện",
+    "closeChat": "Đóng trò chuyện"
+  },
+  "messageInput": {
+    "attachImage": "Đính kèm hình ảnh",
+    "placeholder": "Nhập tin nhắn của bạn...",
+    "sendMessage": "Gửi tin nhắn",
+    "sendInstructions": "Gửi hướng dẫn"
+  }
+}

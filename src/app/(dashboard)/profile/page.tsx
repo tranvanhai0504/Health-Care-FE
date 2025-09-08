@@ -58,25 +58,27 @@ import { ChangePasswordDialog } from "@/components/dialogs/change-password-dialo
 import { useTranslation } from "react-i18next";
 
 // Form validation schema
-const profileFormSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+const profileFormSchema = (t: (key: string) => string) => z.object({
+  name: z.string().min(2, { message: t("dashboard.profile.errors.nameMinLength") }),
   email: z
     .string()
-    .email({ message: "Please enter a valid email address." })
+    .email({ message: t("dashboard.profile.errors.invalidEmail") })
     .optional()
     .or(z.literal("")),
   phoneNumber: z
     .string()
-    .min(10, { message: "Please enter a valid phone number." }),
+    .min(10, { message: t("dashboard.profile.errors.invalidPhoneNumber") }),
   address: z
     .string()
-    .min(5, { message: "Address must be at least 5 characters." })
+    .min(5, { message: t("dashboard.profile.errors.addressMinLength") })
     .optional()
     .or(z.literal("")),
   dateOfBirth: z.string().optional(),
   gender: z.enum(["male", "female", "other"]),
   occupation: z.string().optional(),
 });
+
+type ProfileFormValues = z.infer<ReturnType<typeof profileFormSchema>>;
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -92,11 +94,9 @@ export default function ProfilePage() {
 
   const { fetchProfile } = useAuthStore();
 
-  console.log(user);
-
   // Initialize form with react-hook-form
-  const form = useForm<z.infer<typeof profileFormSchema>>({
-    resolver: zodResolver(profileFormSchema),
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema(t)),
     defaultValues: {
       name: "",
       email: "",
@@ -134,7 +134,7 @@ export default function ProfilePage() {
     };
 
     fetchUserProfile();
-  }, [form]);
+  }, [form, t]);
 
   // Cleanup avatar preview URL on unmount
   useEffect(() => {
@@ -178,12 +178,19 @@ export default function ProfilePage() {
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof profileFormSchema>) => {
+  const onSubmit = async (values: ProfileFormValues) => {
     try {
       setSaving(true);
 
+      // Create update data object with only defined values
       const updateData: UpdateUserData = {
-        ...values,
+        name: values.name,
+        email: values.email || undefined,
+        phoneNumber: values.phoneNumber,
+        address: values.address || undefined,
+        dateOfBirth: values.dateOfBirth || undefined,
+        gender: values.gender,
+        occupation: values.occupation || undefined,
         ...(selectedAvatarFile && { avatar: selectedAvatarFile }),
       };
 
@@ -379,7 +386,7 @@ export default function ProfilePage() {
 
                       <div className="absolute -bottom-2 -right-2">
                         <Badge className="rounded-full px-2 py-1 font-medium capitalize">
-                          {user?.role || "User"}
+                          {user?.role || t("dashboard.profile.user")}
                         </Badge>
                       </div>
 
@@ -689,7 +696,11 @@ export default function ProfilePage() {
                       <CardFooter className="px-0 pt-4 pb-0 flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="text-sm text-muted-foreground italic">
                           {t("dashboard.profile.lastUpdated")}:{" "}
-                          {new Date(user?.updatedAt || "").toLocaleDateString()}
+                          {new Date(user?.updatedAt || "").toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </div>
                         <Button
                           type="submit"

@@ -1,0 +1,83 @@
+{
+  "home": "Home",
+  "services": "Services",
+  "doctors": "Doctors",
+  "packages": "Health Packages",
+  "appointments": "Appointments",
+  "profile": "Profile",
+  "settings": "Settings",
+  "mainNav": {
+    "healthPackages": "Health Packages",
+    "medicalServices": "Medical Services",
+    "blogs": "Blogs"
+  },
+  "authButtons": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "userProfile": {
+    "admin": "Admin",
+    "adminDashboard": "Admin Dashboard",
+    "doctorDashboard": "Doctor Dashboard",
+    "profile": "Profile",
+    "myPrescriptions": "My Prescriptions",
+    "logOut": "Log out"
+  },
+  "doctorSidebar": {
+    "dashboard": "Dashboard",
+    "mySchedules": "My Schedules",
+    "prescriptions": "Prescriptions",
+    "medicalExaminations": "Medical Examinations",
+    "profile": "Profile",
+    "logout": "Logout",
+    "doctorPortal": "Doctor Portal"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "signInToView": "Please sign in to view notifications",
+    "noNotifications": "No notifications yet",
+    "retry": "Retry",
+    "refreshNotifications": "Refresh notifications",
+    "upcomingReminder": "Upcoming Reminder",
+    "messageSent": "Message Sent",
+    "messageFailed": "Message Failed",
+    "notification": "Notification",
+    "recently": "Recently",
+    "pending": "pending",
+    "sent": "sent",
+    "failed": "failed"
+  },
+  "breadcrumb": {
+    "consultations": "Consultations",
+    "medicalSpecialties": "Medical Specialties",
+    "healthBlogs": "Health Blogs",
+    "setup": "Setup",
+    "yourInformation": "Your Information",
+    "createPassword": "Create Password",
+    "dashboard": "Dashboard",
+    "mySchedules": "My Schedules",
+    "myPrescriptions": "My Prescriptions",
+    "profiles": "Profiles",
+    "findDoctors": "Find Doctors",
+    "bookDoctor": "Book Doctor",
+    "medicalServices": "Medical Services",
+    "pharmacy": "Pharmacy",
+    "healthPackages": "Health Packages",
+    "healthBlog": "Health Blog",
+    "faqs": "FAQs",
+    "settings": "Settings",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "myAccount": "My Account",
+    "booking": "Booking",
+    "profile": "Profile",
+    "details": "Details",
+    "history": "History",
+    "billing": "Billing",
+    "preferences": "Preferences",
+    "schedule": "Schedule",
+    "edit": "Edit",
+    "create": "Create",
+    "view": "View"
+  }
+}
