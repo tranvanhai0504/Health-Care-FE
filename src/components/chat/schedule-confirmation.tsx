@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import { ConsultationPackage } from "@/types";
 import { formatCurrency } from "@/utils";
-import { formatDate } from "@/utils/date";
+import { getCurrentLocale } from "@/utils/date";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
@@ -62,12 +62,14 @@ export function ScheduleConfirmation({
   }, [formData.packageId]);
 
   const formatDateLocal = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
+    };
+    
+    return new Date(dateString).toLocaleDateString(getCurrentLocale(), options);
   };
 
   const formatTime = (timeOffset: number) => {
@@ -79,11 +81,13 @@ export function ScheduleConfirmation({
     const targetDate = new Date(weekStartDate);
     targetDate.setDate(weekStartDate.getDate() + dayOffset);
 
-    return targetDate.toLocaleDateString("en-US", {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
       month: "short",
       day: "numeric",
-    });
+    };
+    
+    return new Date(targetDate).toLocaleDateString(getCurrentLocale(), options);
   };
 
   const handleConfirm = async () => {
