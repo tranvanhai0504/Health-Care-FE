@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
 import { ChangePasswordDialog } from "@/components/dialogs/change-password-dialog";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@/utils/date"; // Import the date utility
 
 // Form validation schema
 const profileFormSchema = (t: (key: string) => string) => z.object({
@@ -381,7 +382,7 @@ export default function ProfilePage() {
                         accept="image/*"
                         onChange={handleAvatarChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
-                        disabled={saving}
+                        disabled={saving || false}
                       />
 
                       <div className="absolute -bottom-2 -right-2">
@@ -401,7 +402,7 @@ export default function ProfilePage() {
                           variant="outline"
                           size="sm"
                           onClick={removeSelectedAvatar}
-                          disabled={saving}
+                          disabled={saving || false}
                         >
                           {t("dashboard.profile.cancel")}
                         </Button>
@@ -414,7 +415,7 @@ export default function ProfilePage() {
                             ) as HTMLInputElement;
                             fileInput?.click();
                           }}
-                          disabled={saving}
+                          disabled={saving || false}
                         >
                           <Upload className="h-4 w-4 mr-2" />
                           {t("dashboard.profile.chooseDifferent")}
@@ -482,13 +483,7 @@ export default function ProfilePage() {
                                 {t("dashboard.profile.memberSince")}
                               </span>
                               <span>
-                                {new Date(
-                                  user?.createdAt || ""
-                                ).toLocaleDateString(undefined, {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
+                                {formatDate(user?.createdAt)}
                               </span>
                             </div>
                           </div>
@@ -502,13 +497,7 @@ export default function ProfilePage() {
                                 {t("dashboard.profile.lastUpdated")}
                               </span>
                               <span>
-                                {new Date(
-                                  user?.updatedAt || ""
-                                ).toLocaleDateString(undefined, {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
+                                {formatDate(user?.updatedAt)}
                               </span>
                             </div>
                           </div>
@@ -696,16 +685,12 @@ export default function ProfilePage() {
                       <CardFooter className="px-0 pt-4 pb-0 flex flex-col sm:flex-row gap-3 items-center justify-between">
                         <div className="text-sm text-muted-foreground italic">
                           {t("dashboard.profile.lastUpdated")}:{" "}
-                          {new Date(user?.updatedAt || "").toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {formatDate(user?.updatedAt)}
                         </div>
                         <Button
                           type="submit"
                           className="h-11 px-8 w-full sm:w-auto"
-                          disabled={saving}
+                          disabled={saving || false}
                         >
                           {saving ? (
                             <span className="flex items-center">

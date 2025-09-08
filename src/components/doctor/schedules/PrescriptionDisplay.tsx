@@ -6,6 +6,7 @@ import { Prescription, Medicine } from "@/types";
 import { Pill, FileText, DollarSign, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@/utils/date";
 
 interface PrescriptionDisplayProps {
   prescriptionId: string;
@@ -115,7 +116,7 @@ export function PrescriptionDisplay({ prescriptionId }: PrescriptionDisplayProps
           <div>
             <p className="text-xs font-medium text-gray-600">{t("doctor.prescription.dateIssued")}</p>
             <p className="text-sm text-gray-900">
-              {new Date(prescription.dateIssued).toLocaleDateString()}
+              {formatDate(prescription.dateIssued)}
             </p>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import { ConsultationPackage } from "@/types";
 import { formatCurrency } from "@/utils";
+import { formatDate } from "@/utils/date";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 
@@ -60,7 +61,7 @@ export function ScheduleConfirmation({
     fetchPackageInfo();
   }, [formData.packageId]);
 
-  const formatDate = (dateString: string) => {
+  const formatDateLocal = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -69,7 +70,7 @@ export function ScheduleConfirmation({
     });
   };
 
-       const formatTime = (timeOffset: number) => {
+  const formatTime = (timeOffset: number) => {
     return timeOffset === 0 ? t("chat.scheduleConfirmation.morning") : t("chat.scheduleConfirmation.afternoon");
   };
 
@@ -104,9 +105,9 @@ export function ScheduleConfirmation({
         <CardContent className="p-4">
           <div className="flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" />
-                         <span className="text-sm text-muted-foreground">
-               {t("chat.scheduleConfirmation.loadingPackage")}
-             </span>
+            <span className="text-sm text-muted-foreground">
+              {t("chat.scheduleConfirmation.loadingPackage")}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -117,9 +118,9 @@ export function ScheduleConfirmation({
     return (
       <Card className="w-full max-w-md">
         <CardContent className="p-4">
-                     <div className="text-sm text-destructive">
-             {t("chat.scheduleConfirmation.packageError")}
-           </div>
+          <div className="text-sm text-destructive">
+            {t("chat.scheduleConfirmation.packageError")}
+          </div>
         </CardContent>
       </Card>
     );
@@ -128,13 +129,13 @@ export function ScheduleConfirmation({
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="pb-3">
-                 <CardTitle className="text-base flex items-center gap-2">
-           <Calendar className="w-5 h-5" />
-           {t("chat.scheduleConfirmation.title")}
-         </CardTitle>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          {t("chat.scheduleConfirmation.title")}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-                {/* Package Information */}
+        {/* Package Information */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -170,28 +171,28 @@ export function ScheduleConfirmation({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
-                         <span className="font-medium">{t("chat.scheduleConfirmation.schedule")}</span>
+            <span className="font-medium">{t("chat.scheduleConfirmation.schedule")}</span>
           </div>
           <div className="pl-6 space-y-1">
-                         <div className="text-sm">
-               <span className="font-medium">{t("chat.scheduleConfirmation.date")}</span>{" "}
-               {getDayOfWeek(formData.dayOffset, formData.weekPeriod.from)}
-             </div>
-             <div className="text-sm">
-               <span className="font-medium">{t("chat.scheduleConfirmation.time")}</span>{" "}
-               {formatTime(formData.timeOffset)}
-             </div>
-             <div className="text-sm">
-               <span className="font-medium">{t("chat.scheduleConfirmation.week")}</span>{" "}
-               {formatDate(formData.weekPeriod.from)} -{" "}
-               {formatDate(formData.weekPeriod.to)}
-             </div>
-             <div className="text-sm">
-               <span className="font-medium">{t("chat.scheduleConfirmation.status")}</span>
-               <Badge variant="outline" className="ml-2 capitalize">
-                 {formData.status}
-               </Badge>
-             </div>
+            <div className="text-sm">
+              <span className="font-medium">{t("chat.scheduleConfirmation.date")}</span>{" "}
+              {getDayOfWeek(formData.dayOffset, formData.weekPeriod.from)}
+            </div>
+            <div className="text-sm">
+              <span className="font-medium">{t("chat.scheduleConfirmation.time")}</span>{" "}
+              {formatTime(formData.timeOffset)}
+            </div>
+            <div className="text-sm">
+              <span className="font-medium">{t("chat.scheduleConfirmation.week")}</span>{" "}
+              {formatDateLocal(formData.weekPeriod.from)} -{" "}
+              {formatDateLocal(formData.weekPeriod.to)}
+            </div>
+            <div className="text-sm">
+              <span className="font-medium">{t("chat.scheduleConfirmation.status")}</span>
+              <Badge variant="outline" className="ml-2 capitalize">
+                {formData.status}
+              </Badge>
+            </div>
           </div>
         </div>
 
@@ -199,28 +200,28 @@ export function ScheduleConfirmation({
         <div className="flex gap-2 pt-2">
           <Button
             onClick={handleConfirm}
-            disabled={isConfirming}
+            disabled={isConfirming || false}
             className="flex-1"
           >
-                         {isConfirming ? (
-               <>
-                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                 {t("chat.scheduleConfirmation.confirming")}
-               </>
-             ) : (
-               <>
-                 <CheckCircle className="w-4 h-4 mr-2" />
-                 {t("chat.scheduleConfirmation.confirmSchedule")}
-               </>
-             )}
+            {isConfirming ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {t("chat.scheduleConfirmation.confirming")}
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {t("chat.scheduleConfirmation.confirmSchedule")}
+              </>
+            )}
           </Button>
           {onCancel && (
             <Button
               variant="outline"
               onClick={onCancel}
-              disabled={isConfirming}
+              disabled={isConfirming || false}
             >
-                             {t("common.cancel")}
+              {t("common.cancel")}
             </Button>
           )}
         </div>

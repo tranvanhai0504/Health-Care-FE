@@ -30,6 +30,7 @@ import {
 import QRCode from "qrcode";
 import { generatePaymentQrHtml } from "@/utils/paymentQrTemplate";
 import { getScheduleDate } from "@/utils/formatters";
+import { formatDate } from "@/utils/date";
 
 import {
   Calendar,
@@ -900,7 +901,7 @@ export function ScheduleDetails({
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{t("admin.scheduleDetails.userInfo.dateOfBirth")}:</span>
                     <span>
-                      {new Date(userData.dateOfBirth).toLocaleDateString()}
+                      {formatDate(userData.dateOfBirth)}
                     </span>
                   </div>
                 )}
@@ -920,7 +921,7 @@ export function ScheduleDetails({
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{t("admin.scheduleDetails.userInfo.memberSince")}:</span>
                     <span>
-                      {new Date(userData.createdAt).toLocaleDateString()}
+                      {formatDate(userData.createdAt)}
                     </span>
                   </div>
                 )}

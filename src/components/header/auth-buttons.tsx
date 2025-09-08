@@ -12,10 +12,10 @@ const AuthButtons = () => {
 
   return (
     <>
-      <Button variant="ghost" asChild disabled={isLoading}>
+      <Button variant="ghost" asChild disabled={isLoading || false}>
         <Link href="/login">{t("navigation.authButtons.signIn")}</Link>
       </Button>
-      <Button asChild disabled={isLoading}>
+      <Button asChild disabled={isLoading || false}>
         <Link href="/register">{t("navigation.authButtons.signUp")}</Link>
       </Button>
     </>

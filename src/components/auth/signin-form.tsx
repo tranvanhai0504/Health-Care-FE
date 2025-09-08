@@ -96,7 +96,7 @@ export default function SignInForm() {
                     <Input
                       placeholder={t("auth.login.phonePlaceholder")}
                       {...field}
-                      disabled={isLoading}
+                      disabled={isLoading || false}
                     />
                   </FormControl>
                   <FormMessage />
@@ -116,7 +116,7 @@ export default function SignInForm() {
                         type={showPassword ? "text" : "password"}
                         placeholder={t("auth.login.passwordPlaceholder")}
                         {...field}
-                        disabled={isLoading}
+                        disabled={isLoading || false}
                       />
                       <Button
                         type="button"
