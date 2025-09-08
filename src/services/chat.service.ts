@@ -42,13 +42,17 @@ export class ChatService extends BaseService<ChatResponse> {
           formData.append('image', request.image);
          
           data = formData;
-          config = { headers: { "Content-Type": "multipart/form-data" } };
+          config = { 
+            headers: { "Content-Type": "multipart/form-data" },
+            timeout: 600000 // 30 seconds for image uploads
+          };
         } else {
           data = {
             message: request.message,
             conversationId: request.conversationId,
             context: request.context,
           };
+          config = { timeout: 600000 }; // 30 seconds for regular messages
         }
 
         const response = await api.post<ApiResponse<ChatResponse>>(
@@ -148,6 +152,7 @@ export class ChatService extends BaseService<ChatResponse> {
         request,
         {
           responseType: "stream",
+          timeout: 600000, // 30 seconds for streaming
           onDownloadProgress: (progressEvent) => {
             if (onChunk && progressEvent.event?.target?.response) {
               const chunk = progressEvent.event.target.response;
@@ -172,7 +177,8 @@ export class ChatService extends BaseService<ChatResponse> {
   async getConversation(conversationId: string): Promise<ChatResponse[]> {
     try {
       const response = await api.get<ApiResponse<ChatResponse[]>>(
-        `${this.basePath}/conversation/${conversationId}`
+        `${this.basePath}/conversation/${conversationId}`,
+        { timeout: 600000 } // 30 seconds
       );
       return response.data.data;
     } catch (error) {
@@ -188,7 +194,8 @@ export class ChatService extends BaseService<ChatResponse> {
   async deleteConversation(conversationId: string): Promise<void> {
     try {
       await api.delete<ApiResponse<void>>(
-        `${this.basePath}/conversation/${conversationId}`
+        `${this.basePath}/conversation/${conversationId}`,
+        { timeout: 600000 } // 30 seconds
       );
     } catch (error) {
       throw this.transformError(error);
@@ -217,7 +224,7 @@ export class ChatService extends BaseService<ChatResponse> {
             updatedAt: string;
           }>
         >
-      >(`${this.basePath}/conversations`);
+      >(`${this.basePath}/conversations`, { timeout: 600000 }); // 30 seconds
       return response.data.data;
     } catch (error) {
       throw this.transformError(error);
@@ -237,7 +244,8 @@ export class ChatService extends BaseService<ChatResponse> {
     try {
       await api.patch<ApiResponse<void>>(
         `${this.basePath}/conversation/${conversationId}`,
-        { title }
+        { title },
+        { timeout: 600000 } // 30 seconds
       );
     } catch (error) {
       throw this.transformError(error);
@@ -256,7 +264,10 @@ export class ChatService extends BaseService<ChatResponse> {
     try {
       const response = await api.get<ApiResponse<string[]>>(
         `${this.basePath}/suggestions`,
-        { params: context }
+        { 
+          params: context,
+          timeout: 600000 // 30 seconds
+        }
       );
       return response.data.data;
     } catch (error) {
