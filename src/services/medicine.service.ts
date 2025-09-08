@@ -22,8 +22,8 @@ export class MedicineService extends BaseService<Medicine> {
    * @returns Promise with paginated medicines
    */
   async getAll(params?: Record<string, unknown>): Promise<PaginatedApiResponse<Medicine>> {
-    const response = await api.get<ApiResponse<PaginatedApiResponse<Medicine>>>(this.basePath, { params });
-    return response.data.data;
+    const response = await api.get<PaginatedApiResponse<Medicine>>(this.basePath, { params });
+    return response.data;
   }
 
   /**

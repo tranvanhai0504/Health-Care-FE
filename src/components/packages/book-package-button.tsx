@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface BookPackageButtonProps extends React.ComponentProps<"button"> {
   packageId: string;
@@ -23,10 +24,11 @@ export function BookPackageButton({
   variant = "default",
   size = "default",
   showIcon = true,
-  label = "Book Schedule",
+  label,
   ...props
 }: BookPackageButtonProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     router.push(`/booking?type=package&packageId=${packageId}`);
@@ -41,7 +43,7 @@ export function BookPackageButton({
       {...props}
     >
       {showIcon && <Calendar className="mr-2 h-4 w-4" />}
-      {label}
+      {label || t("common.bookSchedule")}
     </Button>
   );
 } 

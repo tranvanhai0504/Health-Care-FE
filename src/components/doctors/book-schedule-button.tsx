@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useLoginModal } from "@/hooks/useLoginModal";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "react-i18next";
 
 interface BookScheduleButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> {
   doctorId: string;
@@ -27,6 +28,7 @@ export function BookScheduleButton({
   const { isAuthenticated } = useAuth();
   const { openModal } = useLoginModal();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const handleBookSchedule = async () => {
     try {
@@ -36,16 +38,16 @@ export function BookScheduleButton({
       
       // Show success message
       toast({
-        title: "Schedule Created",
-        description: `Your schedule with Dr. ${doctorName} has been created successfully.`,
+        title: t("common.scheduleCreated"),
+        description: t("common.scheduleCreatedSuccess", { doctorName }),
       });
     } catch (error) {
       console.error("Error creating schedule:", error);
       
       // Show error message
       toast({
-        title: "Error Creating Schedule",
-        description: "There was an error creating your schedule. Please try again.",
+        title: t("common.errorCreatingSchedule"),
+        description: t("common.errorCreatingScheduleDescription"),
         type: "error",
       });
     }
@@ -70,13 +72,13 @@ export function BookScheduleButton({
         className={className}
         {...props}
       >
-        {children || "Book Schedule"}
+        {children || t("common.bookSchedule")}
       </Button>
       
       {/* Login prompt for unauthenticated users */}
       {!isAuthenticated && (
         <p className="text-sm text-muted-foreground mt-2">
-          Sign in to book a schedule
+          {t("common.signInToBookSchedule")}
         </p>
       )}
     </>

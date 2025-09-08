@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { X, Plus } from "lucide-react";
 import { CreatePrescriptionData, PrescriptionMedication } from "@/types/prescription";
+import { useTranslation } from "react-i18next";
 
 interface PrescriptionFormProps {
   onSave: (data: CreatePrescriptionData) => Promise<void>;
@@ -15,6 +16,7 @@ interface PrescriptionFormProps {
 }
 
 export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<{
     patient: string;
     diagnosis: string;
@@ -118,30 +120,30 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
     <div className="space-y-6">
       <div className="space-y-4">
         <div>
-          <Label htmlFor="diagnosis">Diagnosis</Label>
+          <Label htmlFor="diagnosis">{t("doctor.prescription.diagnosis")}</Label>
           <Textarea
             id="diagnosis"
             value={formData.diagnosis}
             onChange={(e) => setFormData(prev => ({ ...prev, diagnosis: e.target.value }))}
-            placeholder="Enter diagnosis..."
+            placeholder={t("doctor.prescription.enterDiagnosis")}
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="notes">Notes (Optional)</Label>
+          <Label htmlFor="notes">{t("doctor.prescription.notes")} ({t("doctor.schedules.optional")})</Label>
           <Textarea
             id="notes"
             value={formData.notes}
             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-            placeholder="Enter additional notes..."
+            placeholder={t("doctor.prescription.enterAdditionalNotes")}
           />
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label>Medications</Label>
+          <Label>{t("doctor.prescription.medications")}</Label>
           <Button
             type="button"
             variant="outline"
@@ -149,20 +151,20 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
             onClick={addMedication}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Medication
+            {t("doctor.prescription.addMedication")}
           </Button>
         </div>
 
         {formData.medications.length === 0 && (
           <p className="text-sm text-gray-500 text-center py-4">
-            No medications added yet. Click &quot;Add Medication&quot; to start.
+            {t("doctor.prescription.noMedicationsAdded")}
           </p>
         )}
 
         {formData.medications.map((medication, index) => (
           <div key={index} className="border rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium">Medication {index + 1}</h4>
+              <h4 className="font-medium">{t("doctor.prescription.medication", { number: index + 1 })}</h4>
               <Button
                 type="button"
                 variant="ghost"
@@ -175,7 +177,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor={`name-${index}`}>Medication Name</Label>
+                <Label htmlFor={`name-${index}`}>{t("doctor.prescription.medicationName")}</Label>
                 <Input
                   id={`name-${index}`}
                   value={medication.name}
@@ -186,7 +188,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
               </div>
 
               <div>
-                <Label htmlFor={`dosage-${index}`}>Dosage</Label>
+                <Label htmlFor={`dosage-${index}`}>{t("doctor.prescription.dosage")}</Label>
                 <Input
                   id={`dosage-${index}`}
                   value={medication.dosage}
@@ -197,7 +199,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
               </div>
 
               <div>
-                <Label htmlFor={`frequency-${index}`}>Frequency</Label>
+                <Label htmlFor={`frequency-${index}`}>{t("doctor.prescription.frequency")}</Label>
                 <Input
                   id={`frequency-${index}`}
                   value={medication.frequency}
@@ -208,7 +210,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
               </div>
 
               <div>
-                <Label htmlFor={`duration-${index}`}>Duration</Label>
+                <Label htmlFor={`duration-${index}`}>{t("doctor.prescription.duration")}</Label>
                 <Input
                   id={`duration-${index}`}
                   value={medication.duration}
@@ -219,7 +221,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
               </div>
 
               <div>
-                <Label htmlFor={`quantity-${index}`}>Quantity</Label>
+                <Label htmlFor={`quantity-${index}`}>{t("doctor.prescription.quantity")}</Label>
                 <Input
                   id={`quantity-${index}`}
                   type="number"
@@ -233,7 +235,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
             </div>
 
             <div>
-              <Label htmlFor={`instructions-${index}`}>Instructions</Label>
+              <Label htmlFor={`instructions-${index}`}>{t("doctor.prescription.instructions")}</Label>
               <Textarea
                 id={`instructions-${index}`}
                 value={medication.instructions}
@@ -253,7 +255,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
           onClick={onCancel}
           disabled={isSubmitting}
         >
-          Cancel
+          {t("doctor.prescription.cancel")}
         </Button>
         <Button
           type="submit"
@@ -261,7 +263,7 @@ export function PrescriptionForm({ onSave, onCancel, patientId }: PrescriptionFo
           disabled={isSubmitting || formData.medications.length === 0}
           className="flex-1"
         >
-          {isSubmitting ? "Saving..." : "Save Prescription"}
+          {isSubmitting ? t("doctor.prescription.saving") : t("doctor.prescription.savePrescription")}
         </Button>
       </div>
     </div>

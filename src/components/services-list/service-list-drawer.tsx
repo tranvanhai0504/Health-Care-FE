@@ -19,7 +19,7 @@ import { formatCurrency, formatDuration } from '@/utils';
 import { useTranslation } from 'react-i18next';
 
 export function ServiceListDrawer() {
-  const { t } = useTranslation();
+  const { t } = useTranslation("");
   const {
     items,
     isOpen,
@@ -40,17 +40,17 @@ export function ServiceListDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={setListOpen}>
-      <SheetContent className="w-[400px] sm:w-[540px] p-0 flex flex-col">
+      <SheetContent className="w-[400px] sm:w-[640px] p-0 flex flex-col">
         <SheetHeader className="p-6 pb-4">
           <SheetTitle className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
-            {t('servicesList.drawer.title')}
+            {t('common.servicesList.drawer.title')}
             <Badge variant="secondary" className="ml-auto">
-              {getTotalServices()} {getTotalServices() === 1 ? t('servicesList.drawer.service') : t('servicesList.drawer.services')}
+              {getTotalServices()} {getTotalServices() === 1 ? t('common.servicesList.drawer.service') : t('common.servicesList.drawer.services')}
             </Badge>
           </SheetTitle>
           <SheetDescription>
-            {t('servicesList.drawer.description')}
+            {t('common.servicesList.drawer.description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -60,17 +60,17 @@ export function ServiceListDrawer() {
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                {t('servicesList.drawer.loadingServices')}
+                {t('common.servicesList.drawer.loadingServices')}
               </h3>
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <ClipboardList className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                {t('servicesList.drawer.emptyList')}
+                {t('common.servicesList.drawer.emptyList')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {t('servicesList.drawer.emptyListDescription')}
+                {t('common.servicesList.drawer.emptyListDescription')}
               </p>
             </div>
           ) : (
@@ -117,11 +117,11 @@ export function ServiceListDrawer() {
           <div className="border-t bg-background p-6 space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-base font-medium">{t('servicesList.drawer.totalServices')}:</span>
+                <span className="text-base font-medium">{t('common.servicesList.drawer.totalServices')}:</span>
                 <span className="font-medium">{getTotalServices()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">{t('servicesList.drawer.totalPrice')}:</span>
+                <span className="text-lg font-semibold">{t('common.servicesList.drawer.totalPrice')}:</span>
                 <span className="text-lg font-bold text-primary">
                   {formatCurrency(getTotalPrice())}
                 </span>
@@ -136,14 +136,14 @@ export function ServiceListDrawer() {
                 onClick={clearList}
                 className="flex-1"
               >
-                {t('servicesList.drawer.clearAll')}
+                {t('common.servicesList.drawer.clearAll')}
               </Button>
               <Button
                 onClick={handleBookNow}
                 className="flex-1 bg-primary hover:bg-primary/90"
               >
                 <Calendar className="h-4 w-4 mr-2" />
-                {t('servicesList.drawer.bookNow')}
+                {t('common.servicesList.drawer.bookNow')}
               </Button>
             </div>
           </div>

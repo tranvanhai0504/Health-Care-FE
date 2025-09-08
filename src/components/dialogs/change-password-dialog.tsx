@@ -93,10 +93,10 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-primary" />
-            {t("dialogs.changePassword.title")}
+            {t("dialog.changePassword.title")}
           </DialogTitle>
           <DialogDescription>
-            {t("dialogs.changePassword.description")}
+            {t("dialog.changePassword.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,11 +107,11 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
               name="oldPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("dialogs.changePassword.currentPassword")}</FormLabel>
+                  <FormLabel>{t("dialog.changePassword.currentPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={t("dialogs.changePassword.enterCurrentPassword")}
+                      placeholder={t("dialog.changePassword.enterCurrentPassword")}
                       {...field}
                       disabled={changingPassword}
                     />
@@ -126,11 +126,11 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("dialogs.changePassword.newPassword")}</FormLabel>
+                  <FormLabel>{t("dialog.changePassword.newPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={t("dialogs.changePassword.enterNewPassword")}
+                      placeholder={t("dialog.changePassword.enterNewPassword")}
                       {...field}
                       disabled={changingPassword}
                     />
@@ -145,11 +145,11 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("dialogs.changePassword.confirmNewPassword")}</FormLabel>
+                  <FormLabel>{t("dialog.changePassword.confirmNewPassword")}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={t("dialogs.changePassword.confirmNewPasswordPlaceholder")}
+                      placeholder={t("dialog.changePassword.confirmNewPasswordPlaceholder")}
                       {...field}
                       disabled={changingPassword}
                     />
@@ -166,18 +166,18 @@ export function ChangePasswordDialog({ isOpen, onOpenChange }: Props) {
                 onClick={handleClose}
                 disabled={changingPassword}
               >
-                {t("dialogs.changePassword.cancel")}
+                {t("dialog.changePassword.cancel")}
               </Button>
               <Button type="submit" disabled={changingPassword}>
                 {changingPassword ? (
                   <span className="flex items-center">
                     <span className="animate-spin mr-2 h-4 w-4 border-2 border-background border-t-transparent rounded-full" />
-                    {t("dialogs.changePassword.changing")}
+                    {t("dialog.changePassword.changing")}
                   </span>
                 ) : (
                   <span className="flex items-center">
                     <Key className="mr-2 h-4 w-4" />
-                    {t("dialogs.changePassword.changePassword")}
+                    {t("dialog.changePassword.changePassword")}
                   </span>
                 )}
               </Button>

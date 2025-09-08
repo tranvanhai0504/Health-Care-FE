@@ -81,20 +81,21 @@ export function CreatePrescriptionDialog({
   const fetchMedicines = useCallback(async () => {
     setIsLoadingMedicines(true);
     try {
+      console.log("fetch medicines");
       const response = await medicineService.getAll({
         limit: 100, // Get more medicines for better selection
-        ...(searchTerm && { name: searchTerm })
+        ...(searchTerm && { name: searchTerm }),
       });
       setMedicines(response?.data || []);
     } catch (error) {
-      console.error('Error fetching medicines:', error);
+      console.error("Error fetching medicines:", error);
       setMedicines([]);
     } finally {
       setIsLoadingMedicines(false);
     }
   }, [searchTerm]);
 
-  // Fetch medicines when component mounts
+  // Fetch medicines when component mounts or when dialog opens
   useEffect(() => {
     if (isOpen) {
       fetchMedicines();
@@ -104,25 +105,25 @@ export function CreatePrescriptionDialog({
   // Ensure patient field is always set correctly when dialog opens
   useEffect(() => {
     if (isOpen && patientId) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        patient: patientId
+        patient: patientId,
       }));
     }
   }, [isOpen, patientId]);
 
   // Safety check: if patient field is empty but we have patientId, restore it
   useEffect(() => {
-    if ((!formData.patient || formData.patient.trim() === '') && patientId) {
-      setFormData(prev => ({
+    if ((!formData.patient || formData.patient.trim() === "") && patientId) {
+      setFormData((prev) => ({
         ...prev,
-        patient: patientId
+        patient: patientId,
       }));
     }
   }, [formData, patientId]);
 
   const addMedication = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       patient: prev.patient || patientId, // Ensure patient is preserved
       medications: [
@@ -135,43 +136,49 @@ export function CreatePrescriptionDialog({
           duration: "",
           instructions: "",
           quantity: 1,
-        }
-      ]
+        },
+      ],
     }));
   };
 
   const removeMedication = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       patient: prev.patient || patientId, // Ensure patient is preserved
-      medications: prev.medications.filter((_, i) => i !== index)
+      medications: prev.medications.filter((_, i) => i !== index),
     }));
   };
 
-  const updateMedication = (index: number, field: keyof FormMedication, value: string | number) => {
-    setFormData(prev => ({
+  const updateMedication = (
+    index: number,
+    field: keyof FormMedication,
+    value: string | number
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       patient: prev.patient || patientId, // Ensure patient is preserved
-      medications: prev.medications.map((med, i) => 
+      medications: prev.medications.map((med, i) =>
         i === index ? { ...med, [field]: value } : med
-      )
+      ),
     }));
   };
 
   const handleMedicineSelect = (index: number, medicineId: string) => {
-    const selectedMedicine = medicines.find(med => med._id === medicineId);
+    const selectedMedicine = medicines.find((med) => med._id === medicineId);
     if (selectedMedicine) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         patient: prev.patient || patientId, // Ensure patient is preserved
-        medications: prev.medications.map((med, i) => 
-          i === index ? { 
-            ...med, 
-            medicineId: selectedMedicine._id || "",
-            name: selectedMedicine.name,
-            dosage: selectedMedicine.dosage 
-          } : med
-        )
+        medications: prev.medications.map((med, i) =>
+          i === index
+            ? {
+                ...med,
+                medicineId: selectedMedicine._id || "",
+                name: selectedMedicine.name,
+                dosage: selectedMedicine.dosage,
+              }
+            : med
+        ),
       }));
     }
   };
@@ -180,13 +187,15 @@ export function CreatePrescriptionDialog({
     setSearchTerm(value);
     if (value.trim()) {
       try {
-        const response = await medicineService.searchByName(value, { limit: 50 });
+        const response = await medicineService.searchByName(value, {
+          limit: 50,
+        });
         setMedicines(response?.data || []);
       } catch (error) {
-        console.error('Error searching medicines:', error);
+        console.error("Error searching medicines:", error);
       }
     } else {
-      fetchMedicines();
+      fetchMedicines(); // Reset to full list when search is cleared
     }
   };
 
@@ -198,7 +207,7 @@ export function CreatePrescriptionDialog({
       if (med.medicineId && med.quantity) {
         // Base cost per medicine (you might want to fetch this from the API)
         const baseCost = 1000; // 1000 VND per medicine
-        return total + (baseCost * med.quantity);
+        return total + baseCost * med.quantity;
       }
       return total;
     }, 0);
@@ -207,14 +216,14 @@ export function CreatePrescriptionDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Validate that patient field is not empty
-    if (!formData.patient || formData.patient.trim() === '') {
-      alert('Patient information is missing. Please try again.');
+    if (!formData.patient || formData.patient.trim() === "") {
+      alert("Patient information is missing. Please try again.");
       setIsSubmitting(false);
       return;
     }
-    
+
     try {
       // Transform the data to match API format
       const apiData: CreatePrescriptionData = {
@@ -222,12 +231,12 @@ export function CreatePrescriptionDialog({
         diagnosis: formData.diagnosis,
         notes: formData.notes,
         totalCost: calculateTotalCost(formData.medications),
-        medications: formData.medications.map(med => ({
+        medications: formData.medications.map((med) => ({
           medicine: med.medicineId,
           quantity: med.quantity || 1,
           frequency: med.frequency,
-          duration: med.duration
-        }))
+          duration: med.duration,
+        })),
       };
 
       await onSave(apiData);
@@ -241,7 +250,7 @@ export function CreatePrescriptionDialog({
       });
       onOpenChange(false);
     } catch (error) {
-      console.error('Error saving prescription:', error);
+      console.error("Error saving prescription:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -262,14 +271,22 @@ export function CreatePrescriptionDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-4xl max-h-[90vh] overflow-y-auto"
+        // Remove the onOpenAutoFocus to allow natural focus management
+        // Handle focus trapping properly with Radix UI
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Pill className="h-5 w-5" />
-            Create Prescription
+            {t("dialog.createPrescription.createPrescription")}
           </DialogTitle>
           <DialogDescription>
-            {patientName ? `Create prescription for ${patientName}` : 'Create a new prescription'}
+            {patientName
+              ? `${t(
+                  "dialog.createPrescription.createPrescriptionFor"
+                )} ${patientName}`
+              : t("dialog.createPrescription.createNewPrescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -278,10 +295,18 @@ export function CreatePrescriptionDialog({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-base font-semibold">Medications</Label>
+                <Label className="text-base font-semibold">
+                  {t("dialog.createPrescription.medications")}
+                </Label>
                 {formData.medications.length > 0 && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formData.medications.filter(med => med.medicineId).length} of {formData.medications.length} medicines selected
+                    {
+                      formData.medications.filter((med) => med.medicineId)
+                        .length
+                    }{" "}
+                    {t("dialog.createPrescription.of")}{" "}
+                    {formData.medications.length}{" "}
+                    {t("dialog.createPrescription.medicinesSelected")}
                   </p>
                 )}
               </div>
@@ -290,30 +315,41 @@ export function CreatePrescriptionDialog({
                 variant="outline"
                 size="sm"
                 onClick={addMedication}
+                // Remove autoFocus={false} to allow natural focus behavior
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Medication
+                {t("dialog.createPrescription.addMedication")}
               </Button>
             </div>
 
             {formData.medications.length === 0 && (
               <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                 <Pill className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 mb-2">{t("dialogs.createPrescription.noMedicationsAdded")}</p>
-                <p className="text-xs text-gray-400">{t("dialogs.createPrescription.clickAddMedication")}</p>
+                <p className="text-sm text-gray-500 mb-2">
+                  {t("dialog.createPrescription.noMedicationsAdded")}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {t("dialog.createPrescription.clickAddMedication")}
+                </p>
               </div>
             )}
 
             {formData.medications.map((medication, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-4 bg-gray-50/50">
+              <div
+                key={index}
+                className="border rounded-lg p-4 space-y-4 bg-gray-50/50"
+              >
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-lg">{t("dialogs.createPrescription.medication")} {index + 1}</h4>
+                  <h4 className="font-medium text-lg">
+                    {t("dialog.createPrescription.medication")} {index + 1}
+                  </h4>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => removeMedication(index)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    // Remove explicit tabIndex to allow natural focus management
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -321,41 +357,66 @@ export function CreatePrescriptionDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="">
-                    <Label htmlFor={`medicine-${index}`}>{t("dialogs.createPrescription.selectMedicine")} *</Label>
+                    <Label htmlFor={`medicine-${index}`}>
+                      {t("dialog.createPrescription.selectMedicine")} *
+                    </Label>
                     <Select
-                      onValueChange={(value) => handleMedicineSelect(index, value)}
+                      onValueChange={(value) =>
+                        handleMedicineSelect(index, value)
+                      }
                       value={medication.medicineId || ""}
                     >
-                      <SelectTrigger className="mt-2">
-                        <SelectValue placeholder={t("dialogs.createPrescription.chooseMedicine")} />
+                      <SelectTrigger className="mt-2" id={`medicine-${index}`}>
+                        <SelectValue
+                          placeholder={t(
+                            "dialog.createPrescription.chooseMedicine"
+                          )}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         <div className="p-2">
                           <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                              placeholder={t("dialogs.createPrescription.searchMedicines")}
+                              placeholder={t(
+                                "dialog.createPrescription.searchMedicines"
+                              )}
                               value={searchTerm}
                               onChange={(e) => handleSearch(e.target.value)}
                               className="pl-8"
+                              // Add ref to properly manage focus
+                              ref={(input) => {
+                                // This ensures the input is properly focused when needed
+                                if (input && isOpen && medicines.length === 0) {
+                                  setTimeout(() => {
+                                    input.focus();
+                                  }, 100);
+                                }
+                              }}
                             />
                           </div>
                         </div>
                         {isLoadingMedicines ? (
                           <div className="p-4 text-center text-sm text-muted-foreground">
-                            {t("dialogs.createPrescription.loadingMedicines")}
+                            {t("dialog.createPrescription.loadingMedicines")}
                           </div>
                         ) : medicines.length === 0 ? (
                           <div className="p-4 text-center text-sm text-muted-foreground">
-                            {t("dialogs.createPrescription.noMedicinesFound")}
+                            {t("dialog.createPrescription.noMedicinesFound")}
                           </div>
                         ) : (
                           medicines.map((medicine) => (
-                            <SelectItem key={medicine._id} value={medicine._id || ""}>
+                            <SelectItem
+                              key={medicine._id}
+                              value={medicine._id || ""}
+                            >
                               <div className="flex flex-col items-start">
-                                <span className="font-medium">{medicine.name}</span>
+                                <span className="font-medium">
+                                  {medicine.name}
+                                </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {medicine.dosage} • {medicine.form} • {medicine.route}
+                                  {medicine.dosage} • {medicine.form} •{" "}
+                                  {medicine.route}
                                 </span>
                               </div>
                             </SelectItem>
@@ -364,56 +425,88 @@ export function CreatePrescriptionDialog({
                       </SelectContent>
                     </Select>
                     {medication.medicineId ? (
-                      <p className="text-xs text-green-600 mt-2">✓ {t("dialogs.createPrescription.medicineSelected")}</p>
+                      <p className="text-xs text-green-600 mt-2">
+                        ✓ {t("dialog.createPrescription.medicineSelected")}
+                      </p>
                     ) : (
-                      <p className="text-xs text-red-500 mt-2">{t("dialogs.createPrescription.pleaseSelectMedicine")}</p>
+                      <p className="text-xs text-red-500 mt-2">
+                        {t("dialog.createPrescription.pleaseSelectMedicine")}
+                      </p>
                     )}
                   </div>
 
                   <div className="mt-1">
-                    <Label htmlFor={`dosage-${index}`}>{t("dialogs.createPrescription.dosage")} *</Label>
+                    <Label htmlFor={`dosage-${index}`}>
+                      {t("dialog.createPrescription.dosage")} *
+                    </Label>
                     <Input
                       id={`dosage-${index}`}
                       value={medication.dosage}
-                      onChange={(e) => updateMedication(index, 'dosage', e.target.value)}
-                      placeholder={t("dialogs.createPrescription.dosagePlaceholder")}
+                      onChange={(e) =>
+                        updateMedication(index, "dosage", e.target.value)
+                      }
+                      placeholder={t(
+                        "dialog.createPrescription.dosagePlaceholder"
+                      )}
                       required
                       className="mt-2"
                     />
                   </div>
 
                   <div className="mt-2">
-                    <Label htmlFor={`frequency-${index}`}>{t("dialogs.createPrescription.frequency")} *</Label>
+                    <Label htmlFor={`frequency-${index}`}>
+                      {t("dialog.createPrescription.frequency")} *
+                    </Label>
                     <Input
                       id={`frequency-${index}`}
                       value={medication.frequency}
-                      onChange={(e) => updateMedication(index, 'frequency', e.target.value)}
-                      placeholder={t("dialogs.createPrescription.frequencyPlaceholder")}
+                      onChange={(e) =>
+                        updateMedication(index, "frequency", e.target.value)
+                      }
+                      placeholder={t(
+                        "dialog.createPrescription.frequencyPlaceholder"
+                      )}
                       required
                       className="mt-2"
                     />
                   </div>
 
                   <div className="mt-2">
-                    <Label htmlFor={`duration-${index}`}>{t("dialogs.createPrescription.duration")} *</Label>
+                    <Label htmlFor={`duration-${index}`}>
+                      {t("dialog.createPrescription.duration")} *
+                    </Label>
                     <Input
                       id={`duration-${index}`}
                       value={medication.duration}
-                      onChange={(e) => updateMedication(index, 'duration', e.target.value)}
-                      placeholder={t("dialogs.createPrescription.durationPlaceholder")}
+                      onChange={(e) =>
+                        updateMedication(index, "duration", e.target.value)
+                      }
+                      placeholder={t(
+                        "dialog.createPrescription.durationPlaceholder"
+                      )}
                       required
                       className="mt-2"
                     />
                   </div>
 
                   <div className="mt-2">
-                    <Label htmlFor={`quantity-${index}`}>{t("dialogs.createPrescription.quantity")} *</Label>
+                    <Label htmlFor={`quantity-${index}`}>
+                      {t("dialog.createPrescription.quantity")} *
+                    </Label>
                     <Input
                       id={`quantity-${index}`}
                       type="number"
                       value={medication.quantity}
-                      onChange={(e) => updateMedication(index, 'quantity', parseInt(e.target.value) || 1)}
-                      placeholder={t("dialogs.createPrescription.quantityPlaceholder")}
+                      onChange={(e) =>
+                        updateMedication(
+                          index,
+                          "quantity",
+                          parseInt(e.target.value) || 1
+                        )
+                      }
+                      placeholder={t(
+                        "dialog.createPrescription.quantityPlaceholder"
+                      )}
                       required
                       className="mt-2"
                       min="1"
@@ -422,12 +515,18 @@ export function CreatePrescriptionDialog({
                 </div>
 
                 <div className="mt-4">
-                  <Label htmlFor={`instructions-${index}`}>{t("dialogs.createPrescription.instructions")} *</Label>
+                  <Label htmlFor={`instructions-${index}`}>
+                    {t("dialog.createPrescription.instructions")} *
+                  </Label>
                   <Textarea
                     id={`instructions-${index}`}
                     value={medication.instructions}
-                    onChange={(e) => updateMedication(index, 'instructions', e.target.value)}
-                    placeholder={t("dialogs.createPrescription.instructionsPlaceholder")}
+                    onChange={(e) =>
+                      updateMedication(index, "instructions", e.target.value)
+                    }
+                    placeholder={t(
+                      "dialog.createPrescription.instructionsPlaceholder"
+                    )}
                     required
                     className="mt-2"
                     rows={2}
@@ -439,12 +538,16 @@ export function CreatePrescriptionDialog({
 
           {/* Diagnosis Section */}
           <div className="space-y-4">
-            <Label htmlFor="diagnosis" className="text-base font-semibold">{t("dialogs.createPrescription.diagnosis")} *</Label>
+            <Label htmlFor="diagnosis" className="text-base font-semibold">
+              {t("dialog.createPrescription.diagnosis")} *
+            </Label>
             <Textarea
               id="diagnosis"
               value={formData.diagnosis}
-              onChange={(e) => setFormData(prev => ({ ...prev, diagnosis: e.target.value }))}
-              placeholder={t("dialogs.createPrescription.diagnosisPlaceholder")}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, diagnosis: e.target.value }))
+              }
+              placeholder={t("dialog.createPrescription.diagnosisPlaceholder")}
               required
               rows={3}
             />
@@ -452,12 +555,18 @@ export function CreatePrescriptionDialog({
 
           {/* Notes Section */}
           <div className="space-y-4">
-            <Label htmlFor="notes" className="text-base font-semibold">{t("dialogs.createPrescription.additionalNotes")}</Label>
+            <Label htmlFor="notes" className="text-base font-semibold">
+              {t("dialog.createPrescription.additionalNotes")}
+            </Label>
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder={t("dialogs.createPrescription.additionalNotesPlaceholder")}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, notes: e.target.value }))
+              }
+              placeholder={t(
+                "dialog.createPrescription.additionalNotesPlaceholder"
+              )}
               rows={3}
             />
           </div>
@@ -469,17 +578,24 @@ export function CreatePrescriptionDialog({
                 variant="outline"
                 onClick={handleCancel}
                 disabled={isSubmitting}
+                // Remove explicit tabIndex
               >
-                {t("dialogs.createPrescription.cancel")}
+                {t("dialog.createPrescription.cancel")}
               </Button>
             </DialogClose>
             <Button
               type="submit"
-              disabled={isSubmitting || formData.medications.length === 0 || 
-                formData.medications.some(med => !med.medicineId)}
+              disabled={
+                isSubmitting ||
+                formData.medications.length === 0 ||
+                formData.medications.some((med) => !med.medicineId)
+              }
               className="min-w-[120px]"
+              // Remove explicit tabIndex
             >
-              {isSubmitting ? t("dialogs.createPrescription.creating") : t("dialogs.createPrescription.createPrescription")}
+              {isSubmitting
+                ? t("dialog.createPrescription.creating")
+                : t("dialog.createPrescription.createPrescription")}
             </Button>
           </DialogFooter>
         </form>

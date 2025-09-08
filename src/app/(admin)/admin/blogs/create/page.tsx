@@ -77,7 +77,7 @@ export default function CreateBlogPage() {
       await blogService.create({
         title: formData.title.trim(),
         content: formData.content.trim(),
-        author: formData.author.trim() || "Admin",
+        author: formData.author.trim() || t("admin.blogs.create.form.defaultAuthor", { defaultValue: "Admin" }),
         active: formData.active,
         coverImage: formData.coverImage.trim(),
         specialties: formData.specialties

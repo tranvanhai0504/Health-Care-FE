@@ -61,6 +61,7 @@ import { format } from "date-fns";
 import SearchService from "@/components/dialogs/search-service";
 import { useToast } from "@/hooks/useToast";
 import { Room } from "@/types/room";
+import { useTranslation } from "react-i18next";
 
 interface ScheduleDetailsProps {
   scheduleId: string;
@@ -76,34 +77,34 @@ const getScheduleDateFromSchedule = (schedule: ScheduleResponse) => {
   return getScheduleDate(schedule.weekPeriod, schedule.dayOffset);
 };
 
-const getStatusBadge = (status: ScheduleStatus) => {
+const getStatusBadge = (status: ScheduleStatus, t: (key: string) => string) => {
   const statusConfig = {
     [ScheduleStatus.CONFIRMED]: {
-      label: "Confirmed",
+      label: t("admin.scheduleDetails.status.confirmed"),
       className:
         "bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-sm",
       icon: CheckCircle,
     },
     [ScheduleStatus.CHECKEDIN]: {
-      label: "Checked In",
+      label: t("admin.scheduleDetails.status.checkedIn"),
       className:
         "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm",
       icon: Stethoscope,
     },
     [ScheduleStatus.SERVING]: {
-      label: "In Progress",
+      label: t("admin.scheduleDetails.status.inProgress"),
       className:
         "bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-sm animate-pulse",
       icon: Stethoscope,
     },
     [ScheduleStatus.CANCELLED]: {
-      label: "Cancelled",
+      label: t("admin.scheduleDetails.status.cancelled"),
       className:
         "bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-sm",
       icon: X,
     },
     [ScheduleStatus.COMPLETED]: {
-      label: "Completed",
+      label: t("admin.scheduleDetails.status.completed"),
       className:
         "bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-sm",
       icon: CheckCircle,
@@ -252,6 +253,7 @@ export function ScheduleDetails({
   handleCollapseRightPanel,
   rightPanelSize,
 }: ScheduleDetailsProps) {
+  const { t } = useTranslation();
   const {
     data: schedule,
     error: fetchError,
@@ -432,8 +434,8 @@ export function ScheduleDetails({
       setIsEditing(false);
       setIsEditingPayment(false);
       toast({
-        title: "Success",
-        description: "Schedule updated successfully.",
+        title: t("admin.scheduleDetails.toast.success"),
+        description: t("admin.scheduleDetails.toast.scheduleUpdated"),
         type: "success",
       });
     } catch (error) {
@@ -501,15 +503,15 @@ export function ScheduleDetails({
       } as ScheduleResponseGetSingle);
 
       toast({
-        title: "Success",
-        description: `Schedule status updated to ${newStatus.toLowerCase()}`,
+        title: t("admin.scheduleDetails.toast.success"),
+        description: t("admin.scheduleDetails.toast.scheduleStatusUpdated", { status: newStatus.toLowerCase() }),
         type: "success",
       });
     } catch (error) {
       console.error("Error updating schedule status:", error);
       toast({
-        title: "Error",
-        description: "Failed to update schedule status",
+        title: t("admin.scheduleDetails.toast.error"),
+        description: t("admin.scheduleDetails.toast.failedToUpdateStatus"),
         type: "error",
       });
     }
@@ -551,15 +553,15 @@ export function ScheduleDetails({
       setEditedSchedule(refreshed);
       handlePaymentFormChange("paymentMethod", newMethod);
       toast({
-        title: "Success",
-        description: `Payment method updated to ${newMethod}`,
+        title: t("admin.scheduleDetails.toast.success"),
+        description: t("admin.scheduleDetails.payment.paymentMethodUpdated", { method: newMethod }),
         type: "success",
       });
     } catch (error) {
       console.error("Error updating payment method:", error);
       toast({
-        title: "Error",
-        description: "Failed to update payment method",
+        title: t("admin.scheduleDetails.toast.error"),
+        description: t("admin.scheduleDetails.payment.failedToUpdatePaymentMethod"),
         type: "error",
       });
     } finally {
@@ -587,8 +589,8 @@ export function ScheduleDetails({
       const response = await paymentService.createVNPayPayment(paymentData);
       if (!response.paymentUrl) {
         toast({
-          title: "Error",
-          description: "Could not get payment URL. Please try again.",
+          title: t("admin.scheduleDetails.toast.error"),
+          description: t("admin.scheduleDetails.payment.couldNotGetPaymentUrl"),
           type: "error",
         });
         return;
@@ -623,23 +625,22 @@ export function ScheduleDetails({
         newWindow.document.close();
 
         toast({
-          title: "QR Code Generated",
-          description: "Bank transfer QR code opened in new window",
+          title: t("admin.scheduleDetails.payment.qrCodeGenerated"),
+          description: t("admin.scheduleDetails.payment.bankTransferQrOpened"),
           type: "success",
         });
       } else {
         toast({
-          title: "Error",
-          description:
-            "Could not open new window. Please check your popup blocker.",
+          title: t("admin.scheduleDetails.toast.error"),
+          description: t("admin.scheduleDetails.payment.couldNotOpenWindow"),
           type: "error",
         });
       }
     } catch (error) {
       console.error("Error generating QR code:", error);
       toast({
-        title: "Error",
-        description: "Failed to generate QR code. Please try again.",
+        title: t("admin.scheduleDetails.toast.error"),
+        description: t("admin.scheduleDetails.payment.failedToGenerateQr"),
         type: "error",
       });
     } finally {
@@ -725,7 +726,7 @@ export function ScheduleDetails({
         <div className="flex-shrink-0 p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              Schedule Details
+              {t("admin.scheduleDetails.title")}
             </h2>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-3 w-3" />
@@ -735,7 +736,7 @@ export function ScheduleDetails({
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading schedule details...</p>
+            <p className="text-gray-600">{t("admin.scheduleDetails.loading")}</p>
           </div>
         </div>
       </div>
@@ -748,7 +749,7 @@ export function ScheduleDetails({
         <div className="flex-shrink-0 p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              Schedule Details
+              {t("admin.scheduleDetails.title")}
             </h2>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-3 w-3" />
@@ -759,7 +760,7 @@ export function ScheduleDetails({
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Error Loading Schedule
+              {t("admin.scheduleDetails.error.loadingSchedule")}
             </h3>
             <p className="text-red-600">{fetchError.message}</p>
           </div>
@@ -774,7 +775,7 @@ export function ScheduleDetails({
         <div className="flex-shrink-0 p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              Schedule Details
+              {t("admin.scheduleDetails.title")}
             </h2>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-3 w-3" />
@@ -785,10 +786,10 @@ export function ScheduleDetails({
           <div className="text-center">
             <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No Schedule Found
+              {t("admin.scheduleDetails.error.noScheduleFound")}
             </h3>
             <p className="text-gray-600">
-              The schedule you&apos;re looking for doesn&apos;t exist.
+              {t("admin.scheduleDetails.error.notExist")}
             </p>
           </div>
         </div>
@@ -805,7 +806,7 @@ export function ScheduleDetails({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Package className="h-4 w-4" />
-            Schedule Details
+            {t("admin.scheduleDetails.title")}
           </h2>
           <div className="flex items-center gap-1">
             {rightPanelSize !== 100 && handleExpandRightPanel && (
@@ -838,7 +839,7 @@ export function ScheduleDetails({
             {schedule._id?.slice(-6).toUpperCase()}
           </span>
           <span className="text-gray-400">•</span>
-          {getStatusBadge(schedule.status)}
+          {getStatusBadge(schedule.status, t)}
           {isEditing && (
             <>
               <span className="text-gray-400">•</span>
@@ -846,7 +847,7 @@ export function ScheduleDetails({
                 variant="outline"
                 className="text-xs bg-blue-50 text-blue-700 border-blue-200"
               >
-                Editing Mode
+                {t("admin.scheduleDetails.header.editingMode")}
               </Badge>
             </>
           )}
@@ -858,7 +859,7 @@ export function ScheduleDetails({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <User className="h-4 w-4 text-gray-500" />
-            <span className="font-medium text-sm">User Information</span>
+            <span className="font-medium text-sm">{t("admin.scheduleDetails.userInfo.title")}</span>
             {userLoading && (
               <div className="animate-spin h-3 w-3 border-2 border-gray-400 border-t-transparent rounded-full"></div>
             )}
@@ -873,7 +874,7 @@ export function ScheduleDetails({
             ) : userData ? (
               <>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">Name:</span>
+                  <span className="font-medium">{t("admin.scheduleDetails.userInfo.name")}:</span>
                   <span>{userData.name || "-"}</span>
                   {userData.role && (
                     <Badge variant="outline" className="text-xs">
@@ -882,22 +883,22 @@ export function ScheduleDetails({
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">Email:</span>
+                  <span className="font-medium">{t("admin.scheduleDetails.userInfo.email")}:</span>
                   <span>{userData.email || "-"}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">Phone:</span>
+                  <span className="font-medium">{t("admin.scheduleDetails.userInfo.phone")}:</span>
                   <span>{userData.phoneNumber || "-"}</span>
                 </div>
                 {userData.address && (
                   <div className="flex items-start gap-2">
-                    <span className="font-medium">Address:</span>
+                    <span className="font-medium">{t("admin.scheduleDetails.userInfo.address")}:</span>
                     <span className="flex-1">{userData.address}</span>
                   </div>
                 )}
                 {userData.dateOfBirth && (
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">Date of Birth:</span>
+                    <span className="font-medium">{t("admin.scheduleDetails.userInfo.dateOfBirth")}:</span>
                     <span>
                       {new Date(userData.dateOfBirth).toLocaleDateString()}
                     </span>
@@ -905,19 +906,19 @@ export function ScheduleDetails({
                 )}
                 {userData.gender && (
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">Gender:</span>
+                    <span className="font-medium">{t("admin.scheduleDetails.userInfo.gender")}:</span>
                     <span className="capitalize">{userData.gender}</span>
                   </div>
                 )}
                 {userData.occupation && (
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">Occupation:</span>
+                    <span className="font-medium">{t("admin.scheduleDetails.userInfo.occupation")}:</span>
                     <span>{userData.occupation}</span>
                   </div>
                 )}
                 {userData.createdAt && (
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">Member Since:</span>
+                    <span className="font-medium">{t("admin.scheduleDetails.userInfo.memberSince")}:</span>
                     <span>
                       {new Date(userData.createdAt).toLocaleDateString()}
                     </span>
@@ -927,9 +928,9 @@ export function ScheduleDetails({
             ) : (
               // Fallback to schedule user data if detailed user fetch failed
               <>
-                <div>Name: {schedule.userId?.name || "-"}</div>
-                <div>Email: {schedule.userId?.email || "-"}</div>
-                <div>Phone: {schedule.userId?.phoneNumber || "-"}</div>
+                <div>{t("admin.scheduleDetails.userInfo.name")}: {schedule.userId?.name || "-"}</div>
+                <div>{t("admin.scheduleDetails.userInfo.email")}: {schedule.userId?.email || "-"}</div>
+                <div>{t("admin.scheduleDetails.userInfo.phone")}: {schedule.userId?.phoneNumber || "-"}</div>
               </>
             )}
           </div>
@@ -939,16 +940,16 @@ export function ScheduleDetails({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="h-4 w-4 text-gray-500" />
-            <span className="font-medium text-sm">Date & Time</span>
+            <span className="font-medium text-sm">{t("admin.scheduleDetails.dateTime.title")}</span>
           </div>
           <div className="ml-6 space-y-1 text-sm">
-            <div>Date: {format(scheduleDate, "MMM d, yyyy")}</div>
-            <div>Day: {format(scheduleDate, "EEEE")}</div>
+            <div>{t("admin.scheduleDetails.dateTime.date")}: {format(scheduleDate, "MMM d, yyyy")}</div>
+            <div>{t("admin.scheduleDetails.dateTime.day")}: {format(scheduleDate, "EEEE")}</div>
             <div>
-              Time Slot:{" "}
+              {t("admin.scheduleDetails.dateTime.timeSlot")}:{" "}
               {schedule.timeOffset === 0
-                ? "Morning (7:30 - 11:30)"
-                : "Afternoon (13:30 - 17:30)"}
+                ? t("admin.scheduleDetails.dateTime.morning")
+                : t("admin.scheduleDetails.dateTime.afternoon")}
             </div>
           </div>
         </div>
@@ -960,7 +961,7 @@ export function ScheduleDetails({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle className="h-4 w-4 text-purple-600" />
-                <span className="font-medium text-sm">Status Actions</span>
+                <span className="font-medium text-sm">{t("admin.scheduleDetails.statusActions.title")}</span>
               </div>
               <div className="ml-6 flex flex-wrap gap-2">
                 {schedule.status === ScheduleStatus.CONFIRMED && (
@@ -971,7 +972,7 @@ export function ScheduleDetails({
                     className="text-green-600 border-green-200 hover:bg-green-50"
                   >
                     <UserCheck className="h-3 w-3 mr-1" />
-                    Check In Patient
+                    {t("admin.scheduleDetails.statusActions.checkInPatient")}
                   </Button>
                 )}
                 {schedule.status === ScheduleStatus.CHECKEDIN && (
@@ -982,7 +983,7 @@ export function ScheduleDetails({
                     className="text-blue-600 border-blue-200 hover:bg-blue-50"
                   >
                     <Play className="h-3 w-3 mr-1" />
-                    Start Service
+                    {t("admin.scheduleDetails.statusActions.startService")}
                   </Button>
                 )}
               </div>
@@ -1000,13 +1001,12 @@ export function ScheduleDetails({
                 <Stethoscope className="h-4 w-4 text-purple-600" />
                 <span className="font-medium text-sm">
                   {schedule.type === "package"
-                    ? "Package Services"
-                    : "Selected Services"}
+                    ? t("admin.scheduleDetails.services.packageServices")
+                    : t("admin.scheduleDetails.services.title")}
                 </span>
                 {schedule.services && schedule.services.length > 0 && (
                   <Badge variant="outline" className="text-xs">
-                    {schedule.services.length} service
-                    {schedule.services.length !== 1 ? "s" : ""}
+                    {schedule.services.length} {schedule.services.length !== 1 ? t("admin.scheduleDetails.services.services") : t("admin.scheduleDetails.services.service")}
                   </Badge>
                 )}
                 {isServicesOpen ? (
@@ -1024,7 +1024,7 @@ export function ScheduleDetails({
                     disabled={schedule.status === ScheduleStatus.CONFIRMED}
                   >
                     <Edit3 className="h-3 w-3 mr-1" />
-                    Edit
+                    {t("admin.scheduleDetails.services.edit")}
                   </Button>
                 ) : (
                   <>
@@ -1036,15 +1036,15 @@ export function ScheduleDetails({
                       <Plus className="h-3 w-3 mr-1" />
                       {editedSchedule?.services &&
                       editedSchedule.services.length > 0
-                        ? "Manage Services"
-                        : "Add Services"}
+                        ? t("admin.scheduleDetails.services.manageServices")
+                        : t("admin.scheduleDetails.services.addServices")}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleCancelEditing}
                     >
-                      Cancel
+                      {t("admin.scheduleDetails.services.cancel")}
                     </Button>
                     <Button
                       size="sm"
@@ -1054,12 +1054,12 @@ export function ScheduleDetails({
                       {saving ? (
                         <>
                           <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-1" />
-                          Saving
+                          {t("admin.scheduleDetails.services.saving")}
                         </>
                       ) : (
                         <>
                           <Save className="h-3 w-3 mr-1" />
-                          Save
+                          {t("admin.scheduleDetails.services.save")}
                         </>
                       )}
                     </Button>
@@ -1094,7 +1094,7 @@ export function ScheduleDetails({
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="text-sm font-semibold text-gray-900">
-                                  {scheduleService.service.name || "Service"}
+                                  {scheduleService.service.name || t("admin.scheduleDetails.services.service")}
                                 </h4>
                                 {typeof scheduleService === "object" &&
                                   scheduleService.status && (
@@ -1146,8 +1146,8 @@ export function ScheduleDetails({
                                           <div className="flex items-center gap-1">
                                             <MapPin className="h-3 w-3" />
                                             <span>
-                                              {room?.name} - room{" "}
-                                              {room?.roomNumber} - floor{" "}
+                                              {room?.name} - {t("admin.scheduleDetails.room.room")}{" "}
+                                              {room?.roomNumber} - {t("admin.scheduleDetails.room.floor")}{" "}
                                               {room?.roomFloor}
                                             </span>
                                           </div>
@@ -1190,7 +1190,7 @@ export function ScheduleDetails({
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Stethoscope className="h-4 w-4 text-purple-600" />
-              <span className="font-medium text-sm">No services selected</span>
+              <span className="font-medium text-sm">{t("admin.scheduleDetails.services.noServicesSelected")}</span>
             </div>
           </div>
         )}
@@ -1200,7 +1200,7 @@ export function ScheduleDetails({
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Package className="h-4 w-4 text-green-600" />
-              <span className="font-medium text-sm">Package Details</span>
+              <span className="font-medium text-sm">{t("admin.scheduleDetails.package.title")}</span>
               {packageDetails?.category && (
                 <Badge
                   variant="outline"
@@ -1247,7 +1247,7 @@ export function ScheduleDetails({
               className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded transition-colors"
             >
               <CreditCard className="h-4 w-4 text-green-600" />
-              <span className="font-medium text-sm">Payment Information</span>
+              <span className="font-medium text-sm">{t("admin.scheduleDetails.payment.title")}</span>
               {displayTotalPrice > 0 && (
                 <Badge
                   variant="outline"
@@ -1257,7 +1257,7 @@ export function ScheduleDetails({
                       : "bg-orange-50 text-orange-700 border-orange-200"
                   }`}
                 >
-                  {isFullyPaid ? "Fully Paid" : "Pending Payment"}
+                  {isFullyPaid ? t("admin.scheduleDetails.payment.fullyPaid") : t("admin.scheduleDetails.payment.pendingPayment")}
                 </Badge>
               )}
               {isPaymentOpen ? (
@@ -1274,7 +1274,7 @@ export function ScheduleDetails({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">
-                        Total Amount:
+                        {t("admin.scheduleDetails.payment.totalAmount")}:
                       </span>
                       <span className="font-semibold">
                         {displayTotalPrice > 0
@@ -1284,14 +1284,14 @@ export function ScheduleDetails({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">
-                        Amount Paid:
+                        {t("admin.scheduleDetails.payment.amountPaid")}:
                       </span>
                       <span className="font-semibold text-green-600">
                         {totalPaid > 0 ? formatPrice(totalPaid) : "-"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Amount left to pay:</span>
+                      <span className="text-sm text-gray-600">{t("admin.scheduleDetails.payment.amountLeftToPay")}:</span>
                       <span
                         className={`font-semibold ${
                           remainingBalance > 0
@@ -1309,7 +1309,7 @@ export function ScheduleDetails({
                     <div className="flex items-center gap-2">
                       <Wallet className="h-4 w-4 text-gray-500" />
                       <span className="text-sm text-gray-600">
-                        Payment Method:
+                        {t("admin.scheduleDetails.payment.paymentMethod")}:
                       </span>
                       <Select
                         value={paymentForm.paymentMethod || ""}
@@ -1322,12 +1322,12 @@ export function ScheduleDetails({
                         }
                       >
                         <SelectTrigger className="inline-flex h-auto p-1 border-none text-xs text-gray-500 bg-gray-100 rounded-sm w-fit">
-                          <SelectValue placeholder="Select method" />
+                          <SelectValue placeholder={t("admin.scheduleDetails.payment.selectMethod")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="cash">{t("admin.scheduleDetails.payment.cash")}</SelectItem>
                           <SelectItem value="bank_transfer">
-                            Bank Transfer
+                            {t("admin.scheduleDetails.payment.bankTransfer")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -1337,9 +1337,9 @@ export function ScheduleDetails({
                     </div>
                     <div className="flex items-center gap-2">
                       <Receipt className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Payments:</span>
+                      <span className="text-sm text-gray-600">{t("admin.scheduleDetails.payment.payments")}:</span>
                       <span className="text-xs">
-                        {paymentsCount} transaction(s)
+                        {paymentsCount} {paymentsCount !== 1 ? t("admin.scheduleDetails.payment.transactions") : t("admin.scheduleDetails.payment.transaction")}
                       </span>
                     </div>
                     {/* Payment actions moved below to be full width */}
@@ -1349,7 +1349,7 @@ export function ScheduleDetails({
                 {paymentForm.paymentMethod === "cash" && (
                   <div className="mt-3 border rounded-lg overflow-hidden w-full">
                     <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600">
-                      Confirm payments
+                      {t("admin.scheduleDetails.payment.confirmPayments")}
                     </div>
                     <div className="divide-y">
                       {getPaymentsFromSchedule(schedule).map((p) => {
@@ -1359,8 +1359,8 @@ export function ScheduleDetails({
                         const label =
                           s?.name ||
                           (p.service
-                            ? `Service ${p.service.slice(-6)}`
-                            : `Payment ${p._id.slice(-6)}`);
+                            ? t("admin.scheduleDetails.payment.serviceItem", { id: p.service.slice(-6) })
+                            : t("admin.scheduleDetails.payment.paymentItem", { id: p._id.slice(-6) }));
                         const disabled =
                           p.status === "paid" || updatingPaymentIds.has(p._id);
                         return (
@@ -1387,7 +1387,7 @@ export function ScheduleDetails({
                                     : "bg-yellow-50 text-yellow-700 border-yellow-200"
                                 }`}
                               >
-                                {p.status || "pending"}
+                                {p.status || t("admin.scheduleDetails.payment.pending")}
                               </Badge>
                               <Button
                                 size="sm"
@@ -1413,19 +1413,18 @@ export function ScheduleDetails({
                                       await scheduleService.getById(scheduleId);
                                     setEditedSchedule(refreshed);
                                     toast({
-                                      title: "Payment updated",
-                                      description: `${label} marked as paid`,
+                                      title: t("admin.scheduleDetails.payment.paymentUpdated"),
+                                      description: t("admin.scheduleDetails.payment.markedAsPaid", { label }),
                                       type: "success",
                                     });
                                   } catch (err) {
                                     console.error(
-                                      "Failed to update payment status",
+                                      t("admin.scheduleDetails.payment.failedToUpdateStatus"),
                                       err
                                     );
                                     toast({
-                                      title: "Error",
-                                      description:
-                                        "Failed to mark payment as paid",
+                                      title: t("admin.scheduleDetails.toast.error"),
+                                      description: t("admin.scheduleDetails.payment.failedToMarkPaid"),
                                       type: "error",
                                     });
                                   } finally {
@@ -1440,9 +1439,9 @@ export function ScheduleDetails({
                                 {updatingPaymentIds.has(p._id) ? (
                                   <Loader2 className="animate-spin h-3 w-3" />
                                 ) : p.status === "paid" ? (
-                                  "Paid"
+                                  t("admin.scheduleDetails.payment.paid")
                                 ) : (
-                                  "Mark paid"
+                                  t("admin.scheduleDetails.payment.markPaid")
                                 )}
                               </Button>
                             </div>
@@ -1479,8 +1478,8 @@ export function ScheduleDetails({
                               );
                               setEditedSchedule(refreshed);
                               toast({
-                                title: "Payments updated",
-                                description: `Marked ${pending.length} payment(s) as paid`,
+                                title: t("admin.scheduleDetails.payment.paymentsUpdated"),
+                                description: t("admin.scheduleDetails.payment.markedPaymentsAsPaid", { count: pending.length }),
                                 type: "success",
                               });
                             } catch (err) {
@@ -1489,9 +1488,8 @@ export function ScheduleDetails({
                                 err
                               );
                               toast({
-                                title: "Error",
-                                description:
-                                  "Failed to mark all payments as paid",
+                                title: t("admin.scheduleDetails.toast.error"),
+                                description: t("admin.scheduleDetails.payment.failedToMarkAllPaid"),
                                 type: "error",
                               });
                             } finally {
@@ -1499,7 +1497,7 @@ export function ScheduleDetails({
                             }
                           }}
                         >
-                          Mark all as paid
+                          {t("admin.scheduleDetails.payment.markAllAsPaid")}
                         </Button>
                       </div>
                     )}
@@ -1518,7 +1516,7 @@ export function ScheduleDetails({
                         ) : (
                           <CreditCard className="h-4 w-4 mr-2" />
                         )}
-                        Pay {formatPrice(remainingBalance)} via Bank Transfer
+                        {t("admin.scheduleDetails.payment.payViaBankTransfer", { amount: formatPrice(remainingBalance) })}
                       </Button>
                     </div>
                   )}

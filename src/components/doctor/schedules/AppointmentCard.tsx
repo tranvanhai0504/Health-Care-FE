@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { User, Clock, Phone, Mail, Users } from "lucide-react";
 import { Appointment } from "@/types/appointment";
+import { useTranslation } from "react-i18next";
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -15,6 +16,7 @@ export function AppointmentCard({
   appointment,
   onViewDetails,
 }: AppointmentCardProps) {
+  const { t } = useTranslation();
   const getStatusColor = (status: string) => {
     switch (status) {
       case "upcoming":
@@ -114,8 +116,8 @@ export function AppointmentCard({
                 className="h-7 px-2 text-xs"
                 onClick={() => onViewDetails(appointment)}
               >
-                <span className="hidden sm:inline">View Details</span>
-                <span className="sm:hidden">View</span>
+                <span className="hidden sm:inline">{t("doctor.schedules.viewDetails")}</span>
+                <span className="sm:hidden">{t("doctor.schedules.view")}</span>
               </Button>
             </div>
           </div>

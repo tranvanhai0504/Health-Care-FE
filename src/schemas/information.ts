@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const informationFormSchema = z.object({
-  name: z.string().min(1, "Name cannot be empty"),
+  name: z.string().min(1, "validation.nameCannotBeEmpty"),
   dateOfBirth: z.date({
-    required_error: "Date of birth is required",
+    required_error: "validation.dateOfBirthRequired",
   }),
-  gender: z.string().min(1, "Gender selection is required"),
-  address: z.string().min(1, "Address cannot be empty"),
+  gender: z.string().min(1, "validation.genderRequired"),
+  address: z.string().min(1, "validation.addressCannotBeEmpty"),
 });
 
 export type InformationFormValues = z.infer<typeof informationFormSchema>; 

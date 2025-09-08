@@ -16,6 +16,7 @@ import { imageService } from './image.service';
 import { waitingMessageService } from './waittingMessage.service';
 import { paymentService } from './payment.service';
 import { chatService } from './chat.service';
+import { icdService } from './icd.service';
 import { ApiResponse } from './base.service';
 
 // Export the ApiResponse interface for use throughout the app
@@ -47,5 +48,6 @@ export {
   imageService,
   waitingMessageService,
   paymentService,
-  chatService
+  chatService,
+  icdService
 };

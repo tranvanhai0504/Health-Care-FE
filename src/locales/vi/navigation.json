@@ -1,0 +1,83 @@
+{
+  "home": "Trang chủ",
+  "services": "Dịch vụ",
+  "doctors": "Bác sĩ",
+  "packages": "Gói sức khỏe",
+  "appointments": "Lịch hẹn",
+  "profile": "Hồ sơ",
+  "settings": "Cài đặt",
+  "mainNav": {
+    "healthPackages": "Gói sức khỏe",
+    "medicalServices": "Dịch vụ y tế",
+    "blogs": "Blog"
+  },
+  "authButtons": {
+    "signIn": "Đăng nhập",
+    "signUp": "Đăng ký"
+  },
+  "userProfile": {
+    "admin": "Quản trị viên",
+    "adminDashboard": "Quản trị viên",
+    "doctorDashboard": "Bảng điều khiển bác sĩ",
+    "profile": "Hồ sơ",
+    "myPrescriptions": "Đơn thuốc của tôi",
+    "logOut": "Đăng xuất"
+  },
+  "doctorSidebar": {
+    "dashboard": "Bảng điều khiển",
+    "mySchedules": "Lịch hẹn của tôi",
+    "prescriptions": "Đơn thuốc",
+    "medicalExaminations": "Khám bệnh",
+    "profile": "Hồ sơ",
+    "logout": "Đăng xuất",
+    "doctorPortal": "Cổng thông tin bác sĩ"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "signInToView": "Vui lòng đăng nhập để xem thông báo",
+    "noNotifications": "Chưa có thông báo nào",
+    "retry": "Thử lại",
+    "refreshNotifications": "Làm mới thông báo",
+    "upcomingReminder": "Nhắc nhở sắp tới",
+    "messageSent": "Tin nhắn đã gửi",
+    "messageFailed": "Tin nhắn gửi thất bại",
+    "notification": "Thông báo",
+    "recently": "Gần đây",
+    "pending": "đang chờ",
+    "sent": "đã gửi",
+    "failed": "thất bại"
+  },
+  "breadcrumb": {
+    "consultations": "Tư vấn",
+    "medicalSpecialties": "Chuyên khoa y tế",
+    "healthBlogs": "Blog sức khỏe",
+    "setup": "Thiết lập",
+    "yourInformation": "Thông tin của bạn",
+    "createPassword": "Tạo mật khẩu",
+    "dashboard": "Bảng điều khiển",
+    "mySchedules": "Lịch hẹn của tôi",
+    "myPrescriptions": "Đơn thuốc của tôi",
+    "profiles": "Hồ sơ",
+    "findDoctors": "Tìm bác sĩ",
+    "bookDoctor": "Đặt lịch bác sĩ",
+    "medicalServices": "Dịch vụ y tế",
+    "pharmacy": "Nhà thuốc",
+    "healthPackages": "Gói sức khỏe",
+    "healthBlog": "Blog sức khỏe",
+    "faqs": "Câu hỏi thường gặp",
+    "settings": "Cài đặt",
+    "signIn": "Đăng nhập",
+    "signUp": "Đăng ký",
+    "myAccount": "Tài khoản của tôi",
+    "booking": "Đặt lịch",
+    "profile": "Hồ sơ",
+    "details": "Chi tiết",
+    "history": "Lịch sử",
+    "billing": "Thanh toán",
+    "preferences": "Tùy chọn",
+    "schedule": "Lịch hẹn",
+    "edit": "Chỉnh sửa",
+    "create": "Tạo mới",
+    "view": "Xem"
+  }
+}

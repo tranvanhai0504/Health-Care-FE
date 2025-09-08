@@ -59,10 +59,10 @@ export function ScheduleCard({
       <CardHeader className="pb-4 bg-gradient-to-r from-primary/10 to-transparent rounded-t-lg">
         <CardTitle className="flex items-center gap-2">
           <CalendarCheck className="h-5 w-5 text-primary" />
-          {t("booking.schedule.title")}
+          {t("dashboard.booking.schedule.title")}
         </CardTitle>
         <CardDescription>
-          {t("booking.schedule.description")}
+          {t("dashboard.booking.schedule.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-5">
@@ -70,7 +70,7 @@ export function ScheduleCard({
           {/* Calendar */}
           <div className="flex flex-col">
             <Label className="mb-3 flex items-center text-base font-medium">
-              <Calendar className="w-4 h-4 mr-2 text-primary" /> {t("booking.schedule.selectDate")}
+              <Calendar className="w-4 h-4 mr-2 text-primary" /> {t("dashboard.booking.schedule.selectDate")}
             </Label>
             <div className="border border-border/60 rounded-lg p-4 shadow-sm bg-background flex justify-center">
               <DayPicker
@@ -98,7 +98,7 @@ export function ScheduleCard({
                 }}
                 footer={
                   <div className="mt-3 text-xs text-muted-foreground text-center">
-                    {t("booking.schedule.showing30Days")}
+                    {t("dashboard.booking.schedule.showing30Days")}
                   </div>
                 }
               />
@@ -108,7 +108,7 @@ export function ScheduleCard({
           {/* Time Periods */}
           <div className="flex flex-col h-full">
             <Label className="mb-3 flex items-center text-base font-medium">
-              <Clock className="w-4 h-4 mr-2 text-primary" /> {t("booking.schedule.selectTimePeriod")}
+              <Clock className="w-4 h-4 mr-2 text-primary" /> {t("dashboard.booking.schedule.selectTimePeriod")}
             </Label>
             <div className="border border-border/60 rounded-lg p-4 flex-1 shadow-sm bg-background flex flex-col">
               <div className="flex flex-col gap-4 flex-1 min-h-0">
@@ -161,7 +161,7 @@ export function ScheduleCard({
                 ))}
               </div>
               <div className="text-xs text-center text-muted-foreground mt-4 pt-3 border-t border-border/40 flex-shrink-0">
-                {t("booking.schedule.allTimesLocal")}
+                {t("dashboard.booking.schedule.allTimesLocal")}
               </div>
             </div>
           </div>
@@ -172,11 +172,11 @@ export function ScheduleCard({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckCircle className="h-4 w-4 text-primary" />
               <span>
-                {t("booking.schedule.youSelected")}{" "}
+                {t("dashboard.booking.schedule.youSelected")}{" "}
                 <span className="font-medium text-foreground">
                   {format(selectedDate, "EEEE, MMMM d, yyyy")}
                 </span>{" "}
-                {t("booking.schedule.inThe")}{" "}
+                {t("dashboard.booking.schedule.inThe")}{" "}
                 <span className="font-medium text-foreground">
                   {selectedTimeSlot.label} ({selectedTimeSlot.description})
                 </span>
@@ -191,14 +191,14 @@ export function ScheduleCard({
           onClick={onCancel}
           className="border-border/60"
         >
-          {t("booking.schedule.cancel")}
+          {t("dashboard.booking.schedule.cancel")}
         </Button>
         <Button
           disabled={!selectedDate || !selectedTimeSlot}
           onClick={onContinue}
           className="gap-2 bg-primary hover:bg-primary/90 shadow-sm"
         >
-          {t("booking.schedule.continueToBooking")} <ArrowRightIcon className="h-4 w-4" />
+          {t("dashboard.booking.schedule.continueToBooking")} <ArrowRightIcon className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>

@@ -1,5 +1,14 @@
 import { format, parseISO } from "date-fns";
+import { vi } from "date-fns/locale";
+import i18n from "@/lib/i18n";
 
+/**
+ * Get the appropriate date-fns locale based on current language
+ */
+const getDateLocale = () => {
+  const currentLanguage = i18n.language || 'en';
+  return currentLanguage === 'vi' ? vi : undefined;
+};
 /**
  * Format a number as Vietnamese currency (VND)
  * @param amount - The amount to format
@@ -49,16 +58,16 @@ export const formatTime = (timeString: string): string => {
   try {
     // Handle time-only strings (HH:MM format)
     if (timeString.match(/^\d{2}:\d{2}$/)) {
-      return format(parseISO(`2000-01-01T${timeString}`), 'h:mm a');
+      return format(parseISO(`2000-01-01T${timeString}`), 'h:mm a', { locale: getDateLocale() });
     }
     
     // Handle full ISO date strings
     if (timeString.includes('T') || timeString.includes('-')) {
-      return format(parseISO(timeString), 'h:mm a');
+      return format(parseISO(timeString), 'h:mm a', { locale: getDateLocale() });
     }
     
     // Fallback: try to parse as-is
-    return format(new Date(timeString), 'h:mm a');
+    return format(new Date(timeString), 'h:mm a', { locale: getDateLocale() });
   } catch (error) {
     console.warn('Failed to format time:', timeString, error);
     return timeString; // Return original string if parsing fails
@@ -73,7 +82,7 @@ export const formatTime = (timeString: string): string => {
  */
 export const formatDate = (dateString: string, formatString: string = 'MMM dd, yyyy'): string => {
   try {
-    return format(parseISO(dateString), formatString);
+    return format(parseISO(dateString), formatString, { locale: getDateLocale() });
   } catch (error) {
     console.warn('Failed to format date:', dateString, error);
     return dateString;
@@ -87,7 +96,7 @@ export const formatDate = (dateString: string, formatString: string = 'MMM dd, y
  */
 export const formatDateTime = (dateString: string): string => {
   try {
-    return format(parseISO(dateString), 'MMM dd, yyyy \'at\' h:mm a');
+    return format(parseISO(dateString), 'MMM dd, yyyy \'at\' h:mm a', { locale: getDateLocale() });
   } catch (error) {
     console.warn('Failed to format datetime:', dateString, error);
     return dateString;
@@ -129,9 +138,25 @@ export const getScheduleDate = (weekPeriod: { from: string | Date; to: string | 
 export const formatScheduleDate = (weekPeriod: { from: string | Date; to: string | Date }, dayOffset: number, formatString: string = 'MMM dd, yyyy'): string => {
   try {
     const appointmentDate = getScheduleDate(weekPeriod, dayOffset);
-    return format(appointmentDate, formatString);
+    return format(appointmentDate, formatString, { locale: getDateLocale() });
   } catch (error) {
     console.warn('Failed to format schedule date:', error);
+    return 'Invalid Date';
+  }
+};
+
+/**
+ * Format weekday name from weekPeriod and dayOffset with locale support
+ * @param weekPeriod - Object containing from and to dates
+ * @param dayOffset - Day offset from week start (0 = Sunday, 1 = Monday, etc.)
+ * @returns Localized weekday name
+ */
+export const formatScheduleWeekday = (weekPeriod: { from: string | Date; to: string | Date }, dayOffset: number): string => {
+  try {
+    const appointmentDate = getScheduleDate(weekPeriod, dayOffset);
+    return format(appointmentDate, 'EEEE', { locale: getDateLocale() });
+  } catch (error) {
+    console.warn('Failed to format schedule weekday:', error);
     return 'Invalid Date';
   }
 }; 

@@ -39,6 +39,7 @@ import { consultationServiceApi } from "@/services/consultationService.service";
 import { consultationPackageService } from "@/services/consultationPackage.service";
 import { roomService } from "@/services/room.service";
 import { getScheduleDate } from "@/utils/formatters";
+import { useTranslation } from "react-i18next";
 
 interface ScheduleDetailModalProps {
   schedule: ScheduleResponse | null;
@@ -55,34 +56,34 @@ const getScheduleDateFromSchedule = (schedule: ScheduleResponse): Date => {
 };
 
 // Helper function to get status badge with enhanced styling
-const getStatusBadge = (status: ScheduleStatus) => {
+const getStatusBadge = (status: ScheduleStatus, t: (key: string) => string) => {
   const statusConfig = {
     [ScheduleStatus.CONFIRMED]: {
-      label: "Confirmed",
+      label: t("dialog.scheduleDetail.statusLabels.confirmed"),
       className:
         "bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-sm",
       icon: CheckCircle,
     },
     [ScheduleStatus.CHECKEDIN]: {
-      label: "Checked In",
+      label: t("dialog.scheduleDetail.statusLabels.checkedIn"),
       className:
         "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm",
       icon: Activity,
     },
     [ScheduleStatus.SERVING]: {
-      label: "In Progress",
+      label: t("dialog.scheduleDetail.statusLabels.inProgress"),
       className:
         "bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-sm animate-pulse",
       icon: Activity,
     },
     [ScheduleStatus.CANCELLED]: {
-      label: "Cancelled",
+      label: t("dialog.scheduleDetail.statusLabels.cancelled"),
       className:
         "bg-gradient-to-r from-red-500 to-red-600 text-white border-0 shadow-sm",
       icon: X,
     },
     [ScheduleStatus.COMPLETED]: {
-      label: "Completed",
+      label: t("dialog.scheduleDetail.statusLabels.completed"),
       className:
         "bg-gradient-to-r from-gray-500 to-gray-600 text-white border-0 shadow-sm",
       icon: CheckCircle,
@@ -144,6 +145,7 @@ export default function ScheduleDetailModal({
   onEdit,
   onCancel,
 }: ScheduleDetailModalProps) {
+  const { t } = useTranslation();
   const [serviceDetails, setServiceDetails] = useState<ServiceWithRoom[]>(
     []
   );
@@ -240,15 +242,15 @@ export default function ScheduleDetailModal({
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle className="text-lg font-semibold text-gray-900">
-                  Schedule Details
+                  {t("dialog.scheduleDetail.title")}
                 </DialogTitle>
                 <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
                   <Package className="h-3 w-3 text-gray-500" />
                   {schedule.type === "package"
                     ? packageDetails?.title ||
                       packageName ||
-                      "Package Consultation"
-                    : "Medical Services"}
+                      t("dialog.scheduleDetail.packageConsultation")
+                    : t("dialog.scheduleDetail.medicalServices")}
                   <span className="text-gray-400">•</span>
                   <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">
                     {schedule._id?.slice(-6).toUpperCase()}
@@ -264,10 +266,10 @@ export default function ScheduleDetailModal({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {getStatusBadge(schedule.status)}
+                {getStatusBadge(schedule.status, t)}
                 {!isFullyPaid && displayTotalPrice > 0 && (
                   <Badge className="bg-orange-100 text-orange-800 border-orange-200 px-2 py-1 text-xs">
-                    Balance Due
+                    {t("dialog.scheduleDetail.balanceDue")}
                   </Badge>
                 )}
               </div>
@@ -285,7 +287,7 @@ export default function ScheduleDetailModal({
                   <Calendar className="h-3 w-3 text-white" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-800">
-                  Schedule Information
+                  {t("dialog.scheduleDetail.scheduleInformation")}
                 </h3>
               </div>
 
@@ -294,7 +296,7 @@ export default function ScheduleDetailModal({
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-3 w-3 text-gray-500" />
                     <span className="text-xs font-medium text-gray-600">
-                      Date
+                      {t("dialog.scheduleDetail.date")}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-gray-900">
@@ -309,7 +311,7 @@ export default function ScheduleDetailModal({
                   <div className="flex items-center gap-1.5">
                     <Clock className="h-3 w-3 text-gray-500" />
                     <span className="text-xs font-medium text-gray-600">
-                      Time
+                      {t("dialog.scheduleDetail.time")}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-gray-900">
@@ -318,7 +320,7 @@ export default function ScheduleDetailModal({
                       : "13:30 - 17:30"}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {schedule.timeOffset === 0 ? "Morning" : "Afternoon"}
+                    {schedule.timeOffset === 0 ? t("dialog.scheduleDetail.morning") : t("dialog.scheduleDetail.afternoon")}
                   </p>
                 </div>
 
@@ -326,13 +328,13 @@ export default function ScheduleDetailModal({
                   <div className="flex items-center gap-1.5">
                     <Building2 className="h-3 w-3 text-gray-500" />
                     <span className="text-xs font-medium text-gray-600">
-                      Location
+                      {t("dialog.scheduleDetail.location")}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-gray-900">
-                    Medical Center
+                    {t("dialog.scheduleDetail.medicalCenter")}
                   </p>
-                  <p className="text-xs text-gray-500">Floor 2</p>
+                  <p className="text-xs text-gray-500">{t("dialog.scheduleDetail.floorTwo")}</p>
                 </div>
               </div>
             </div>
@@ -345,7 +347,7 @@ export default function ScheduleDetailModal({
                     <CreditCard className="h-3 w-3 text-white" />
                   </div>
                   <h3 className="text-sm font-semibold text-gray-800">
-                    Payment Information
+                    {t("dialog.scheduleDetail.paymentInformation")}
                   </h3>
                   {schedule.payment ? (
                     <Badge
@@ -356,14 +358,14 @@ export default function ScheduleDetailModal({
                           : "bg-orange-50 text-orange-700 border-orange-200"
                       }`}
                     >
-                      {isFullyPaid ? "Fully Paid" : "Pending Payment"}
+                      {isFullyPaid ? t("dialog.scheduleDetail.fullyPaid") : t("dialog.scheduleDetail.pendingPayment")}
                     </Badge>
                   ) : (
                     <Badge
                       variant="outline"
                       className="text-xs bg-gray-50 text-gray-700 border-gray-200"
                     >
-                      No Payment Data
+                      {t("dialog.scheduleDetail.noPaymentData")}
                     </Badge>
                   )}
                 </div>
@@ -372,7 +374,7 @@ export default function ScheduleDetailModal({
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-medium text-gray-600">
-                        Total Cost
+                        {t("dialog.scheduleDetail.totalCost")}
                       </span>
                     </div>
                     <p className="text-lg font-bold text-gray-900">
@@ -381,12 +383,13 @@ export default function ScheduleDetailModal({
                     <p className="text-xs text-gray-500">
                       {totalPrice > 0
                         ? schedule.type === "package"
-                          ? "Package Price"
-                          : "Services Total"
-                        : "Calculated from " +
+                          ? t("dialog.scheduleDetail.packagePrice")
+                          : t("dialog.scheduleDetail.servicesTotal")
+                        : t("dialog.scheduleDetail.calculatedFrom") +
+                          " " +
                           (schedule.type === "package"
-                            ? "package"
-                            : "services")}
+                            ? t("dialog.scheduleDetail.package")
+                            : t("dialog.scheduleDetail.services"))}
                     </p>
                   </div>
 
@@ -396,17 +399,16 @@ export default function ScheduleDetailModal({
                         <div className="flex items-center gap-1.5">
                           <CheckCircle className="h-3 w-3 text-blue-600" />
                           <span className="text-xs font-medium text-gray-600">
-                            Amount Paid
+                            {t("dialog.scheduleDetail.amountPaid")}
                           </span>
                         </div>
                         <p className="text-lg font-bold text-blue-700">
                           {formatPrice(totalPaid)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {schedule.payment.payments?.length || 0} payment
-                          {(schedule.payment.payments?.length || 0) !== 1
-                            ? "s"
-                            : ""}
+                          {schedule.payment.payments?.length || 0} {(schedule.payment.payments?.length || 0) !== 1
+                            ? t("dialog.scheduleDetail.payments")
+                            : t("dialog.scheduleDetail.payment")}
                         </p>
                       </div>
 
@@ -418,7 +420,7 @@ export default function ScheduleDetailModal({
                             }`}
                           />
                           <span className="text-xs font-medium text-gray-600">
-                            Balance
+                            {t("dialog.scheduleDetail.balance")}
                           </span>
                         </div>
                         <p
@@ -429,7 +431,7 @@ export default function ScheduleDetailModal({
                           {formatPrice(remainingBalance)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {isFullyPaid ? "Paid in full" : "Outstanding"}
+                          {isFullyPaid ? t("dialog.scheduleDetail.paidInFull") : t("dialog.scheduleDetail.outstanding")}
                         </p>
                       </div>
                     </>
@@ -439,14 +441,14 @@ export default function ScheduleDetailModal({
                         <div className="flex items-center gap-1.5">
                           <AlertCircle className="h-3 w-3 text-gray-400" />
                           <span className="text-xs font-medium text-gray-600">
-                            Amount Paid
+                            {t("dialog.scheduleDetail.amountPaid")}
                           </span>
                         </div>
                         <p className="text-lg font-bold text-gray-400">
-                          No Data
+                          {t("dialog.scheduleDetail.noData")}
                         </p>
                         <p className="text-xs text-gray-500">
-                          Payment info unavailable
+                          {t("dialog.scheduleDetail.paymentInfoUnavailable")}
                         </p>
                       </div>
 
@@ -454,14 +456,14 @@ export default function ScheduleDetailModal({
                         <div className="flex items-center gap-1.5">
                           <AlertCircle className="h-3 w-3 text-orange-600" />
                           <span className="text-xs font-medium text-gray-600">
-                            Status
+                            {t("dialog.scheduleDetail.status")}
                           </span>
                         </div>
                         <p className="text-lg font-bold text-orange-700">
-                          Pending
+                          {t("dialog.scheduleDetail.pending")}
                         </p>
                         <p className="text-xs text-gray-500">
-                          Awaiting payment setup
+                          {t("dialog.scheduleDetail.awaitingPaymentSetup")}
                         </p>
                       </div>
                     </>
@@ -479,12 +481,11 @@ export default function ScheduleDetailModal({
                   </div>
                   <h3 className="text-sm font-semibold text-gray-800">
                     {schedule.type === "package"
-                      ? "Package Services"
-                      : "Selected Services"}
+                      ? t("dialog.scheduleDetail.packageServices")
+                      : t("dialog.scheduleDetail.selectedServices")}
                   </h3>
                   <Badge variant="outline" className="text-xs">
-                    {schedule.services.length} service
-                    {schedule.services.length !== 1 ? "s" : ""}
+                    {schedule.services.length} {schedule.services.length !== 1 ? t("dialog.scheduleDetail.servicesPlural") : t("dialog.scheduleDetail.service")}
                   </Badge>
                 </div>
 
@@ -514,7 +515,7 @@ export default function ScheduleDetailModal({
                             <div className="flex-1">
                               <div className="flex items-center justify-start gap-2 mb-1">
                                 <h4 className="text-sm font-semibold text-gray-900">
-                                  {serviceDetail?.name || "Service"}
+                                  {serviceDetail?.name || t("dialog.scheduleDetail.serviceItem")}
                                 </h4>
                                 {typeof scheduleService === "object" &&
                                   scheduleService.status && (
@@ -526,7 +527,7 @@ export default function ScheduleDetailModal({
                                           : "bg-yellow-50 text-yellow-700 border-yellow-200"
                                       }`}
                                     >
-                                      {scheduleService.status}
+                                      {scheduleService.status === "completed" ? t("dialog.scheduleDetail.completed") : scheduleService.status}
                                     </Badge>
                                   )}
                               </div>
@@ -588,7 +589,7 @@ export default function ScheduleDetailModal({
                     <Package className="h-3 w-3 text-white" />
                   </div>
                   <h3 className="text-sm font-semibold text-gray-800">
-                    Package Details
+                    {t("dialog.scheduleDetail.packageDetails")}
                   </h3>
                   {packageDetails?.category && (
                     <Badge
@@ -606,7 +607,7 @@ export default function ScheduleDetailModal({
                   </h4>
                   <p className="text-sm text-gray-600">
                     {packageDetails?.description ||
-                      "Comprehensive health package with multiple tests and consultations."}
+                      t("dialog.scheduleDetail.comprehensiveHealthPackage")}
                   </p>
 
                   {/* Remove fallback for features since features field is gone */}
@@ -621,7 +622,7 @@ export default function ScheduleDetailModal({
                   <FileText className="h-3 w-3 text-white" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-800">
-                  Important Notes
+                  {t("dialog.scheduleDetail.importantNotes")}
                 </h3>
               </div>
 
@@ -629,22 +630,22 @@ export default function ScheduleDetailModal({
                 {[
                   {
                     icon: Clock,
-                    text: "Arrive 15 minutes early",
+                    text: t("dialog.scheduleDetail.arriveEarly"),
                     color: "blue",
                   },
                   {
                     icon: User,
-                    text: "Bring ID and insurance card",
+                    text: t("dialog.scheduleDetail.bringIdInsurance"),
                     color: "green",
                   },
                   {
                     icon: AlertCircle,
-                    text: "Fasting may be required",
+                    text: t("dialog.scheduleDetail.fastingRequired"),
                     color: "orange",
                   },
                   {
                     icon: Phone,
-                    text: "Call to reschedule/cancel",
+                    text: t("dialog.scheduleDetail.callToReschedule"),
                     color: "purple",
                   },
                 ].map((note, index) => (
@@ -668,7 +669,7 @@ export default function ScheduleDetailModal({
               className="flex-1 sm:flex-none border-gray-300 hover:bg-gray-50"
             >
               <X className="h-3 w-3 mr-1.5" />
-              Close
+              {t("dialog.scheduleDetail.close")}
             </Button>
 
             <div className="flex gap-2 flex-1">
@@ -680,7 +681,7 @@ export default function ScheduleDetailModal({
                   className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                 >
                   <Edit className="h-3 w-3 mr-1.5" />
-                  Reschedule
+                  {t("dialog.scheduleDetail.reschedule")}
                 </Button>
               )}
 
@@ -692,7 +693,7 @@ export default function ScheduleDetailModal({
                   className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                 >
                   <X className="h-3 w-3 mr-1.5" />
-                  Cancel
+                  {t("dialog.scheduleDetail.cancel")}
                 </Button>
               )}
             </div>

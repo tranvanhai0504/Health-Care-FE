@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, FileText, Pencil, Calendar, User, Tag } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
+import { formatDateTime } from "@/utils/date";
+import { useTranslation } from "react-i18next";
 
 const blogService = new BlogService();
 
@@ -25,6 +27,7 @@ export default function ViewBlogPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const blogId = params.id as string;
 
@@ -38,8 +41,8 @@ export default function ViewBlogPage() {
       } catch (error) {
         console.error("Error fetching blog:", error);
         toast({
-          title: "Error",
-          description: "Failed to load blog data",
+          title: t("admin.blogs.view.errorTitle", { defaultValue: "Error" }),
+          description: t("admin.blogs.view.loadError", { defaultValue: "Failed to load blog data" }),
           type: "error",
         });
         router.push("/admin/blogs");
@@ -60,15 +63,7 @@ export default function ViewBlogPage() {
     router.push(`/admin/blogs/edit/${blogId}`);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const formatDate = formatDateTime;
 
   if (loading) {
     return (
@@ -76,7 +71,7 @@ export default function ViewBlogPage() {
         <div className="mb-6">
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blogs
+            {t("admin.blogs.view.back", { defaultValue: "Back to Blogs" })}
           </Button>
         </div>
 
@@ -102,13 +97,13 @@ export default function ViewBlogPage() {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="text-center py-16">
-          <h3 className="text-lg font-medium mb-2">Blog not found</h3>
+          <h3 className="text-lg font-medium mb-2">{t("admin.blogs.view.notFoundTitle", { defaultValue: "Blog not found" })}</h3>
           <p className="text-muted-foreground mb-6">
-            The blog you&apos;re looking for doesn&apos;t exist.
+            {t("admin.blogs.view.notFoundMessage", { defaultValue: "The blog you're looking for doesn't exist." })}
           </p>
           <Button onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blogs
+            {t("admin.blogs.view.back", { defaultValue: "Back to Blogs" })}
           </Button>
         </div>
       </div>
@@ -124,7 +119,7 @@ export default function ViewBlogPage() {
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Blogs
+          {t("admin.blogs.view.back", { defaultValue: "Back to Blogs" })}
         </Button>
       </div>
 
@@ -139,20 +134,20 @@ export default function ViewBlogPage() {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
-                  {typeof blog.author === 'string' ? blog.author : blog.author?.name || "Unknown Author"}
+                  {typeof blog.author === 'string' ? blog.author : blog.author?.name || t("admin.blogs.view.unknownAuthor", { defaultValue: "Unknown Author" })}
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
                   {formatDate(blog.createdAt)}
                 </div>
                 <Badge variant={blog.active ? "default" : "secondary"}>
-                  {blog.active ? "Published" : "Draft"}
+                  {blog.active ? t("admin.blogs.view.published", { defaultValue: "Published" }) : t("admin.blogs.view.draft", { defaultValue: "Draft" })}
                 </Badge>
               </div>
             </div>
             <Button onClick={handleEdit} className="ml-4">
               <Pencil className="mr-2 h-4 w-4" />
-              Edit Blog
+              {t("admin.blogs.view.edit", { defaultValue: "Edit Blog" })}
             </Button>
           </div>
         </CardHeader>
@@ -177,18 +172,18 @@ export default function ViewBlogPage() {
           <div className="mb-6 p-4 bg-muted/50 rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="font-medium">Created:</span> {formatDate(blog.createdAt)}
+                <span className="font-medium">{t("admin.blogs.view.created", { defaultValue: "Created:" })}</span> {formatDate(blog.createdAt)}
               </div>
               <div>
-                <span className="font-medium">Last Updated:</span> {formatDate(blog.updatedAt)}
+                <span className="font-medium">{t("admin.blogs.view.lastUpdated", { defaultValue: "Last Updated:" })}</span> {formatDate(blog.updatedAt)}
               </div>
               <div>
-                <span className="font-medium">Author:</span> {typeof blog.author === 'string' ? blog.author : blog.author?.name || "Unknown"}
+                <span className="font-medium">{t("admin.blogs.view.author", { defaultValue: "Author:" })}</span> {typeof blog.author === 'string' ? blog.author : blog.author?.name || t("admin.blogs.view.unknown", { defaultValue: "Unknown" })}
               </div>
               <div>
-                <span className="font-medium">Status:</span>{" "}
+                <span className="font-medium">{t("admin.blogs.view.status", { defaultValue: "Status:" })}</span>{" "}
                 <Badge variant={blog.active ? "default" : "secondary"} className="ml-1">
-                  {blog.active ? "Published" : "Draft"}
+                  {blog.active ? t("admin.blogs.view.published", { defaultValue: "Published" }) : t("admin.blogs.view.draft", { defaultValue: "Draft" })}
                 </Badge>
               </div>
             </div>
@@ -199,7 +194,7 @@ export default function ViewBlogPage() {
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Tag className="h-4 w-4" />
-                <span className="font-medium">Related Specialties:</span>
+                <span className="font-medium">{t("admin.blogs.view.relatedSpecialties", { defaultValue: "Related Specialties:" })}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {blog.specialties.map((specialty, index) => (
@@ -222,11 +217,11 @@ export default function ViewBlogPage() {
           <div className="flex justify-between items-center mt-8 pt-6 border-t">
             <Button variant="outline" onClick={handleBack}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Blogs
+              {t("admin.blogs.view.back", { defaultValue: "Back to Blogs" })}
             </Button>
             <Button onClick={handleEdit}>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit Blog
+              {t("admin.blogs.view.edit", { defaultValue: "Edit Blog" })}
             </Button>
           </div>
         </CardContent>

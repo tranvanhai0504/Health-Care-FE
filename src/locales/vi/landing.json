@@ -1,0 +1,93 @@
+{
+  "hero": {
+    "badge": "Sức khỏe của bạn là sự ưu tiên hàng đầu",
+    "title": "HealthCare - Giải pháp Y tế Hiện đại",
+    "subtitle": "Cung cấp dịch vụ chăm sóc sức khỏe chất lượng để cải thiện sức khỏe và chất lượng cuộc sống",
+    "bookSchedule": "Đặt lịch hẹn",
+    "learnMore": "Tìm hiểu thêm",
+    "stats": {
+      "patients": "Bệnh nhân hài lòng",
+      "doctors": "Bác sĩ chuyên gia",
+      "services": "Dịch vụ y tế",
+      "experience": "Năm kinh nghiệm"
+    }
+  },
+  "services": {
+    "title": "Dịch vụ y tế của chúng tôi",
+    "subtitle": "Giải pháp chăm sóc sức khỏe toàn diện phù hợp với nhu cầu của bạn",
+    "viewAll": "Xem tất cả dịch vụ"
+  },
+  "packages": {
+    "title": "Gói sức khỏe",
+    "subtitle": "Chọn gói sức khỏe hoàn hảo cho nhu cầu của bạn",
+    "viewAll": "Xem tất cả gói"
+  },
+  "healthPackages": {
+    "title": "Gói sức khỏe",
+    "description": "Các gói sức khỏe toàn diện được thiết kế để cung cấp giải pháp chăm sóc hoàn chỉnh với giá cả phải chăng",
+    "mostPopular": "Phổ biến nhất",
+    "free": "Miễn phí",
+    "learnMore": "Tìm hiểu thêm",
+    "viewAll": "Xem tất cả gói sức khỏe",
+    "discoverAll": "Khám phá tất cả"
+  },
+  "features": {
+    "title": "Xuất sắc trong chăm sóc sức khỏe",
+    "description": "Chúng tôi cam kết cung cấp dịch vụ chăm sóc sức khỏe đặc biệt với trọng tâm là chất lượng, lòng trắc ẩn và sự đổi mới.",
+    "technology": "Công nghệ tiên tiến",
+    "technologyDesc": "Thiết bị y tế hiện đại và công nghệ tiên tiến.",
+    "expertise": "Đội ngũ y tế chuyên gia",
+    "expertiseDesc": "Các bác sĩ và chuyên gia y tế có trình độ cao.",
+    "accessibility": "Hỗ trợ 24/7",
+    "accessibilityDesc": "Dịch vụ chăm sóc sức khỏe và hỗ trợ khẩn cấp suốt ngày đêm.",
+    "personalized": "Chăm sóc cá nhân hóa",
+    "personalizedDesc": "Kế hoạch điều trị được thiết kế riêng cho nhu cầu cụ thể của bạn.",
+    "patientCenteredCare": {
+      "title": "Chăm sóc lấy bệnh nhân làm trung tâm",
+      "description": "Phương pháp chăm sóc sức khỏe của chúng tôi đặt bệnh nhân làm trung tâm trong mọi việc chúng tôi làm, đảm bảo chăm sóc cá nhân hóa và đầy lòng trắc ẩn.",
+      "personalizedPlans": "Kế hoạch điều trị cá nhân hóa",
+      "compassionateCare": "Chăm sóc đầy lòng trắc ẩn",
+      "patientEducation": "Giáo dục bệnh nhân"
+    },
+    "expertSpecialists": {
+      "title": "Chuyên gia đầu ngành",
+      "description": "Đội ngũ chuyên gia được chứng nhận của chúng tôi mang đến nhiều năm kinh nghiệm và chuyên môn để cung cấp dịch vụ y tế chất lượng cao nhất.",
+      "boardCertified": "Bác sĩ được chứng nhận",
+      "specializedExpertise": "Chuyên môn chuyên biệt",
+      "collaborativeApproach": "Phương pháp hợp tác"
+    },
+    "support24x7": {
+      "title": "Hỗ trợ 24/7",
+      "description": "Hỗ trợ chăm sóc sức khỏe suốt ngày đêm đảm bảo bạn có quyền truy cập vào hỗ trợ y tế bất cứ khi nào bạn cần.",
+      "emergencyAssistance": "Hỗ trợ khẩn cấp",
+      "onlineConsultations": "Tư vấn trực tuyến",
+      "immediateResponses": "Phản hồi ngay lập tức"
+    },
+    "advancedTechnology": {
+      "title": "Công nghệ tiên tiến",
+      "description": "Chúng tôi sử dụng công nghệ y tế và thiết bị tiên tiến để cung cấp chẩn đoán chính xác và điều trị hiệu quả."
+    },
+    "affordableCare": {
+      "title": "Chăm sóc giá cả phải chăng",
+      "description": "Chăm sóc sức khỏe chất lượng nên có thể tiếp cận được với mọi người. Chúng tôi cung cấp giá cả cạnh tranh và các tùy chọn thanh toán linh hoạt."
+    }
+  },
+  "specialties": {
+    "title": "Chuyên khoa y tế của chúng tôi",
+    "description": "Khám phá nhiều chuyên khoa y tế với các bác sĩ chuyên gia",
+    "viewAll": "Xem tất cả chuyên khoa",
+    "viewDetails": "Xem chi tiết",
+    "viewAllSpecialties": "Xem tất cả chuyên khoa"
+  },
+  "blog": {
+    "title": "Cập nhật sức khỏe mới nhất",
+    "description": "Cập nhật thông tin với các bài viết chăm sóc sức khỏe mới nhất",
+    "viewAll": "Xem tất cả bài viết",
+    "featuredArticle": "Bài viết nổi bật",
+    "featuredArticleDescription": "Các mẹo và lời khuyên chăm sóc sức khỏe từ các chuyên gia y tế",
+    "readTime": "thời gian đọc",
+    "articleDescription": "Mô tả bài viết",
+    "readArticle": "Đọc bài viết",
+    "viewAllArticles": "Xem tất cả bài viết"
+  }
+}

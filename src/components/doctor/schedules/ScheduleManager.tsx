@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Appointment, AppointmentStatus } from "@/types/appointment";
+import { useTranslation } from "react-i18next";
 
 interface ScheduleService {
   id: string;
@@ -34,10 +35,11 @@ export function ScheduleManager({
   onSave,
   onCancel,
 }: ScheduleManagerProps) {
+  const { t } = useTranslation();
   const [appointmentData, setAppointmentData] = useState<Appointment>(appointment);
   const [services, setServices] = useState<ScheduleService[]>([
-    { id: "1", name: "Blood Test", status: "pending" },
-    { id: "2", name: "X-Ray", status: "pending" },
+    { id: "1", name: t("doctor.schedules.sampleServices.bloodTest"), status: "pending" },
+    { id: "2", name: t("doctor.schedules.sampleServices.xRay"), status: "pending" },
   ]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -124,7 +126,7 @@ export function ScheduleManager({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Manage Schedule
+            {t("doctor.schedules.manageSchedule")}
           </h2>
           <Button variant="ghost" size="sm" onClick={onCancel}>
             <X className="h-3 w-3" />
@@ -136,13 +138,13 @@ export function ScheduleManager({
         {/* Patient Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Patient Information</CardTitle>
+            <CardTitle className="text-sm">{t("doctor.schedules.patientInformation")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm">
-              <p><strong>Name:</strong> {appointment.patientName}</p>
-              <p><strong>Phone:</strong> {appointment.patientPhone}</p>
-              <p><strong>Type:</strong> {appointment.type}</p>
+              <p><strong>{t("doctor.schedules.name")}:</strong> {appointment.patientName}</p>
+              <p><strong>{t("doctor.schedules.phone")}:</strong> {appointment.patientPhone}</p>
+              <p><strong>{t("doctor.schedules.type")}:</strong> {appointment.type}</p>
             </div>
           </CardContent>
         </Card>
@@ -150,12 +152,12 @@ export function ScheduleManager({
         {/* Appointment Details */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Appointment Details</CardTitle>
+            <CardTitle className="text-sm">{t("doctor.schedules.appointmentDetails")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="date" className="text-xs">Date</Label>
+                <Label htmlFor="date" className="text-xs">{t("doctor.schedules.date")}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -165,7 +167,7 @@ export function ScheduleManager({
                 />
               </div>
               <div>
-                <Label htmlFor="time" className="text-xs">Time</Label>
+                <Label htmlFor="time" className="text-xs">{t("doctor.schedules.time")}</Label>
                 <Input
                   id="time"
                   type="time"
@@ -177,7 +179,7 @@ export function ScheduleManager({
             </div>
 
             <div>
-              <Label htmlFor="status" className="text-xs">Status</Label>
+              <Label htmlFor="status" className="text-xs">{t("doctor.schedules.status")}</Label>
               <Select
                 value={appointmentData.status}
                 onValueChange={handleStatusChange}
@@ -186,21 +188,21 @@ export function ScheduleManager({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="upcoming">{t("doctor.schedules.status.upcoming")}</SelectItem>
+                  <SelectItem value="in-progress">{t("doctor.schedules.status.inProgress")}</SelectItem>
+                  <SelectItem value="completed">{t("doctor.schedules.status.completed")}</SelectItem>
+                  <SelectItem value="cancelled">{t("doctor.schedules.status.cancelled")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="notes" className="text-xs">Notes</Label>
+              <Label htmlFor="notes" className="text-xs">{t("doctor.schedules.notes")}</Label>
               <Input
                 id="notes"
                 value={appointmentData.notes || ""}
                 onChange={(e) => handleNotesChange(e.target.value)}
-                placeholder="Appointment notes..."
+                placeholder={t("doctor.schedules.appointmentNotes")}
                 className="h-8 text-sm"
               />
             </div>
@@ -211,7 +213,7 @@ export function ScheduleManager({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center justify-between">
-              Services
+              {t("doctor.schedules.services")}
               <Button type="button" size="sm" variant="outline" onClick={addService}>
                 <Plus className="h-3 w-3" />
               </Button>
@@ -221,7 +223,7 @@ export function ScheduleManager({
             {services.map((service) => (
               <div key={service.id} className="space-y-3 p-3 border rounded-md">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">Service</h4>
+                  <h4 className="text-sm font-medium">{t("doctor.schedules.service")}</h4>
                   <Button
                     type="button"
                     size="sm"
@@ -233,17 +235,17 @@ export function ScheduleManager({
                 </div>
 
                 <div>
-                  <Label className="text-xs">Service Name</Label>
+                  <Label className="text-xs">{t("doctor.schedules.serviceName")}</Label>
                   <Input
                     value={service.name}
                     onChange={(e) => handleServiceNameChange(service.id, e.target.value)}
-                    placeholder="Enter service name"
+                    placeholder={t("doctor.schedules.serviceNamePlaceholder")}
                     className="h-8 text-sm"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-xs">Status</Label>
+                  <Label className="text-xs">{t("doctor.schedules.status")}</Label>
                   <Select
                     value={service.status}
                     onValueChange={(status: ScheduleService["status"]) =>
@@ -254,9 +256,9 @@ export function ScheduleManager({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="pending">{t("doctor.schedules.status.pending")}</SelectItem>
+                      <SelectItem value="completed">{t("doctor.schedules.status.completed")}</SelectItem>
+                      <SelectItem value="cancelled">{t("doctor.schedules.status.cancelled")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -269,11 +271,11 @@ export function ScheduleManager({
                 </div>
 
                 <div>
-                  <Label className="text-xs">Notes</Label>
+                  <Label className="text-xs">{t("doctor.schedules.notes")}</Label>
                   <Input
                     value={service.notes || ""}
                     onChange={(e) => handleServiceNotesChange(service.id, e.target.value)}
-                    placeholder="Service notes..."
+                    placeholder={t("doctor.schedules.serviceNotes")}
                     className="h-8 text-sm"
                   />
                 </div>
@@ -286,10 +288,10 @@ export function ScheduleManager({
         <div className="flex gap-2 pt-4 border-t">
           <Button type="submit" disabled={isSaving} className="flex-1">
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? t("doctor.schedules.saving") : t("doctor.schedules.saveChanges")}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {t("doctor.schedules.cancel")}
           </Button>
         </div>
       </form>

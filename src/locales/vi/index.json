@@ -1,0 +1,12 @@
+{
+  "common": "common",
+  "header": "header", 
+  "chat": "chat",
+  "navigation": "navigation",
+  "auth": "auth",
+  "dashboard": "dashboard",
+  "landing": "landing",
+  "admin": "admin",
+  "doctor": "doctor",
+  "pagination": "pagination"
+}

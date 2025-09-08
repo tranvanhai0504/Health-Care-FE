@@ -46,6 +46,7 @@ import { PaginationWrapper } from "@/components/ui/pagination-wrapper";
 import { userService } from "@/services/user.service";
 import { User as UserType } from "@/types/user";
 import { PaginationInfo } from "@/types/api";
+import { formatDate } from "@/utils/date";
 import { useToast } from "@/hooks/useToast";
 
 export default function UsersPage() {
@@ -85,10 +86,10 @@ export default function UsersPage() {
       setUsers(sortedUsers);
       setPaginationInfo(response.pagination);
     } catch {
-      console.error("Error fetching users");
+      console.error(t("admin.toast.errorFetchingUsers"));
       toast({
-        title: "Error",
-        description: "Failed to fetch users",
+        title: t("admin.toast.error"),
+        description: t("admin.toast.failedToFetchUsers"),
         type: "error",
       });
       setUsers([]);
@@ -103,16 +104,6 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    const options: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
   const formatField = (value: string | undefined | null) => {
     return value && value.trim() !== "" ? value : "-";
   };
@@ -122,14 +113,14 @@ export default function UsersPage() {
       await userService.deleteUser(userId);
       setUsers(users.filter((user) => user._id !== userId));
       toast({
-        title: "Success",
-        description: "User deleted successfully",
+        title: t("admin.toast.success"),
+        description: t("admin.toast.userDeleted"),
         type: "success",
       });
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to delete user",
+        title: t("admin.toast.error"),
+        description: t("admin.toast.failedToDelete"),
         type: "error",
       });
     }
@@ -188,10 +179,10 @@ export default function UsersPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl flex items-center gap-2">
-                  <Users className="h-5 w-5" /> User Management
+                  <Users className="h-5 w-5" /> {t("admin.users.title")}
                 </CardTitle>
                 <CardTitle className="text-sm text-muted-foreground mt-1">
-                  Manage all users across the system
+                  {t("admin.users.subtitle")}
                 </CardTitle>
               </div>
             </div>
@@ -370,7 +361,7 @@ export default function UsersPage() {
                   itemsPerPage={itemsPerPage}
                   onPageChange={handlePageChange}
                   onItemsPerPageChange={handleItemsPerPageChange}
-                  itemName="user"
+                  itemName={t("admin.users.user").toLowerCase()}
                   showItemsPerPage={true}
                   showJumpToPage={false}
                   itemsPerPageOptions={[5, 10, 20, 50]}

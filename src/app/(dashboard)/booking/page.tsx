@@ -51,14 +51,14 @@ function BookingPageContent() {
     {
       id: "morning",
       label: t("dashboard.booking.timePeriods.morning"),
-      description: "08:00 - 12:00",
+      description: t("dashboard.booking.timePeriods.morningTime"),
       start: "08:00",
       end: "12:00",
     },
     {
       id: "afternoon",
       label: t("dashboard.booking.timePeriods.afternoon"),
-      description: "13:30 - 17:30",
+      description: t("dashboard.booking.timePeriods.afternoonTime"),
       start: "13:30",
       end: "17:30",
     },

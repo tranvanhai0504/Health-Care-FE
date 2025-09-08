@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import {
   Star,
   MapPin,
@@ -53,6 +54,7 @@ const mockDoctor = {
 
 export default function DoctorDetailsPage() {
   const params = useParams();
+  const { t } = useTranslation();
   const [doctor, setDoctor] = useState<null | typeof mockDoctor>(null);
   const [loading, setLoading] = useState(true);
 
@@ -255,7 +257,7 @@ export default function DoctorDetailsPage() {
                   size="lg"
                   className="px-8"
                 >
-                  Book a Schedule
+                  {t("common.bookASchedule")}
                 </BookScheduleButton>
               </div>
             </CardContent>

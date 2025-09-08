@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/utils/formatters";
+import { useTranslation } from "react-i18next";
 
 // Dynamic import for MDEditor to avoid SSR issues
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -65,6 +66,7 @@ export default function EditHealthPackagePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,18 +138,19 @@ export default function EditHealthPackagePage({
             setSelectedServices(services);
           } catch (serviceError) {
             console.error("Error fetching service details:", serviceError);
-            toast.error("Some services could not be loaded");
+            toast.error(t("admin.toast.someServicesCouldNotBeLoaded"));
           }
         }
       } catch (error) {
         console.error("Error fetching package details:", error);
-        toast.error("Failed to fetch package details");
+        toast.error(t("admin.toast.failedToFetchPackageDetails"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPackageData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, form]);
 
   // Handle form submission
@@ -170,13 +173,13 @@ export default function EditHealthPackagePage({
         bookingOptions: originalPackage.bookingOptions,
       });
 
-      toast.success("Health package updated successfully");
+      toast.success(t("admin.toast.packageUpdated"));
 
       // Redirect to the package details
       router.push(`/admin/health-packages/${id}`);
     } catch (error) {
       console.error("Error updating health package:", error);
-      toast.error("Failed to update health package");
+      toast.error(t("admin.toast.failedToUpdatePackage"));
     } finally {
       setIsSubmitting(false);
     }
@@ -210,16 +213,16 @@ export default function EditHealthPackagePage({
         className="mb-6"
         onClick={() => router.push(`/admin/health-packages/${id}`)}
       >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Package Details
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t("admin.healthPackages.editSection.backToDetails")}
       </Button>
 
       <Card className="border-none shadow-sm">
         <CardHeader className="bg-muted/50 rounded-t-lg">
           <CardTitle className="text-2xl flex items-center gap-2">
-            <Package className="h-5 w-5" /> Edit Health Package
+            <Package className="h-5 w-5" /> {t("admin.healthPackages.editSection.title")}
           </CardTitle>
           <CardDescription>
-            Update details for {originalPackage?.title}
+            {t("admin.healthPackages.editSection.subtitle")} {originalPackage?.title}
           </CardDescription>
         </CardHeader>
 
@@ -232,10 +235,10 @@ export default function EditHealthPackagePage({
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Package Title</FormLabel>
+                      <FormLabel>{t("admin.healthPackages.create.form.packageTitle")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. Complete Health Checkup"
+                          placeholder={t("admin.healthPackages.create.form.packageTitlePlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -249,7 +252,7 @@ export default function EditHealthPackagePage({
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>{t("admin.healthPackages.create.form.description")}</FormLabel>
                       <FormControl>
                         <div className="w-full">
                           <MDEditor
@@ -259,7 +262,7 @@ export default function EditHealthPackagePage({
                             height={300}
                             textareaProps={{
                               placeholder:
-                                "Describe the health package using markdown...",
+                                t("admin.healthPackages.create.form.descriptionPlaceholder"),
                             }}
                             preview="live"
                             hideToolbar={false}
@@ -268,8 +271,7 @@ export default function EditHealthPackagePage({
                         </div>
                       </FormControl>
                       <FormDescription>
-                        Use markdown formatting to describe the health package.
-                        You can use headers, lists, bold text, and more.
+                        {t("admin.healthPackages.create.form.descriptionHelper")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -281,10 +283,10 @@ export default function EditHealthPackagePage({
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>{t("admin.healthPackages.create.form.category")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g. General Health, Specialized Care"
+                          placeholder={t("admin.healthPackages.create.form.categoryPlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -298,15 +300,15 @@ export default function EditHealthPackagePage({
                   name="titleImage"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Title Image URL</FormLabel>
+                      <FormLabel>{t("admin.healthPackages.create.form.titleImage")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="https://example.com/image.jpg"
+                          placeholder={t("admin.healthPackages.create.form.titleImagePlaceholder")}
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        URL of the image to display for this package
+                        {t("admin.healthPackages.create.form.titleImageHelper")}
                       </FormDescription>
                       <FormMessage />
 
@@ -314,7 +316,7 @@ export default function EditHealthPackagePage({
                       {field.value && field.value.trim() !== "" && (
                         <div className="mt-3">
                           <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                            Preview
+                            {t("admin.healthPackages.create.form.preview")}
                           </h4>
                           <div className="relative w-full max-w-md">
                             <Image
@@ -354,10 +356,10 @@ export default function EditHealthPackagePage({
                                   </svg>
                                 </div>
                                 <p className="text-sm text-red-600 font-medium">
-                                  Failed to load image
+                                  {t("admin.healthPackages.failedToLoadImage")}
                                 </p>
                                 <p className="text-xs text-red-500 mt-1">
-                                  Please check the URL
+                                  {t("admin.healthPackages.checkImageUrl")}
                                 </p>
                               </div>
                             </div>
@@ -373,7 +375,7 @@ export default function EditHealthPackagePage({
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price</FormLabel>
+                      <FormLabel>{t("admin.healthPackages.create.form.price")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -385,7 +387,7 @@ export default function EditHealthPackagePage({
                         />
                       </FormControl>
                       <FormDescription>
-                        Package price in currency units
+                        {t("admin.healthPackages.create.form.priceHelper")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -397,7 +399,7 @@ export default function EditHealthPackagePage({
                   name="maxSlotPerPeriod"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Maximum Slots Per Period</FormLabel>
+                      <FormLabel>{t("admin.healthPackages.create.form.maxSlotPerPeriod")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -409,8 +411,7 @@ export default function EditHealthPackagePage({
                         />
                       </FormControl>
                       <FormDescription>
-                        Maximum number of schedules that can be booked for this
-                        package per period
+                        {t("admin.healthPackages.create.form.maxSlotHelper")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -421,7 +422,7 @@ export default function EditHealthPackagePage({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">
-                      Services & Tests Included
+                      {t("admin.healthPackages.create.form.servicesTestsIncluded")}
                     </h3>
                     <Button
                       type="button"
@@ -429,7 +430,7 @@ export default function EditHealthPackagePage({
                       size="sm"
                       onClick={() => setIsServiceDialogOpen(true)}
                     >
-                      <Plus className="h-4 w-4 mr-1" /> Select Services
+                      <Plus className="h-4 w-4 mr-1" /> {t("admin.healthPackages.create.form.selectServices")}
                     </Button>
                   </div>
 
@@ -437,10 +438,9 @@ export default function EditHealthPackagePage({
                     <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
                       <div className="text-muted-foreground">
                         <Stethoscope className="h-8 w-8 mx-auto mb-2" />
-                        <p>No services selected yet</p>
+                        <p>{t("admin.healthPackages.create.form.noServicesSelected")}</p>
                         <p className="text-sm mt-1">
-                          Click &quot;Select Services&quot; to include
-                          consultation services and tests in this package
+                          {t("admin.healthPackages.create.form.selectServicesHelper")}
                         </p>
                       </div>
                     </div>
@@ -463,7 +463,7 @@ export default function EditHealthPackagePage({
                               {service.description}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                              <span>Duration: {service.duration} min</span>
+                              <span>{t("admin.healthPackages.create.form.duration")} {service.duration} {t("admin.healthPackages.minutes")}</span>
                               <span className="font-medium text-green-600">
                                 {formatCurrency(service.price)}
                               </span>
@@ -495,13 +495,13 @@ export default function EditHealthPackagePage({
                       <div className="text-sm text-green-800">
                         <p>
                           <span className="font-medium">
-                            Total Services & Tests:
+                            {t("admin.healthPackages.create.form.totalServicesTests")}
                           </span>{" "}
                           {selectedServices.length}
                         </p>
                         <p>
                           <span className="font-medium">
-                            Total Service Value:
+                            {t("admin.healthPackages.create.form.totalServiceValue")}
                           </span>{" "}
                           {formatCurrency(
                             selectedServices.reduce(
@@ -511,8 +511,7 @@ export default function EditHealthPackagePage({
                           )}
                         </p>
                         <p className="text-xs text-green-600 mt-1">
-                          All services and tests listed above will be included
-                          in this health package.
+                          {t("admin.healthPackages.create.form.allServicesIncluded")}
                         </p>
                       </div>
                     </div>
@@ -528,12 +527,12 @@ export default function EditHealthPackagePage({
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Updating...
+                        {t("admin.healthPackages.editSection.updating")}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4" />
-                        Save Changes
+                        {t("admin.healthPackages.editSection.saveChanges")}
                       </>
                     )}
                   </Button>

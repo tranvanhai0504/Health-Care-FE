@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { ConsultationService, Specialty } from "@/types";
 import { consultationServiceApi } from "@/services/consultationService.service";
@@ -48,25 +49,42 @@ import { Skeleton } from "@/components/ui/skeleton";
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 // Schema for form validation
-const formSchema = z.object({
-  name: z.string().min(3, "Service name must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  specialization: z.string().min(1, "Specialization is required"),
-  duration: z.number().min(1, "Duration must be at least 1 minute"),
-  price: z.number().min(0, "Price must be a positive number"),
-});
+const createFormSchema = (t: (key: string) => string) => {
+  try {
+    return z.object({
+      name: z.string().min(3, t("admin.healthServices.editPagePage.validation.nameMinLength") || "Service name must be at least 3 characters"),
+      description: z.string().min(10, t("admin.healthServices.editPagePage.validation.descriptionMinLength") || "Description must be at least 10 characters"),
+      specialization: z.string().min(1, t("admin.healthServices.editPagePage.validation.specializationRequired") || "Specialization is required"),
+      duration: z.number().min(1, t("admin.healthServices.editPagePage.validation.durationMinValue") || "Duration must be at least 1 minute"),
+      price: z.number().min(0, t("admin.healthServices.editPagePage.validation.priceMinValue") || "Price must be a positive number"),
+    });
+  } catch (error) {
+    console.warn("Translation error in form schema, using fallback messages:", error);
+    return z.object({
+      name: z.string().min(3, "Service name must be at least 3 characters"),
+      description: z.string().min(10, "Description must be at least 10 characters"),
+      specialization: z.string().min(1, "Specialization is required"),
+      duration: z.number().min(1, "Duration must be at least 1 minute"),
+      price: z.number().min(0, "Price must be a positive number"),
+    });
+  }
+};
 
 export default function EditHealthServicePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalService, setOriginalService] = useState<ConsultationService | null>(null);
   const [id, setId] = useState<string>("");
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
+
+  // Create form schema with proper error handling
+  const formSchema = useMemo(() => createFormSchema(t), [t]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -95,12 +113,12 @@ export default function EditHealthServicePage({
         setSpecialties(data);
       } catch (error) {
         console.error("Error fetching specialties:", error);
-        toast.error("Failed to fetch specialties");
+        toast.error(t("admin.healthServices.editPage.messages.fetchSpecialtiesError"));
       }
     };
 
     fetchSpecialties();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!id) return;
@@ -123,14 +141,14 @@ export default function EditHealthServicePage({
         });
       } catch (error) {
         console.error("Error fetching service details:", error);
-        toast.error("Failed to fetch service details");
+        toast.error(t("admin.healthServices.editPage.messages.fetchServiceError"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchServiceData();
-  }, [id, form]);
+  }, [id, form, t]);
 
   // Handle form submission
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -141,13 +159,13 @@ export default function EditHealthServicePage({
 
       await consultationServiceApi.update(id, data);
 
-      toast.success("Health service updated successfully");
+      toast.success(t("admin.healthServices.editPage.messages.updateSuccess"));
 
       // Redirect to the service details
       router.push(`/admin/health-services/${id}`);
     } catch (error) {
       console.error("Error updating health service:", error);
-      toast.error("Failed to update health service");
+      toast.error(t("admin.healthServices.editPage.messages.updateError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -181,16 +199,16 @@ export default function EditHealthServicePage({
         className="mb-6"
         onClick={() => router.push(`/admin/health-services/${id}`)}
       >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Service Details
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t("admin.healthServices.editPage.backToDetails")}
       </Button>
 
       <Card className="border-none shadow-sm">
         <CardHeader className="bg-muted/50 rounded-t-lg">
           <CardTitle className="text-2xl flex items-center gap-2">
-            <Stethoscope className="h-5 w-5" /> Edit Health Service
+            <Stethoscope className="h-5 w-5" /> {t("admin.healthServices.editPage.title")}
           </CardTitle>
           <CardDescription>
-            Update details for {originalService?.name}
+            {t("admin.healthServices.editPage.subtitle")} {originalService?.name}
           </CardDescription>
         </CardHeader>
 
@@ -205,10 +223,10 @@ export default function EditHealthServicePage({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Service Name</FormLabel>
+                        <FormLabel>{t("admin.healthServices.editPage.form.serviceName")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g. General Consultation"
+                            placeholder={t("admin.healthServices.editPage.form.serviceNamePlaceholder")}
                             {...field}
                           />
                         </FormControl>
@@ -222,11 +240,11 @@ export default function EditHealthServicePage({
                     name="specialization"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Specialization</FormLabel>
+                        <FormLabel>{t("admin.healthServices.editPage.form.specialization")}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a specialization" />
+                              <SelectValue placeholder={t("admin.healthServices.editPage.form.selectSpecialization")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -248,7 +266,7 @@ export default function EditHealthServicePage({
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>{t("admin.healthServices.editPage.form.description")}</FormLabel>
                       <FormControl>
                         <div className="w-full">
                           <MDEditor
@@ -257,8 +275,7 @@ export default function EditHealthServicePage({
                             data-color-mode="light"
                             height={300}
                             textareaProps={{
-                              placeholder:
-                                "Describe the consultation service using markdown...",
+                              placeholder: t("admin.healthServices.editPage.form.descriptionPlaceholder"),
                             }}
                             preview="live"
                             hideToolbar={false}
@@ -267,8 +284,7 @@ export default function EditHealthServicePage({
                         </div>
                       </FormControl>
                       <FormDescription>
-                        Use markdown formatting to describe the consultation service.
-                        You can use headers, lists, bold text, and more.
+                        {t("admin.healthServices.editPage.form.descriptionHelper")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -282,7 +298,7 @@ export default function EditHealthServicePage({
                     name="duration"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Duration (minutes)</FormLabel>
+                        <FormLabel>{t("admin.healthServices.editPage.form.duration")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -294,7 +310,7 @@ export default function EditHealthServicePage({
                           />
                         </FormControl>
                         <FormDescription>
-                          Estimated consultation time
+                          {t("admin.healthServices.editPage.form.durationHelper")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -306,7 +322,7 @@ export default function EditHealthServicePage({
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price</FormLabel>
+                        <FormLabel>{t("admin.healthServices.editPage.form.price")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -318,7 +334,7 @@ export default function EditHealthServicePage({
                           />
                         </FormControl>
                         <FormDescription>
-                          Service price (0 for free)
+                          {t("admin.healthServices.editPage.form.priceHelper")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -337,12 +353,12 @@ export default function EditHealthServicePage({
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Updating...
+                        {t("admin.healthServices.editPage.form.updating")}
                       </>
                     ) : (
                       <>
                         <Save className="h-4 w-4" />
-                        Save Changes
+                        {t("admin.healthServices.editPage.form.saveChanges")}
                       </>
                     )}
                   </Button>
